@@ -1,0 +1,68 @@
+// Options supported by this project
+local options_doc = {
+  OS: ['Operating system to build for.'],
+  ARCH: [|||
+    The underlying architecture. Is taken as a default for "HOST_ARCH" and
+    "TARGET_ARCH".
+
+    Typical values are "x86", "x86_64", "arm", "arm64", but the actual set
+    of supported values depends on the toolchain in use.
+  |||],
+  TARGET_ARCH: ['The architecture for which to build the binary.'],
+  TOOLCHAIN_CONFIG: [|||
+    The toolchain configuration.
+
+    Use field "FAMILY" to specify the compiler family. Typical values are
+    "clang" and "gnu", but the actual set of supported values depends on
+    the toolchain in use.
+  |||],
+  ENV: [|||
+    Map from strings to strings. The build environment to be used for
+    build actions. Typically used to include an unusual value of PATH.
+  |||],
+  LOCALBASE: [|||
+    Use this localbase for building against system libs (e.g. "/usr").
+  |||],
+  PKG_CONFIG_ARGS: [|||
+    Additional "pkg-config" arguments (e.g. "--define-prefix" or "--static").
+  |||],
+};
+
+{
+  // Default target: installs the library's public headers into a
+  // LOCALBASE-shaped tree (include/gsl/*).
+  ALL: {
+    type: 'export',
+    target: 'INSTALL',
+    doc: ['Installs the Microsoft GSL library into a LOCALBASE-style tree.'],
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  // Predefined target combining all libs, binaries, and public headers of
+  // this project into a single LOCALBASE-shaped tree.
+  INSTALL: {
+    type: @'rules//CC:install-with-deps',
+    targets: ['gsl'],
+  },
+
+  // Microsoft GSL (https://github.com/microsoft/GSL), an implementation of
+  // the C++ Core Guidelines Support Library.
+  gsl: {
+    type: 'export',
+    target: 'gsl_unexported',
+    doc: [
+      'Microsoft GSL (https://github.com/microsoft/GSL).',
+      'Header-only; nothing is compiled when consumed.',
+    ],
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  gsl_unexported: {
+    type: @'rules//CC:library',
+    name: ['gsl'],
+    hdrs: [jst.tree('.')],
+    stage: ['gsl'],
+  },
+}

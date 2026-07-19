@@ -1,0 +1,26 @@
+{
+  "main": "microsoft_gsl",
+  "imports": [
+    {
+      "source": "git",
+      "branch": "system",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [{"alias": "toolchain"}]
+    }
+  ],
+  "repositories": {
+    "targets": {"repository": {"type": "file", "path": "targets"}},
+    "microsoft_gsl": {
+      "repository": {
+        "type": "archive",
+        "content": "386f0a89a47763481223a63d5026215af8d3c827",
+        "fetch": "https://github.com/microsoft/GSL/archive/refs/tags/v4.0.0.tar.gz",
+        "sha256": "f0e32cb10654fea91ad56bde89170d78cfbf4363ee0b01d8f097de2ba49f6ce9",
+        "sha512": "7fa7446796c6bf82fb3bff09f86a69c446a27be528bef3b17c8bc5ad2f24d5cf86bdb3d3813ecb44726e8f395020180e97e41027330d1fbf545cc0f0b44aac29",
+        "subdir": "GSL-4.0.0/include/gsl"
+      },
+      "target_root": "targets",
+      "bindings": {"rules": "toolchain"}
+    }
+  }
+}
