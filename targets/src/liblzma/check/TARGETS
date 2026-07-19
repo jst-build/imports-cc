@@ -1,0 +1,22 @@
+{
+  headers: {
+    type: @'rules//CC:library',
+    arguments_config: ['ENABLE_SMALL', 'ADDITIONAL_CHECK_TYPES'],
+    hdrs:
+      [
+        'check.h',
+        'crc_common.h',
+      ]
+      + if !jst.env('ENABLE_SMALL') then
+        [
+          'crc32_table_be.h',
+          'crc32_table_le.h',
+          'crc_x86_clmul.h',
+        ]
+        + if jst.env('ADDITIONAL_CHECK_TYPES') then
+          [
+            'crc64_table_be.h',
+            'crc64_table_le.h',
+          ],
+  },
+}

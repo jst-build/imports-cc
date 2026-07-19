@@ -1,0 +1,62 @@
+{
+  "main": "lzma",
+  "repositories": {
+    "config": {
+      "repository": {
+        "type": "file",
+        "path": "config"
+      }
+    },
+    "targets": {
+      "repository": {
+        "type": "file",
+        "path": "targets"
+      }
+    },
+    "rules": {
+      "repository": "toolchain",
+      "target_root": "config",
+      "rule_root": "toolchain",
+      "bindings": {
+        "base": "toolchain"
+      }
+    },
+    "lzma": {
+      "repository": {
+        "type": "archive",
+        "content": "80e67abd2e08a54ec21f195b3e9e4abfc64ba7e1",
+        "fetch": "https://github.com/tukaani-project/xz/releases/download/v5.6.3/xz-5.6.3.tar.gz",
+        "sha256": "b1d45295d3f71f25a4c9101bd7c8d16cb56348bbef3bbc738da0351e17c73317",
+        "sha512": "b07b45e18615d1946e9d12157af99b54700d757832a638fccab70549574dcd7f28e69e71cc4c0b9c808959f818e79b668a5ccf108429ea0f40b6125bfd55d274",
+        "subdir": "xz-5.6.3"
+      },
+      "target_root": "targets",
+      "bindings": {
+        "rules": "rules"
+      }
+    },
+    "toolchain": {
+      "repository": "toolchain/rules",
+      "target_root": "toolchain/targets",
+      "rule_root": "toolchain/rules"
+    },
+    "toolchain/rules": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/rules-cc",
+        "branch": "master",
+        "commit": "c18d9413f8759f8c261a3af06edf0861ee9e2492",
+        "subdir": "rules"
+      }
+    },
+    "toolchain/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/toolchains-cc.git",
+        "branch": "system",
+        "commit": "5505965c61432dea016055d0f12f483df40eb9ff",
+        "subdir": "targets"
+      }
+    }
+  }
+}
