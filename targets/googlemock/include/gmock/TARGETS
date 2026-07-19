@@ -1,0 +1,23 @@
+{
+  hdrs: {
+    type: @'rules//data:staged',
+    srcs: [
+      'gmock-actions.h',
+      'gmock-cardinalities.h',
+      'gmock-function-mocker.h',
+      'gmock.h',
+      'gmock-matchers.h',
+      'gmock-more-actions.h',
+      'gmock-more-matchers.h',
+      'gmock-nice-strict.h',
+      'gmock-spec-builders.h',
+      'internal/custom/gmock-generated-actions.h',
+      'internal/custom/gmock-matchers.h',
+      'internal/custom/gmock-port.h',
+      'internal/gmock-internal-utils.h',
+      'internal/gmock-port.h',
+      'internal/gmock-pp.h',
+    ],
+    stage: ['gmock'],
+  },
+}

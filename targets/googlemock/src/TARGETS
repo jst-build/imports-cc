@@ -1,0 +1,28 @@
+{
+  // gmock-all.cc #includes these sibling .cc files via quoted paths
+  // relative to the googlemock/ root (e.g. "src/gmock.cc"), so they must
+  // be staged alongside it rather than compiled separately.
+  private_hdrs: {
+    type: @'rules//data:staged',
+    srcs: [
+      'gmock-cardinalities.cc',
+      'gmock.cc',
+      'gmock-internal-utils.cc',
+      'gmock-matchers.cc',
+      'gmock-spec-builders.cc',
+    ],
+    stage: ['src'],
+  },
+
+  gmock_all: {
+    type: @'rules//data:staged',
+    srcs: ['gmock-all.cc'],
+    stage: ['src'],
+  },
+
+  gmock_main: {
+    type: @'rules//data:staged',
+    srcs: ['gmock_main.cc'],
+    stage: ['src'],
+  },
+}
