@@ -1,0 +1,36 @@
+{
+  "main": "re2",
+  "imports": [
+    {
+      "source": "git",
+      "branch": "system",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [{"alias": "toolchain"}]
+    }
+  ],
+  "repositories": {
+    "config": {"repository": {"type": "file", "path": "config"}},
+    "targets": {"repository": {"type": "file", "path": "targets"}},
+    "rules": {
+      "repository": "toolchain",
+      "target_root": "config",
+      "rule_root": "toolchain",
+      "bindings": {"base": "toolchain"}
+    },
+    "re2": {
+      "repository": {
+        "type": "archive",
+        "content": "8eebd70d7ebd33ac5d736090cecd7cfe1831b9e3",
+        "fetch": "https://github.com/google/re2/archive/refs/tags/2022-04-01.tar.gz",
+        "sha256": "1ae8ccfdb1066a731bba6ee0881baad5efd2cd661acd9569b689f2586e1a50e9",
+        "sha512": "fc3d7cc1ee6bd771719845566d83ffc8c4e19d838748e842a1e19c7564473c9a0a061bebb3966ffa82de6515346f9bbddc2d94ceb3de89233f58826774bd7ce7",
+        "subdir": "re2-2022-04-01",
+        "mirrors": [
+          "https://storage.googleapis.com/grpc-bazel-mirror/github.com/google/re2/archive/2022-04-01.tar.gz"
+        ]
+      },
+      "target_root": "targets",
+      "bindings": {"rules": "rules"}
+    }
+  }
+}
