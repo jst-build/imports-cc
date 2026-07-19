@@ -1,0 +1,36 @@
+{
+  "main": "ssl",
+  "imports": [
+    {
+      "source": "git",
+      "branch": "system",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [{"alias": "toolchain"}]
+    }
+  ],
+  "repositories": {
+    "config": {"repository": {"type": "file", "path": "config"}},
+    "targets": {"repository": {"type": "file", "path": "targets"}},
+    "rules": {
+      "repository": "toolchain",
+      "target_root": "config",
+      "rule_root": "toolchain",
+      "bindings": {"base": "toolchain"}
+    },
+    "ssl": {
+      "repository": {
+        "type": "archive",
+        "content": "d9ff3aa3d22337e93cb0a0e2df00ca8abea2fac6",
+        "fetch": "https://github.com/google/boringssl/archive/dec0d8f681348af8bb675e07bd89989665fca8bc.tar.gz",
+        "sha256": "2f12c33d2cf25a658a1b981fb96923dac87e9175fb20e45db6950ee36c526356",
+        "sha512": "51f91bee640e38ce20c180195de6811b5be7522240faae2b57158fa9c298ed09292ecb09c770df5d4fc6a3100bc2459de4e9d312e315265c1ea7ade347bad3f2",
+        "subdir": "boringssl-dec0d8f681348af8bb675e07bd89989665fca8bc",
+        "mirrors": [
+          "https://storage.googleapis.com/grpc-bazel-mirror/github.com/google/boringssl/archive/dec0d8f681348af8bb675e07bd89989665fca8bc.tar.gz"
+        ]
+      },
+      "target_root": "targets",
+      "bindings": {"rules": "rules"}
+    }
+  }
+}

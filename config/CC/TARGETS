@@ -1,0 +1,59 @@
+local os = jst.env('OS', default='linux');
+local arch = jst.env('ARCH', default='x86_64');
+local platform = jst.join([os, jst.env('TARGET_ARCH', default=arch)], sep='_');
+local toolchain_config = jst.env('TOOLCHAIN_CONFIG', default={});
+local compiler_family = jst.get('FAMILY', toolchain_config, default='unknown');
+
+local posix_copts = [
+  '-Wa,--noexecstack',
+  '-D_XOPEN_SOURCE=700',
+  '-Wall',
+  '-Wformat=2',
+  '-Wsign-compare',
+  '-Wmissing-field-initializers',
+  '-Wwrite-strings',
+  '-Wshadow',
+  '-fno-common',
+];
+
+{
+  defaults: {
+    type: @'//CC:defaults',
+    arguments_config: ['TOOLCHAIN_CONFIG', 'OS', 'ARCH', 'TARGET_ARCH'],
+    base: [@'base//CC:defaults'],
+    ADD_CFLAGS:
+      ['-std=gnu17', '-DBORINGSSL_IMPLEMENTATION']
+      + (if jst.env('TARGET_ARCH', default=arch) == 'arm' then
+           ['-Wno-atomic-alignment'])
+      + (if platform == 'linux_x86_64' || platform == 'mac_x86_64' then
+           posix_copts
+         else if platform == 'windows_x86_64' then
+           [
+             '-DWIN32_LEAN_AND_MEAN',
+             '-DOPENSSL_NO_ASM',
+           ]
+         else ['-DOPENSSL_NO_ASM'])
+      + (if compiler_family == 'gnu' then
+           [
+             '-Wno-dangling-pointer',
+             '-Wno-array-bounds',
+             '-Wno-stringop-overflow',
+           ]
+         else if (compiler_family == 'clang') then
+           [
+             '-Wno-unused-but-set-variable',
+             '-Wno-unknown-warning-option',
+           ]),
+    ADD_CXXFLAGS:
+      ['-std=c++20', '-DBORINGSSL_IMPLEMENTATION']
+      + (if platform == 'linux_x86_64' || platform == 'mac_x86_64' then
+           posix_copts + ['-Wmissing-declarations']
+         else if platform == 'windows_x86_64' then
+           [
+             '-DWIN32_LEAN_AND_MEAN',
+             '-utf-8',
+             '-DOPENSSL_NO_ASM',
+           ]
+         else ['-DOPENSSL_NO_ASM']),
+  },
+}
