@@ -1,0 +1,10 @@
+{
+  cli11_headers: {
+    type: 'tree',
+    name: 'CLI',
+    deps: [
+      jst.glob('*.hpp'),
+      jst.tree('impl'),
+    ],
+  },
+}

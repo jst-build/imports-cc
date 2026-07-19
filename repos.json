@@ -1,0 +1,48 @@
+{
+  "main": "cli11",
+  "repositories": {
+    "targets": {
+      "repository": {
+        "type": "file",
+        "path": "targets"
+      }
+    },
+    "cli11": {
+      "repository": {
+        "type": "archive",
+        "content": "6689a311c4e3f31e0428a6135ed03f2ccac448f8",
+        "fetch": "https://github.com/CLIUtils/CLI11/archive/refs/tags/v2.5.0.tar.gz",
+        "sha256": "17e02b4cddc2fa348e5dbdbb582c59a3486fa2b2433e70a0c3bacb871334fd55",
+        "sha512": "895fb61e4c9974ee8e8d4681fb880a10126a412f24bb147d558d465d78fe784a044c5443edf1ce20fc9936901073073d795b034e0c02bdb3c8aa74c9d6ac811c",
+        "subdir": "CLI11-2.5.0"
+      },
+      "target_root": "targets",
+      "bindings": {
+        "rules": "toolchain"
+      }
+    },
+    "toolchain": {
+      "repository": "toolchain/rules",
+      "target_root": "toolchain/targets",
+      "rule_root": "toolchain/rules"
+    },
+    "toolchain/rules": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/rules-cc",
+        "branch": "master",
+        "commit": "c18d9413f8759f8c261a3af06edf0861ee9e2492",
+        "subdir": "rules"
+      }
+    },
+    "toolchain/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/toolchains-cc.git",
+        "branch": "system",
+        "commit": "5505965c61432dea016055d0f12f483df40eb9ff",
+        "subdir": "targets"
+      }
+    }
+  }
+}
