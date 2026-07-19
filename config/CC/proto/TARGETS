@@ -1,0 +1,6 @@
+{
+  defaults: {
+    type: @'//CC/proto:defaults',
+    base: [@'base//CC/proto:defaults'],
+  },
+}

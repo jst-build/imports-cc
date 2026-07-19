@@ -1,0 +1,99 @@
+{
+  "main": "grpc",
+  "imports": [
+    {
+      "source": "git",
+      "branch": "system",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [{"alias": "toolchain"}]
+    },
+    {
+      "source": "git",
+      "branch": "absl/system",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "absl"}]
+    },
+    {
+      "source": "git",
+      "branch": "zlib/system",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "zlib"}]
+    },
+    {
+      "source": "git",
+      "branch": "protobuf/v29.0",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{
+        "alias": "protobuf",
+        "map":{"toolchain": "toolchain", "absl": "absl", "zlib": "zlib"}
+      }]
+    },
+    {
+      "source": "git",
+      "branch": "protobuf/v29.0",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [
+        {
+          "alias": "proto_toolchain",
+          "map": {"base_toolchain": "toolchain", "protobuf": "protobuf"}
+        }
+      ]
+    },
+    {
+      "source": "git",
+      "branch": "ssl/system",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "ssl"}]
+    },
+    {
+      "source": "git",
+      "branch": "re2/system",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "re2"}]
+    }
+  ],
+  "repositories": {
+    "config": {"repository": {"type": "file", "path": "config"}},
+    "targets": {"repository": {"type": "file", "path": "targets"}},
+    "rules": {
+      "repository": "proto_toolchain",
+      "target_root": "config",
+      "rule_root": "proto_toolchain",
+      "bindings": {"base": "proto_toolchain"}
+    },
+    "grpc": {
+      "repository": {
+        "type": "archive",
+        "content": "87c37bc5be5d6ded368667d02958d488b94d6143",
+        "fetch": "https://github.com/grpc/grpc/archive/refs/tags/v1.70.2.tar.gz",
+        "sha256": "92f240f7267ed6cd8ba2be4c59a3b5b6ec0c4b4c466071b1e1d62165b25acf64",
+        "sha512": "4afd34b36b4d7c41260abad6d921154a3e7176a7a46de6ae97335697db5d11f61e37b08889c007463fc8f3e800788585f5f7d5b2cec12f89b69fc9bc15efd17f",
+        "subdir": "grpc-1.70.2",
+        "pragma": {"special": "ignore"}
+      },
+      "target_root": "targets",
+      "bindings": {
+        "rules": "rules",
+        "protobuf": "protobuf",
+        "ssl": "ssl",
+        "absl": "absl",
+        "zlib": "zlib",
+        "re2": "re2",
+        "cares": "grpc-cares"
+      }
+    },
+    "grpc-cares": {
+      "repository": {
+        "type": "archive",
+        "content": "4237a53f7a5dc1cfb4d04a6b6374f8674c32e271",
+        "fetch": "https://github.com/c-ares/c-ares/releases/download/cares-1_19_1/c-ares-1.19.1.tar.gz",
+        "sha256": "321700399b72ed0e037d0074c629e7741f6b2ec2dda92956abe3e9671d3e268e",
+        "sha512": "466a94efda626e815a6ef7a890637056339f883d549ea6055e289fd8cd2391130e5682c905c0fb3bd7e955af7f6deb793562c170eb0ee066a4a62085a82ba470",
+        "subdir": "c-ares-1.19.1"
+      },
+      "target_root": "targets",
+      "target_file_name": "cares.TARGETS",
+      "bindings": {"rules": "proto_toolchain", "grpc": "grpc"}
+    }
+  }
+}

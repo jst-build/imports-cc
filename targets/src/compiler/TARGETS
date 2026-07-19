@@ -1,0 +1,132 @@
+{
+  proto_parser_helper: {
+    type: @'rules//CC:library',
+    name: ['proto_parser_helper'],
+    stage: ['src', 'compiler'],
+    srcs: ['proto_parser_helper.cc'],
+    hdrs: ['proto_parser_helper.h'],
+  },
+
+  grpc_plugin_support: {
+    type: @'rules//CC:library',
+    name: ['grpc_plugin_support'],
+    stage: ['src', 'compiler'],
+    srcs: [
+      'cpp_generator.cc',
+      'csharp_generator.cc',
+      'node_generator.cc',
+      'objective_c_generator.cc',
+      'php_generator.cc',
+      'python_generator.cc',
+      'ruby_generator.cc',
+    ],
+    hdrs: [
+      'config.h',
+      'config_protobuf.h',
+      'cpp_generator.h',
+      'cpp_generator_helpers.h',
+      'cpp_plugin.h',
+      'csharp_generator.h',
+      'csharp_generator_helpers.h',
+      'generator_helpers.h',
+      'node_generator.h',
+      'node_generator_helpers.h',
+      'objective_c_generator.h',
+      'objective_c_generator_helpers.h',
+      'php_generator.h',
+      'php_generator_helpers.h',
+      'protobuf_plugin.h',
+      'python_generator.h',
+      'python_generator_helpers.h',
+      'python_private_generator.h',
+      'ruby_generator.h',
+      'ruby_generator_helpers-inl.h',
+      'ruby_generator_map-inl.h',
+      'ruby_generator_string-inl.h',
+      'schema_interface.h',
+    ],
+    deps: [
+      'proto_parser_helper',
+      @'protobuf//:libprotobuf',
+      @'protobuf//:libprotoc',
+      @'//:grpc++_config_proto',
+    ],
+  },
+
+  grpc_cpp_plugin: {
+    type: @'rules//CC:binary',
+    name: ['grpc_cpp_plugin'],
+    srcs: ['cpp_plugin.cc'],
+    'private-deps': ['grpc_plugin_support'],
+    'private-ldflags': [
+      '-pthread',
+      '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+    ],
+  },
+
+  grpc_csharp_plugin: {
+    type: @'rules//CC:binary',
+    name: ['grpc_csharp_plugin'],
+    srcs: ['csharp_plugin.cc'],
+    'private-deps': ['grpc_plugin_support'],
+    'private-ldflags': [
+      '-pthread',
+      '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+    ],
+  },
+
+  grpc_node_plugin: {
+    type: @'rules//CC:binary',
+    name: ['grpc_node_plugin'],
+    srcs: ['node_plugin.cc'],
+    'private-deps': ['grpc_plugin_support'],
+    'private-ldflags': [
+      '-pthread',
+      '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+    ],
+  },
+
+  grpc_objective_c_plugin: {
+    type: @'rules//CC:binary',
+    name: ['grpc_objective_c_plugin'],
+    srcs: ['objective_c_plugin.cc'],
+    'private-deps': ['grpc_plugin_support'],
+    'private-ldflags': [
+      '-pthread',
+      '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+    ],
+  },
+
+  grpc_php_plugin: {
+    type: @'rules//CC:binary',
+    name: ['grpc_php_plugin'],
+    srcs: ['php_plugin.cc'],
+    'private-deps': ['grpc_plugin_support'],
+    'private-ldflags': [
+      '-pthread',
+      '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+    ],
+  },
+
+  grpc_python_plugin: {
+    type: @'rules//CC:binary',
+    name: ['grpc_python_plugin'],
+    srcs: ['python_plugin.cc'],
+    'private-deps': ['grpc_plugin_support'],
+    'private-ldflags': [
+      '-pthread',
+      '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+    ],
+  },
+
+  grpc_ruby_plugin: {
+    type: @'rules//CC:binary',
+    name: ['grpc_ruby_plugin'],
+    srcs: ['ruby_plugin.cc'],
+    'private-deps': ['grpc_plugin_support'],
+    'private-ldflags': [
+      '-pthread',
+      '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+    ],
+  },
+}

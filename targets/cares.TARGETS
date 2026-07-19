@@ -1,0 +1,44 @@
+// Options supported by this project
+local options_doc = {
+  OS: ['Operating system to build for.'],
+  ARCH: [|||
+    The underlying architecture. Is taken as a default for "TARGET_ARCH".
+
+    Typical values are "x86", "x86_64", "arm", "arm64", but the actual set
+    of supported values depends on the toolchain in use.
+  |||],
+  TARGET_ARCH: ['The architecture for which to build the binary.'],
+  TOOLCHAIN_CONFIG: [|||
+    The toolchain configuration.
+
+    Use field "FAMILY" to specify the compiler family. Typical values are
+    "clang" and "gnu", but the actual set of supported values depends on
+    the toolchain in use.
+  |||],
+  DEBUG: [|||
+    Map enabling and configuring the debug version. Specify a map that is
+    logically true (e.g., non-null, non-empty map) to enable debug mode.
+  |||],
+  CC: ['The C compiler to use.'],
+  CFLAGS: ['The C compiler flags to use.'],
+  ADD_CFLAGS: ['Additional C compiler flags.'],
+  AR: ['The archiver to use.'],
+  ENV: [|||
+    Map from strings to strings. The build environment to be used for
+    build actions. Typically used to include an unusual value of PATH.
+  |||],
+};
+
+{
+  // A patched, internally-renamed copy of c-ares vendored specifically for
+  // gRPC's own DNS resolution (kept separate from the repo's own bundled
+  // "cares" extern to avoid symbol/archive-name collisions when both are
+  // linked into the same binary).
+  ares: {
+    type: 'export',
+    doc: ['A patched c-ares, vendored for gRPC\'s own DNS resolution use.'],
+    target: @'//src/lib:ares_lib',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+}

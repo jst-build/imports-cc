@@ -1,0 +1,84 @@
+local os = jst.env('OS', default='linux');
+local arch = jst.env('ARCH', default='x86_64');
+local target_arch = jst.env('TARGET_ARCH', default=arch);
+local toolchain_config = jst.env('TOOLCHAIN_CONFIG', default={});
+local compiler_family = jst.get('FAMILY', toolchain_config, default='unknown');
+
+{
+  defaults: {
+    type: @'//CC:defaults',
+    arguments_config: ['DEBUG', 'OS', 'ARCH', 'TARGET_ARCH', 'TOOLCHAIN_CONFIG'],
+    base: [@'base//CC:defaults'],
+    ADD_CFLAGS:
+      ['-std=c11']
+      + (if compiler_family != 'msvc' then
+           [
+             '-Wall',
+             '-Wextra',
+             '-Wno-unused-parameter',
+             '-Wno-sign-compare',
+             '-Wno-implicit-fallthrough',
+             '-DOSATOMIC_USE_INLINED=1',
+             '-Wno-attributes',
+           ])
+      + (if compiler_family == 'gnu' then
+           ['-Wno-clobbered', '-Wno-type-limits']
+         else if compiler_family == 'clang' then
+           ['-Wno-atomic-alignment'])
+      + (if jst.env('DEBUG') then
+           ['-D_DEBUG', '-DDEBUG']
+         else
+           ['-Wframe-larger-than=16384'])
+      + (if os == 'windows' then
+           [
+             '-D_WIN32_WINNT=0x0600',
+             '-DWIN32_LEAN_AND_MEAN',
+             '-D_HAS_EXCEPTIONS=0',
+             '-DUNICODE',
+             '-D_UNICODE',
+             '-DNOMINMAX',
+           ]),
+    ADD_CXXFLAGS:
+      ['-std=c++17']
+      + (if compiler_family != 'msvc' then
+           [
+             '-Wall',
+             '-Wextra',
+             '-Wno-unused-parameter',
+             '-Wno-uninitialized',
+             '-Wno-missing-field-initializers',
+             '-DOSATOMIC_USE_INLINED=1',
+             '-Wno-redundant-move',
+             '-Wno-comment',
+             '-Wno-attributes',
+             '-Wno-unused-function',
+             '-Wno-unknown-warning-option',
+             '-Wno-implicit-const-int-float-conversion',
+             '-Wno-stringop-overflow',
+             '-Wno-stringop-truncation',
+             '-Wno-class-memaccess',
+           ])
+      + (if jst.env('DEBUG') then
+           ['-D_DEBUG', '-DDEBUG']
+         else
+           ['-Wframe-larger-than=16384'])
+      + (if compiler_family == 'gnu' then
+           [
+             '-Wno-array-bounds',
+             '-Wno-unused-variable',
+             '-Wno-dangling-pointer',
+             '-Wno-type-limits',
+           ])
+      + (if os == 'windows' then
+           [
+             '-D_WIN32_WINNT=0x0600',
+             '-DWIN32_LEAN_AND_MEAN',
+             '-D_HAS_EXCEPTIONS=0',
+             '-DUNICODE',
+             '-D_UNICODE',
+             '-DNOMINMAX',
+           ])
+      + (if target_arch == 'arm' then
+           ['-Wno-atomic-alignment']),
+  },
+}

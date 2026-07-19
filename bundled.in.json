@@ -1,0 +1,70 @@
+{
+  "main": "grpc",
+  "imports": [
+    {
+      "source": "git",
+      "branch": "system",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [{"alias": "toolchain"}]
+    },
+    {
+      "source": "git",
+      "branch": "absl/v20240722.0",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "absl", "map": {"toolchain": "toolchain"}}]
+    },
+    {
+      "source": "git",
+      "branch": "zlib/v1.3.1",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "zlib", "map": {"toolchain": "toolchain"}}]
+    },
+    {
+      "source": "git",
+      "branch": "protobuf/v29.0",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{
+        "alias": "protobuf",
+        "map":{"toolchain": "toolchain", "absl": "absl", "zlib": "zlib"}
+      }]
+    },
+    {
+      "source": "git",
+      "branch": "protobuf/v29.0",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [
+        {
+          "alias": "proto_toolchain",
+          "map": {"base_toolchain": "toolchain", "protobuf": "protobuf"}
+        }
+      ]
+    },
+    {
+      "source": "git",
+      "branch": "boringssl/dec0d8f6",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "ssl", "map": {"toolchain": "toolchain"}}]
+    },
+    {
+      "source": "git",
+      "branch": "re2/v2022-04-01",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "re2", "map": {"toolchain": "toolchain"}}]
+    },
+    {
+      "source": "file",
+      "path": ".",
+      "repos": [{
+        "alias": "grpc",
+        "map": {
+          "proto_toolchain": "proto_toolchain",
+          "absl": "absl",
+          "zlib": "zlib",
+          "protobuf": "protobuf",
+          "ssl": "ssl",
+          "re2": "re2"
+        }
+      }]
+    }
+  ]
+}
