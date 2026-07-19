@@ -1,0 +1,51 @@
+// Options supported by this project
+local options_doc = {
+  ENV: [|||
+    Map from strings to strings. The build environment to be used for
+    build actions. Typically used to include an unusual value of PATH.
+  |||],
+  LOCALBASE: [|||
+    Use this localbase for building against system libs (e.g. "/usr").
+  |||],
+  PKG_CONFIG_ARGS: [|||
+    Additional "pkg-config" arguments (e.g. "--define-prefix" or "--static").
+  |||],
+};
+
+{
+  'grpc++': {
+    type: 'export',
+    target: 'grpc++_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  grpc: {
+    type: 'export',
+    target: 'grpc_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  gpr: {
+    type: 'export',
+    target: 'gpr_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  'grpc++_unexported': {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['grpc++'],
+  },
+
+  grpc_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['grpc'],
+  },
+
+  gpr_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['gpr'],
+  },
+}
