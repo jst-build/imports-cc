@@ -1,0 +1,26 @@
+{
+  "main": "zlib",
+  "imports": [
+    {
+      "source": "git",
+      "branch": "system",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [{"alias": "toolchain"}]
+    }
+  ],
+  "repositories": {
+    "targets": {"repository": {"type": "file", "path": "targets"}},
+    "zlib": {
+      "repository": {
+        "type": "archive",
+        "content": "53fa48bf97f0ee0f42c62743b018507a6583ec3e",
+        "fetch": "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz",
+        "sha256": "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23",
+        "sha512": "580677aad97093829090d4b605ac81c50327e74a6c2de0b85dd2e8525553f3ddde17556ea46f8f007f89e435493c9a20bc997d1ef1c1c2c23274528e3c46b94f",
+        "subdir": "zlib-1.3.1"
+      },
+      "target_root": "targets",
+      "bindings": {"rules": "toolchain"}
+    }
+  }
+}
