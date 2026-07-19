@@ -1,0 +1,288 @@
+{
+  archive_pthread: {
+    type: @'rules//CC:library',
+    arguments_config: ['OS'],
+    name: ['archive_pthread'],
+    'private-ldflags':
+      if jst.env('OS') == 'linux' then
+        [
+          '-pthread',
+          '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+        ],
+  },
+
+  archive_crypt: {
+    type: @'rules//CC:library',
+    arguments_config: ['OS', 'ENABLE_CNG', 'USE_SYSTEM_LIBS'],
+    name: ['curl_crypt'],
+    'private-ldflags':
+      if jst.env('OS') == 'windows' && jst.env('ENABLE_CNG') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lbcrypt'],
+    deps:
+      if jst.env('OS') == 'windows' && jst.env('ENABLE_CNG') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'bcrypt//:bcrypt'],
+  },
+
+  archive_zlib: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_ZLIB'],
+    name: ['archive_zlib'],
+    'private-ldflags':
+      if jst.env('ENABLE_ZLIB') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lz'],
+    deps:
+      if jst.env('ENABLE_ZLIB') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'zlib//:zlib'],
+  },
+
+  archive_bzip2: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_BZip2'],
+    name: ['archive_bzip2'],
+    'private-ldflags':
+      if jst.env('ENABLE_BZip2') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lbz2'],
+    deps:
+      if jst.env('ENABLE_BZip2') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'bzip2//:libbz2'],
+  },
+
+  archive_lzma: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_LZMA'],
+    name: ['archive_lzma'],
+    'private-ldflags':
+      if jst.env('ENABLE_LZMA') && jst.env('USE_SYSTEM_LIBS') then
+        ['-llzma'],
+    deps:
+      if jst.env('ENABLE_LZMA') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'lzma//:lzma'],
+  },
+
+  archive_lzo: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_LZO'],
+    name: ['archive_lzo'],
+    'private-ldflags':
+      if jst.env('ENABLE_LZO') && jst.env('USE_SYSTEM_LIBS') then
+        ['-llzo2'],
+    deps:
+      if jst.env('ENABLE_LZO') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'lzo2//:lzo2'],
+  },
+
+  archive_libb2: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_LIBB2'],
+    name: ['archive_libb2'],
+    'private-ldflags':
+      if jst.env('ENABLE_LIBB2') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lb2'],
+    deps:
+      if jst.env('ENABLE_LIBB2') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'b2//:b2'],
+  },
+
+  archive_lz4: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_LZ4'],
+    name: ['archive_lz4'],
+    'private-ldflags':
+      if jst.env('ENABLE_LZ4') && jst.env('USE_SYSTEM_LIBS') then
+        ['-llz4'],
+    deps:
+      if jst.env('ENABLE_LZ4') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'lz4//:lz4'],
+  },
+
+  archive_lzstd: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_ZSTD'],
+    name: ['archive_lzstd'],
+    'private-ldflags':
+      if jst.env('ENABLE_ZSTD') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lzstd'],
+    deps:
+      if jst.env('ENABLE_ZSTD') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'zstd//:zstd'],
+  },
+
+  archive_mbedtls: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_MBEDTLS'],
+    name: ['archive_mbedtls'],
+    'private-ldflags':
+      if jst.env('ENABLE_MBEDTLS') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lmbedcrypto'],
+    deps:
+      if jst.env('ENABLE_MBEDTLS') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'mbedtls//:mbedcrypto'],
+  },
+
+  archive_nettle: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_NETTLE'],
+    name: ['archive_nettle'],
+    'private-ldflags':
+      if jst.env('ENABLE_NETTLE') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lnettle'],
+    deps:
+      if jst.env('ENABLE_NETTLE') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'nettle//:nettle'],
+  },
+
+  archive_libmd: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_LIBMD'],
+    name: ['archive_libmd'],
+    'private-ldflags':
+      if jst.env('ENABLE_LIBMD') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lmd'],
+    deps:
+      if jst.env('ENABLE_LIBMD') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'libmd//:libmd'],
+  },
+
+  archive_crypto: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_OPENSSL'],
+    name: ['archive_crypto'],
+    'private-ldflags':
+      if jst.env('ENABLE_OPENSSL') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lcrypto'],
+    deps:
+      if jst.env('ENABLE_OPENSSL') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'ssl//:crypto'],
+  },
+
+  archive_libxml2: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_LIBXML2'],
+    name: ['archive_libxml2'],
+    'private-ldflags':
+      if jst.env('ENABLE_LIBXML2') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lxml2'],
+    deps:
+      if jst.env('ENABLE_LIBXML2') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'xml2//:xml2'],
+  },
+
+  archive_pcreposix: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_PCREPOSIX'],
+    name: ['archive_pcreposix'],
+    'private-ldflags':
+      if jst.env('ENABLE_PCREPOSIX') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lpcreposix'],
+    deps:
+      if jst.env('ENABLE_PCREPOSIX') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'pcreposix//:pcreposix'],
+  },
+
+  archive_pcre2posix: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_PCRE2POSIX'],
+    name: ['archive_pcre2posix'],
+    'private-ldflags':
+      if jst.env('ENABLE_PCRE2POSIX') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lpcre2posix'],
+    deps:
+      if jst.env('ENABLE_PCRE2POSIX') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'pcre2posix//:pcre2posix'],
+  },
+
+  archive_pcre: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_PCRE'],
+    name: ['archive_pcre'],
+    'private-ldflags':
+      if jst.env('ENABLE_PCRE') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lpcre'],
+    deps:
+      if jst.env('ENABLE_PCRE') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'pcre//:pcre'],
+  },
+
+  archive_pcre2: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_PCRE2'],
+    name: ['archive_pcre2'],
+    'private-ldflags':
+      if jst.env('ENABLE_PCRE2') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lpcre2'],
+    deps:
+      if jst.env('ENABLE_PCRE2') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'pcre2//:pcre2'],
+  },
+
+  archive_regex: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_REGEX'],
+    name: ['archive_regex'],
+    'private-ldflags':
+      if jst.env('ENABLE_REGEX') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lregex'],
+    deps:
+      if jst.env('ENABLE_REGEX') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'regex//:regex'],
+  },
+
+  archive_libgcc: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_LIBGCC'],
+    name: ['archive_libgcc'],
+    'private-ldflags':
+      if jst.env('ENABLE_LIBGCC') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lgcc'],
+    deps:
+      if jst.env('ENABLE_LIBGCC') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'gcc//:gcc'],
+  },
+
+  archive_acl: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_ACL'],
+    name: ['archive_acl'],
+    'private-ldflags':
+      if jst.env('ENABLE_ACL') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lacl'],
+    deps:
+      if jst.env('ENABLE_ACL') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'acl//:acl'],
+  },
+
+  archive_xattr: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_XATTR', 'XATTR_PROVIDER'],
+    name: ['archive_xattr'],
+    'private-ldflags':
+      if jst.env('ENABLE_XATTR') && jst.env('USE_SYSTEM_LIBS') && jst.env('XATTR_PROVIDER') == 'attr' then
+        ['-lattr'],
+    deps:
+      if jst.env('ENABLE_XATTR') && !jst.env('USE_SYSTEM_LIBS') && jst.env('XATTR_PROVIDER') == 'attr' then
+        [@'attr//:attr'],
+  },
+
+  archive_richacl: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_RICHACL'],
+    name: ['archive_richacl'],
+    'private-ldflags':
+      if jst.env('ENABLE_RICHACL') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lrichacl'],
+    deps:
+      if jst.env('ENABLE_RICHACL') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'richacl//:richacl'],
+  },
+
+  archive_hidden_symbols: {
+    type: @'rules//CC:library',
+    arguments_config: ['TOOLCHAIN_CONFIG', 'HIDE_SYMBOLS'],
+    name: ['archive_hidden_symbols'],
+    'private-ldflags':
+      local compiler_family = jst.get('FAMILY', jst.env('TOOLCHAIN_CONFIG', default={}));
+      if compiler_family != 'msvc' && jst.env('HIDE_SYMBOLS') &&
+         (compiler_family == 'clang' || compiler_family == 'gnu' || compiler_family == 'intel') then
+        ['-fvisibility=hidden'],
+  },
+}

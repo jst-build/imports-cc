@@ -1,0 +1,126 @@
+{
+  "main": "libarchive",
+  "repositories": {
+    "config": {
+      "repository": {
+        "type": "file",
+        "path": "config"
+      }
+    },
+    "targets": {
+      "repository": {
+        "type": "file",
+        "path": "targets"
+      }
+    },
+    "rules": {
+      "repository": "toolchain",
+      "target_root": "config",
+      "rule_root": "toolchain",
+      "bindings": {
+        "base": "toolchain"
+      }
+    },
+    "libarchive": {
+      "repository": {
+        "type": "archive",
+        "content": "994435922d1ce63b52f6420f90b1b2a9f6670c39",
+        "fetch": "https://github.com/libarchive/libarchive/releases/download/v3.7.7/libarchive-3.7.7.tar.gz",
+        "sha256": "4cc540a3e9a1eebdefa1045d2e4184831100667e6d7d5b315bb1cbc951f8ddff",
+        "sha512": "cce6eecfcd33d228bd1b1162a90bad63750adb53ac4edcaed34e2fdc30b6ba211cf1fd25d4b8761373949ceec266478b09bd70ffa4e374803a29e8573d6d149e",
+        "subdir": "libarchive-3.7.7"
+      },
+      "target_root": "targets",
+      "bindings": {
+        "rules": "rules",
+        "zlib": "zlib",
+        "ssl": "ssl",
+        "bzip2": "bzip2",
+        "lzma": "lzma"
+      }
+    },
+    "toolchain": {
+      "repository": "toolchain/rules",
+      "target_root": "toolchain/targets",
+      "rule_root": "toolchain/rules"
+    },
+    "toolchain/rules": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/rules-cc",
+        "branch": "master",
+        "commit": "c18d9413f8759f8c261a3af06edf0861ee9e2492",
+        "subdir": "rules"
+      }
+    },
+    "toolchain/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/toolchains-cc.git",
+        "branch": "system",
+        "commit": "5505965c61432dea016055d0f12f483df40eb9ff",
+        "subdir": "targets"
+      }
+    },
+    "zlib": {
+      "repository": "zlib/targets",
+      "bindings": {
+        "rules": "toolchain"
+      }
+    },
+    "zlib/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "zlib/system",
+        "commit": "f429a1b6826cbe76f76515ea36e8b43d2d28b6a9",
+        "subdir": "targets"
+      }
+    },
+    "ssl": {
+      "repository": "ssl/targets",
+      "bindings": {
+        "rules": "toolchain"
+      }
+    },
+    "ssl/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "ssl/system",
+        "commit": "6bd87d6fd3bf4cf724ebf879856c56b5b0639727",
+        "subdir": "targets"
+      }
+    },
+    "bzip2": {
+      "repository": "bzip2/targets",
+      "bindings": {
+        "rules": "toolchain"
+      }
+    },
+    "bzip2/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "bzip2/system",
+        "commit": "c6f311a0e7ae21072e83cdfcefa44b248cbd64df",
+        "subdir": "targets"
+      }
+    },
+    "lzma": {
+      "repository": "lzma/targets",
+      "bindings": {
+        "rules": "toolchain"
+      }
+    },
+    "lzma/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "lzma/system",
+        "commit": "0a50f9ed9da5b1ee713b8907055019d6c064e428",
+        "subdir": "targets"
+      }
+    }
+  }
+}

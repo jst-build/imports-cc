@@ -1,0 +1,60 @@
+local os = jst.env('OS', default='linux');
+local debug = jst.env('DEBUG', default=false);
+local toolchain_config = jst.env('TOOLCHAIN_CONFIG', default={});
+local compiler_family = jst.get('FAMILY', toolchain_config, default='unknown');
+
+{
+  defaults: {
+    type: @'//CC:defaults',
+    arguments_config: ['OS', 'TOOLCHAIN_CONFIG', 'DEBUG', 'ENABLE_BZip2', 'HIDE_SYMBOLS'],
+    base: [@'base//CC:defaults'],
+    ADD_CFLAGS:
+      ['-DHAVE_CONFIG_H']
+      + (if (compiler_family == 'gnu') || (compiler_family == 'clang') then
+           ['-Wall', '-Wformat', '-Wformat-security']
+           + if debug then
+             [
+               '-g',
+               '-Wextra',
+               '-Wunused',
+               '-Wshadow',
+               '-Wmissing-prototypes',
+               '-Wcast-qual',
+             ])
+      + (if os == 'darwin' then
+           ['-ffunction-sections -fdata-sections'])
+      + (if compiler_family == 'xlc_r' then
+           ['-qflag=e:e', '-qformat=sec']
+           + if debug then
+             ['-qhalt=w', '-g', '-qflag=w:w', '-qinfo=pro:use'])
+      + (if compiler_family == 'msvc' then
+           ['/Oi']
+           + (if debug then
+                [
+                  '/w14062',
+                  '/w14254',
+                  '/w14295',
+                  '/w14296',
+                  '/w14389',
+                  '/w14505',
+                  '/w14514',
+                  '/w14702',
+                  '/w14706',
+                ])
+           + ['-D_CRT_SECURE_NO_DEPRECATE'])
+      + (if (compiler_family == 'mingw') then
+           ['-D__USE_MINGW_ANSI_STDIO', '-D__MINGW_USE_VC2005_COMPAT'])
+      + (if (os == 'hp-ux') then
+           ['-D_XOPEN_SOURCE=500']
+         else if (os == 'mac') then
+           ['-Wno-deprecated-declarations'])
+      + if compiler_family != 'msvc' then
+        if jst.env('HIDE_SYMBOLS') then
+          if compiler_family == 'clang' then
+            ['-D__LIBARCHIVE_ENABLE_VISIBILITY']
+          else if compiler_family == 'gnu' then
+            ['-D__LIBARCHIVE_ENABLE_VISIBILITY']
+          else if compiler_family == 'intel' then
+            ['-D__LIBARCHIVE_ENABLE_VISIBILITY'],
+  },
+}

@@ -1,0 +1,49 @@
+{
+  "main": "libarchive",
+  "imports": [
+    {
+      "source": "git",
+      "branch": "system",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [{"alias": "toolchain"}]
+    },
+    {
+      "source": "git",
+      "branch": "zlib/v1.3.1",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "zlib", "map": {"toolchain": "toolchain"}}]
+    },
+    {
+      "source": "git",
+      "branch": "boringssl/dec0d8f6",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "ssl", "map": {"toolchain": "toolchain"}}]
+    },
+    {
+      "source": "git",
+      "branch": "bzip2/v1.0.8",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "bzip2", "map": {"toolchain": "toolchain"}}]
+    },
+    {
+      "source": "git",
+      "branch": "lzma/v5.6.3",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "lzma", "map": {"toolchain": "toolchain"}}]
+    },
+    {
+      "source": "file",
+      "path": ".",
+      "repos": [{
+        "alias": "libarchive",
+        "map": {
+          "toolchain": "toolchain",
+          "zlib": "zlib",
+          "ssl": "ssl",
+          "bzip2": "bzip2",
+          "lzma": "lzma"
+        }
+      }]
+    }
+  ]
+}
