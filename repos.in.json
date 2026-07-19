@@ -1,0 +1,26 @@
+{
+  "main": "catch2",
+  "imports": [
+    {
+      "source": "git",
+      "branch": "system",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [{"alias": "toolchain"}]
+    }
+  ],
+  "repositories": {
+    "targets": {"repository": {"type": "file", "path": "targets"}},
+    "catch2": {
+      "repository": {
+        "type": "archive",
+        "content": "5af653af0c54ad580176a8cadb5a1cef8c880372",
+        "fetch": "https://github.com/catchorg/Catch2/archive/refs/tags/v3.5.3.tar.gz",
+        "sha256": "8d723b0535c94860ef8cf6231580fa47d67a3416757ecb10639e40d748ab6c71",
+        "sha512": "57c996f679cbad212cb0fde39e506bade37bd559c0e93e20f407f2a2f029e98b78661e10257f9c8e4cb5fd7d52d0ea1eae3d4a1f989c6d66fcb281e32e1688f6",
+        "subdir": "Catch2-3.5.3"
+      },
+      "target_root": "targets",
+      "bindings": {"rules": "toolchain"}
+    }
+  }
+}
