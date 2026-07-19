@@ -1,0 +1,63 @@
+// Options supported by this project
+local options_doc = {
+  ENV: [|||
+    Map from strings to strings. The build environment to be used for
+    build actions. Typically used to include an unusual value of PATH.
+  |||],
+  LOCALBASE: [|||
+    Use this localbase for building against system libs (e.g. "/usr").
+  |||],
+  PKG_CONFIG_ARGS: [|||
+    Additional "pkg-config" arguments (e.g. "--define-prefix" or "--static").
+  |||],
+};
+
+{
+  gtest: {
+    type: 'export',
+    target: 'gtest_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  gtest_main: {
+    type: 'export',
+    target: 'gtest_main_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  gmock: {
+    type: 'export',
+    target: 'gmock_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  gmock_main: {
+    type: 'export',
+    target: 'gmock_main_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  gtest_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['gtest'],
+  },
+
+  gtest_main_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['gtest_main'],
+  },
+
+  gmock_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['gmock'],
+  },
+
+  gmock_main_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['gmock_main'],
+  },
+}
