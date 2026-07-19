@@ -1,0 +1,144 @@
+{
+  config_h: {
+    type: 'configure',
+    target: 'config_h_gen',
+    config:
+      local support_pcre8 = true;
+      local bsr_anycrlf = false;
+      local no_recurse = true;
+      local pcre_link_size = '2';
+      local pcre_parens_nest_limit = '250';
+      local pcre_match_limit = '10000000';
+      local pcre_match_limit_recursion = 'MATCH_LIMIT';
+      local pcre_newline = 'LF';
+      local pcre_posix_malloc_threshold = '10';
+      local sys_hdrs = [
+        'stdlib.h',
+        'string.h',
+        'strings.h',
+      ];
+      {
+        defines: [
+          ['MAX_NAME_SIZE', '32'],
+          ['MAX_NAME_COUNT', '10000'],
+          [
+            'NEWLINE',
+            if pcre_newline == 'LF' then
+              '10'
+            else if pcre_newline == 'CR' then
+              '13'
+            else if pcre_newline == 'CRLF' then
+              '3338'
+            else if pcre_newline == 'ANY' then
+              '-1'
+            else if pcre_newline == 'ANYCRLF' then
+              '-2'
+            else
+              jst.fail(
+                'The PCRE_NEWLINE variable must be set to one of the following values: '
+                + jst.join(['LF', 'CR', 'CRLF', 'ANY', 'ANYCRLF'], ', '),
+              ),
+          ],
+          ['POSIX_MALLOC_THRESHOLD', pcre_posix_malloc_threshold],
+          ['LINK_SIZE', pcre_link_size],
+          ['PARENS_NEST_LIMIT', pcre_parens_nest_limit],
+          ['MATCH_LIMIT', pcre_match_limit],
+          ['MATCH_LIMIT_RECURSION', pcre_match_limit_recursion],
+          ['PCREGREP_BUFSIZE', jst.env('PCREGREP_BUFSIZE', default='')],
+        ],
+        defines1: [
+          ['PCRE_STATIC', jst.env('PCRE_STATIC')],
+          ['SUPPORT_PCRE8', support_pcre8],
+          ['SUPPORT_PCRE16', jst.env('SUPPORT_PCRE16')],
+          ['SUPPORT_PCRE32', jst.env('SUPPORT_PCRE32')],
+          ['SUPPORT_JIT', jst.env('SUPPORT_JIT')],
+          ['SUPPORT_PCREGREP_JIT', jst.env('SUPPORT_PCREGREP_JIT')],
+          ['SUPPORT_UTF', jst.env('SUPPORT_UTF')],
+          ['SUPPORT_UCP', jst.env('SUPPORT_UCP')],
+          ['EBCDIC', jst.env('EBCDIC')],
+          ['EBCDIC_NL25', jst.env('EBCDIC_NL25')],
+          ['BSR_ANYCRLF', bsr_anycrlf],
+          ['NO_RECURSE', no_recurse],
+          ['SUPPORT_LIBBZ2', jst.env('SUPPORT_LIBBZ2')],
+          ['SUPPORT_LIBZ', jst.env('SUPPORT_LIBZ')],
+          ['SUPPORT_LIBEDIT', jst.env('SUPPORT_LIBEDIT')],
+          ['SUPPORT_LIBREADLINE', jst.env('SUPPORT_LIBREADLINE')],
+          ['SUPPORT_VALGRIND', jst.env('SUPPORT_VALGRIND')],
+          ['SUPPORT_GCOV', jst.env('SUPPORT_GCOV')],
+        ],
+        have_cfile: [
+          ['HAVE_DIRENT_H', 'dirent.h'],
+          ['HAVE_STDINT_H', 'stdint.h'],
+          ['HAVE_INTTYPES_H', 'inttypes.h'],
+          ['HAVE_SYS_STAT_H', 'sys/stat.h'],
+          ['HAVE_SYS_TYPES_H', 'sys/types.h'],
+          ['HAVE_UNISTD_H', 'unistd.h'],
+          ['HAVE_WINDOWS_H', 'windows.h'],
+        ],
+        have_ctype: [
+          ['HAVE_LONG_LONG', 'long long'],
+          ['HAVE_UNSIGNED_LONG_LONG', 'unsigned long long'],
+        ],
+        have_csymbol: [
+          ['HAVE_BCOPY', ['bcopy', sys_hdrs]],
+          ['HAVE_MEMMOVE', ['memmove', sys_hdrs]],
+          ['HAVE_STRERROR', ['bcopy', sys_hdrs]],
+          ['HAVE_STRTOLL', ['strtoll', sys_hdrs]],
+          ['HAVE_STRTOQ', ['strtoq', sys_hdrs]],
+          ['HAVE__STRTOI64', ['_strtoi64', sys_hdrs]],
+        ],
+      },
+  },
+
+  config_h_gen: {
+    type: @'rules//CC/auto:config',
+    name: ['config.h'],
+    guard: ['INCLUDE_DEPS_PCRE_CONFIG_H'],
+  },
+
+  git2_pcre: {
+    type: @'rules//CC:library',
+    arguments_config: ['OS'],
+    name: ['git2_pcre'],
+    'pure C': ['yes'],
+    'private-defines':
+      ['HAVE_CONFIG_H']
+      + if jst.env('OS', default='linux') == 'windows' then
+        ['_CRT_SECURE_NO_DEPRECATE', '_CRT_SECURE_NO_WARNINGS'],
+    'private-cflags': [
+      '-Wno-unused-function',
+      '-Wno-implicit-fallthrough',
+    ],
+    srcs: [
+      'pcre_byte_order.c',
+      'pcre_chartables.c',
+      'pcre_compile.c',
+      'pcre_config.c',
+      'pcre_dfa_exec.c',
+      'pcre_exec.c',
+      'pcre_fullinfo.c',
+      'pcre_get.c',
+      'pcre_globals.c',
+      'pcre_jit_compile.c',
+      'pcre_maketables.c',
+      'pcre_newline.c',
+      'pcre_ord2utf8.c',
+      'pcre_refcount.c',
+      'pcre_string_utils.c',
+      'pcre_study.c',
+      'pcre_tables.c',
+      'pcre_ucd.c',
+      'pcre_valid_utf8.c',
+      'pcre_version.c',
+      'pcre_xclass.c',
+      'pcreposix.c',
+    ],
+    hdrs: [
+      'config_h',
+      'pcre.h',
+      'pcre_internal.h',
+      'ucp.h',
+      'pcreposix.h',
+    ],
+  },
+}

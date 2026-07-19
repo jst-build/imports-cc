@@ -1,0 +1,35 @@
+{
+  "main": "libgit2",
+  "imports": [
+    {
+      "source": "git",
+      "branch": "system",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [{"alias": "toolchain"}]
+    },
+    {
+      "source": "git",
+      "branch": "zlib/v1.3.1",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "zlib", "map": {"toolchain": "toolchain"}}]
+    },
+    {
+      "source": "git",
+      "branch": "boringssl/dec0d8f6",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "ssl", "map": {"toolchain": "toolchain"}}]
+    },
+    {
+      "source": "file",
+      "path": ".",
+      "repos": [{
+        "alias": "libgit2",
+        "map": {
+          "toolchain": "toolchain",
+          "zlib": "zlib",
+          "ssl": "ssl"
+        }
+      }]
+    }
+  ]
+}

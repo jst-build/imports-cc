@@ -1,0 +1,68 @@
+local os = jst.env('OS', default='linux');
+local toolchain_config = jst.env('TOOLCHAIN_CONFIG', default={});
+local compiler_family = jst.get('FAMILY', toolchain_config, default='unknown');
+
+{
+  defaults: {
+    type: @'//CC:defaults',
+    arguments_config: ['TOOLCHAIN_CONFIG', 'OS'],
+    base: [@'base//CC:defaults'],
+    ADD_CFLAGS:
+      if compiler_family == 'msvc' then
+        [
+          '-D_SCL_SECURE_NO_WARNINGS',
+          '-D_CRT_SECURE_NO_DEPRECATE',
+          '-D_CRT_NONSTDC_NO_DEPRECATE',
+          '/GF',
+          '/MP',
+          '/nologo',
+        ]
+      else
+        [
+          '-std=gnu90',
+          '-D_GNU_SOURCE',
+          '-Wall',
+          '-Wextra',
+          '-DGIT_DEPRECATE_HARD',
+        ]
+        + (if os == 'sunos' then [
+             '-D_POSIX_C_SOURCE=200112L',
+             '-D__EXTENSIONS__',
+             '-D_POSIX_PTHREAD_SEMANTICS',
+           ]
+           else if os == 'solaris' then [
+             '-D_POSIX_C_SOURCE=200112L',
+             '-D__EXTENSIONS__',
+             '-D_POSIX_PTHREAD_SEMANTICS',
+           ])
+        + (if compiler_family == 'clang' then
+             [
+               '-Wdocumentation',
+               '-Wno-documentation-deprecated-sync',
+               '-Wno-unused-but-set-variable',
+               '-Wno-unused-but-set-parameter',
+               '-Wno-single-bit-bitfield-constant-conversion',
+             ]
+           else if (compiler_family == 'gnu') then
+             ['-Wno-dangling-pointer'])
+        + [
+          '-Wno-missing-field-initializers',
+          '-Wstrict-aliasing',
+          '-Wstrict-prototypes',
+          '-Wdeclaration-after-statement',
+          '-Wshift-count-overflow',
+          '-Wunused-const-variable',
+          '-Wunused-function',
+          '-Wint-conversion',
+          '-Wformat',
+          '-Wformat-security',
+          '-Wmissing-declarations',
+          '-Wno-implicit-fallthrough',
+          '-Wno-sign-compare',
+          '-Wno-unused-parameter',
+          '-Wno-uninitialized',
+          '-Wno-array-parameter',
+          '-Wno-unknown-warning-option',
+        ],
+  },
+}

@@ -1,0 +1,13 @@
+{
+  srcs: {
+    type: @'rules//data:staged',
+    stage: ['transports'],
+    srcs: [jst.glob('*.c')],
+  },
+
+  hdrs: {
+    type: @'rules//data:staged',
+    stage: ['transports'],
+    srcs: [jst.glob('*.h')],
+  },
+}

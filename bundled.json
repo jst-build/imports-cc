@@ -1,0 +1,136 @@
+{
+  "main": "libgit2",
+  "repositories": {
+    "": {
+      "repository": {
+        "type": "file",
+        "path": "."
+      }
+    },
+    "toolchain": {
+      "repository": "toolchain/rules",
+      "target_root": "toolchain/targets",
+      "rule_root": "toolchain/rules"
+    },
+    "toolchain/rules": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/rules-cc",
+        "branch": "master",
+        "commit": "c18d9413f8759f8c261a3af06edf0861ee9e2492",
+        "subdir": "rules"
+      }
+    },
+    "toolchain/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/toolchains-cc.git",
+        "branch": "system",
+        "commit": "5505965c61432dea016055d0f12f483df40eb9ff",
+        "subdir": "targets"
+      }
+    },
+    "zlib": {
+      "repository": {
+        "type": "archive",
+        "content": "53fa48bf97f0ee0f42c62743b018507a6583ec3e",
+        "fetch": "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz",
+        "sha256": "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23",
+        "sha512": "580677aad97093829090d4b605ac81c50327e74a6c2de0b85dd2e8525553f3ddde17556ea46f8f007f89e435493c9a20bc997d1ef1c1c2c23274528e3c46b94f",
+        "subdir": "zlib-1.3.1"
+      },
+      "target_root": "zlib/targets",
+      "bindings": {
+        "rules": "toolchain"
+      }
+    },
+    "zlib/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "zlib/v1.3.1",
+        "commit": "8631d63e55cbb5b7adc32bba61b158df7076d42f",
+        "subdir": "targets"
+      }
+    },
+    "ssl": {
+      "repository": {
+        "type": "archive",
+        "content": "d9ff3aa3d22337e93cb0a0e2df00ca8abea2fac6",
+        "fetch": "https://github.com/google/boringssl/archive/dec0d8f681348af8bb675e07bd89989665fca8bc.tar.gz",
+        "sha256": "2f12c33d2cf25a658a1b981fb96923dac87e9175fb20e45db6950ee36c526356",
+        "sha512": "51f91bee640e38ce20c180195de6811b5be7522240faae2b57158fa9c298ed09292ecb09c770df5d4fc6a3100bc2459de4e9d312e315265c1ea7ade347bad3f2",
+        "subdir": "boringssl-dec0d8f681348af8bb675e07bd89989665fca8bc",
+        "mirrors": [
+          "https://storage.googleapis.com/grpc-bazel-mirror/github.com/google/boringssl/archive/dec0d8f681348af8bb675e07bd89989665fca8bc.tar.gz"
+        ]
+      },
+      "target_root": "ssl/targets",
+      "bindings": {
+        "rules": "ssl/rules"
+      }
+    },
+    "ssl/rules": {
+      "repository": "toolchain",
+      "target_root": "ssl/config",
+      "rule_root": "toolchain",
+      "bindings": {
+        "base": "toolchain"
+      }
+    },
+    "ssl/config": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "boringssl/dec0d8f6",
+        "commit": "967af575ceaae6cfc497c6b4b9af49d2eaf5ad64",
+        "subdir": "config"
+      }
+    },
+    "ssl/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "boringssl/dec0d8f6",
+        "commit": "967af575ceaae6cfc497c6b4b9af49d2eaf5ad64",
+        "subdir": "targets"
+      }
+    },
+    "libgit2": {
+      "repository": {
+        "type": "archive",
+        "content": "80f999c62e8da8da7d64fe543c8eeb9953bf6974",
+        "fetch": "https://github.com/libgit2/libgit2/archive/refs/tags/v1.7.2.tar.gz",
+        "sha256": "de384e29d7efc9330c6cdb126ebf88342b5025d920dcb7c645defad85195ea7f",
+        "sha512": "825737e4a1991fba50ea535f15b0e560ebe76ead752e04aeba36925b944d0da77fe9826a70980a1aa3d0bf9afbedfab79dd92e799c9252931384c89ebec9b012",
+        "subdir": "libgit2-1.7.2"
+      },
+      "target_root": "libgit2/targets",
+      "bindings": {
+        "rules": "libgit2/rules",
+        "zlib": "zlib",
+        "ssl": "ssl"
+      }
+    },
+    "libgit2/rules": {
+      "repository": "toolchain",
+      "target_root": "libgit2/config",
+      "rule_root": "toolchain",
+      "bindings": {
+        "base": "toolchain"
+      }
+    },
+    "libgit2/config": {
+      "repository": {
+        "type": "file",
+        "path": "./config"
+      }
+    },
+    "libgit2/targets": {
+      "repository": {
+        "type": "file",
+        "path": "./targets"
+      }
+    }
+  }
+}

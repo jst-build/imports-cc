@@ -1,0 +1,35 @@
+{
+  libgit2_private_headers: {
+    type: @'rules//data:staged',
+    srcs: [
+      jst.glob('*.h'),
+      @'./streams:hdrs',
+      @'./transports:hdrs',
+      @'//src/util:util_private_headers',
+      'experimental.h',
+    ],
+  },
+
+  libgit2_sources: {
+    type: @'rules//data:staged',
+    srcs: [
+      jst.glob('*.c'),
+      @'./streams:srcs',
+      @'./transports:srcs',
+    ],
+  },
+
+  'experimental.h': {
+    type: 'configure',
+    target: 'experimental',
+    config: {
+      // defines1: [[ 'GIT_EXPERIMENTAL_SHA256', 0, ]],
+    },
+  },
+
+  experimental: {
+    type: @'rules//CC/auto:config',
+    name: ['experimental.h'],
+    guard: ['INCLUDE_experimental_h__'],
+  },
+}

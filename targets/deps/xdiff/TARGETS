@@ -1,0 +1,11 @@
+{
+  srcs: {
+    type: @'rules//data:staged',
+    srcs: [jst.glob('*.c')],
+  },
+
+  hdrs: {
+    type: @'rules//data:staged',
+    srcs: [jst.glob('*.h')],
+  },
+}
