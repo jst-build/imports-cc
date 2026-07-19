@@ -1,0 +1,198 @@
+// Options supported by this project
+local options_doc = {
+  OS: ['Operating system to build for.'],
+  ARCH: [|||
+    The underlying architecture. Is taken as a default for "HOST_ARCH" and
+    "TARGET_ARCH".
+
+    Typical values are "x86", "x86_64", "arm", "arm64", but the actual set
+    of supported values depends on the toolchain in use.
+  |||],
+  TARGET_ARCH: ['The architecture for which to build the binary.'],
+  TOOLCHAIN_CONFIG: [|||
+    The toolchain configuration.
+
+    Use field "FAMILY" to specify the compiler family. Typical values are
+    "clang" and "gnu", but the actual set of supported values depends on
+    the toolchain in use.
+  |||],
+  DEBUG: [|||
+    Map enabling and configuring the debug version. Specify a map that is
+    logically true (e.g., non-null, non-empty map) to enable debug mode.
+  |||],
+  CC: ['The C compiler to use.'],
+  CFLAGS: ['The C compiler flags to use.'],
+  ADD_CFLAGS: ['Additional C compiler flags.'],
+  AR: ['The archiver to use.'],
+  ENV: [|||
+    Map from strings to strings. The build environment to be used for
+    build actions. Typically used to include an unusual value of PATH.
+  |||],
+  LOCALBASE: [|||
+    Use this localbase for building against system libs (e.g. "/usr").
+  |||],
+  PKG_CONFIG_ARGS: [|||
+    Additional "pkg-config" arguments (e.g. "--define-prefix" or "--static").
+  |||],
+};
+
+{
+  // Default target: installs the libraries and command-line tools into a
+  // LOCALBASE-shaped tree (include/bzlib.h, lib/liblibbz2.a, bin/bzip2, ...).
+  ALL: {
+    type: 'export',
+    target: 'INSTALL',
+    doc: ['Installs the BZip2 libraries and command-line tools into a LOCALBASE-style tree.'],
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  // Predefined target combining all libs, binaries, and public headers of
+  // this project into a single LOCALBASE-shaped tree. Composed by hand (via
+  // "install") rather than passing "bunzip2"/"bzcat" to "install-with-deps"
+  // directly: the latter only knows how to place CC library/binary targets
+  // into bin/lib/include, and would otherwise stage these plain renamed
+  // copies of "bzip2" as generic files under both lib/ and include/.
+  INSTALL: {
+    type: 'install',
+    dirs: [['install_cc', '.']],
+    files: {
+      'bin/bunzip2': 'bunzip2',
+      'bin/bzcat': 'bzcat',
+    },
+  },
+
+  // Round-trips the upstream sample data through compression/decompression
+  // and diffs the results against the reference files.
+  TEST: {
+    type: @'rules//shell/test:script',
+    name: ['test'],
+    test: ['test_script'],
+    deps: [
+      'bzip2',
+      jst.glob('sample*'),
+    ],
+  },
+
+  // The BZip2 compression library.
+  libbz2: {
+    type: 'export',
+    target: 'libbz2_unexported',
+    doc: ['The BZip2 linkable compression library.'],
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  // The bzip2 command-line compression tool.
+  bzip2: {
+    type: 'export',
+    target: 'bzip2_unexported',
+    doc: ['The bzip2 command-line compression tool.'],
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  // The bzip2recover data-recovery tool for damaged .bz2 files.
+  bzip2recover: {
+    type: 'export',
+    target: 'bzip2recover_unexported',
+    doc: ['The bzip2recover data-recovery tool for damaged .bz2 files.'],
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  // "bunzip2" is bzip2 under its traditional decompress-mode name (same
+  // binary, invoked differently based on argv[0]).
+  bunzip2: {
+    type: 'export',
+    target: 'bunzip2_unexported',
+    doc: ['The bunzip2 command (bzip2 under its traditional decompress-mode name).'],
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  // "bzcat" is bzip2 under its traditional decompress-to-stdout name (same
+  // binary, invoked differently based on argv[0]).
+  bzcat: {
+    type: 'export',
+    target: 'bzcat_unexported',
+    doc: ['The bzcat command (bzip2 under its traditional decompress-to-stdout name).'],
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  // Predefined target combining all libs, binaries, and public headers of
+  // this project into a single LOCALBASE-shaped tree, minus "bunzip2"/"bzcat"
+  // (see the comment on INSTALL for why those are staged separately).
+  install_cc: {
+    type: @'rules//CC:install-with-deps',
+    targets: [
+      'libbz2',
+      'bzip2',
+      'bzip2recover',
+    ],
+  },
+
+  libbz2_unexported: {
+    type: @'rules//CC:library',
+    name: ['bz2'],
+    'pkg-name': ['bzip2'],
+    'pure C': ['YES'],
+    srcs: [
+      'blocksort.c',
+      'huffman.c',
+      'crctable.c',
+      'randtable.c',
+      'compress.c',
+      'decompress.c',
+      'bzlib.c',
+    ],
+    hdrs: ['bzlib.h'],
+    'private-hdrs': ['bzlib_private.h'],
+  },
+
+  bzip2_unexported: {
+    type: @'rules//CC:binary',
+    name: ['bzip2'],
+    'pure C': ['YES'],
+    srcs: ['bzip2.c'],
+    'private-deps': ['libbz2'],
+  },
+
+  bzip2recover_unexported: {
+    type: @'rules//CC:binary',
+    name: ['bzip2recover'],
+    'pure C': ['YES'],
+    srcs: ['bzip2recover.c'],
+  },
+
+  bunzip2_unexported: {
+    type: 'install',
+    files: {bunzip2: 'bzip2'},
+  },
+
+  bzcat_unexported: {
+    type: 'install',
+    files: {bzcat: 'bzip2'},
+  },
+
+  test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      ./bzip2 -1  < sample1.ref > sample1.rb2
+      ./bzip2 -2  < sample2.ref > sample2.rb2
+      ./bzip2 -3  < sample3.ref > sample3.rb2
+      ./bzip2 -d  < sample1.bz2 > sample1.tst
+      ./bzip2 -d  < sample2.bz2 > sample2.tst
+      ./bzip2 -ds < sample3.bz2 > sample3.tst
+      cmp sample1.bz2 sample1.rb2
+      cmp sample2.bz2 sample2.rb2
+      cmp sample3.bz2 sample3.rb2
+      cmp sample1.tst sample1.ref
+      cmp sample2.tst sample2.ref
+      cmp sample3.tst sample3.ref
+    |||,
+  },
+}
