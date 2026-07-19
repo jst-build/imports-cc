@@ -1,0 +1,3650 @@
+// Abseil (https://abseil.io): Google's C++ common libraries, built from source.
+//
+// This is the fully flattened target description: every Abseil component lives
+// in this single module. Header/source paths are written relative to the
+// archive root (e.g. "absl/base/attributes.h") and the libraries carry no
+// "stage" field, so a header staged as "absl/base/attributes.h" is included as
+// #include "absl/base/attributes.h" by consumers.
+
+// Global Abseil configuration, read per-target from the effective config.
+local os = jst.env('OS', default='linux');
+local arch = jst.env('ARCH', default='unknown');
+local target_arch = jst.env('TARGET_ARCH', default=arch);
+local toolchain_config = jst.env('TOOLCHAIN_CONFIG', default={});
+local compiler_family = jst.get('FAMILY', toolchain_config);
+
+// Options supported by this project. Every export target advertises these via
+// its flexible_config/config_doc so `jst describe <target>` documents them.
+local options_doc = {
+  OS: [|||
+    Operating system to build for. This project reads it directly to select
+    platform-specific link flags (e.g. "-lrt" on "linux", "-ladvapi32" for
+    mingw) and, in the random seed generator, whether to link the system
+    bcrypt on "windows". Typical values are "linux", "darwin", "windows";
+    defaults to "linux" when unset.
+  |||],
+  ARCH: [|||
+    The underlying architecture. Passed through to the toolchain and used as
+    the default for "TARGET_ARCH". Typical values are "x86_64", "arm64", but
+    the actual set of supported values depends on the toolchain in use.
+    Defaults to "unknown" when unset.
+  |||],
+  HOST_ARCH: [|||
+    Architecture of the machine running the build; consumed by the toolchain.
+    Typical values are "x86_64", "arm64", but the actual set of supported
+    values depends on the toolchain in use.
+  |||],
+  TARGET_ARCH: [|||
+    The architecture to build for. This project reads it directly to select
+    CPU-specific compile flags (e.g. "-maes"/"-msse4.1" on "x86_64",
+    "-march=armv8-a+crypto" on "arm64", "-mfpu=neon" on "arm") and to decide
+    whether to link "-latomic". Defaults to "ARCH" (which itself defaults to
+    "unknown", a value that enables the "-latomic" fallback).
+  |||],
+  TOOLCHAIN_CONFIG: [|||
+    The toolchain configuration. This project reads its "FAMILY" field to
+    select compiler-specific warning flags and code paths; recognized values
+    include "gnu", "clang", "msvc", "clang-cl", and "mingw", with any other
+    value falling back to a generic GCC-style flag set. The full set of
+    supported values ultimately depends on the toolchain in use.
+  |||],
+  ENV: [|||
+    Map from strings to strings. The build environment to be used for build
+    actions. Typically used to include an unusual value of PATH.
+  |||],
+  LOCALBASE: [|||
+    Use this localbase for building against system libs (e.g. "/usr").
+  |||],
+  PKG_CONFIG_ARGS: [|||
+    Additional "pkg-config" arguments (e.g. "--define-prefix" or "--static").
+  |||],
+  DEBUG: [|||
+    Map enabling and configuring the debug version. Specify a map that is
+    logically true (e.g., non-null, non-empty map) to enable debug mode.
+  |||],
+  CC: ['The C compiler to use.'],
+  CXX: ['The C++ compiler to use.'],
+  AR: ['The archiver to use.'],
+  DWP: ['The dwp tool to use for split-DWARF debug packaging.'],
+  PATCH: ['The patch tool used to apply the bundled options.h patch.'],
+  CFLAGS: ['The C compiler flags to use.'],
+  CXXFLAGS: ['The C++ compiler flags to use.'],
+  ADD_CFLAGS: ['Additional C compiler flags.'],
+  ADD_CXXFLAGS: ['Additional C++ compiler flags.'],
+  USE_SYSTEM_LIBS: [|||
+    If set, prefer system libraries. This project reads it in the random seed
+    generator to link the system "bcrypt" (Windows only) instead of a bundled
+    dependency. Has no effect on other platforms.
+  |||],
+};
+
+{
+  // Default target: all publicly-consumed Abseil libraries and their headers,
+  // staged into a LOCALBASE-shaped tree (lib/, include/, lib/pkgconfig/).
+  ALL: {
+    type: 'export',
+    doc: ['All publicly-consumed Abseil libraries and headers as a LOCALBASE-shaped tree.'],
+    target: 'INSTALL',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // Predefined target combining the public Abseil libraries and headers into a
+  // single LOCALBASE-shaped tree. Only the components actually referenced by
+  // downstream consumers (grpc, protobuf, libgit2, curl) are installed; the
+  // remaining targets in this file are internal building blocks kept as
+  // export targets for inspectability.
+  INSTALL: {
+    type: @'rules//CC:install-with-deps',
+    targets: [
+      'algorithm_container',
+      'base',
+      'config',
+      'core_headers',
+      'dynamic_annotations',
+      'endian',
+      'log_severity',
+      'no_destructor',
+      'prefetch',
+      'cleanup',
+      'btree',
+      'fixed_array',
+      'flat_hash_map',
+      'flat_hash_set',
+      'inlined_vector',
+      'flags',
+      'flags_marshalling',
+      'any_invocable',
+      'bind_front',
+      'function_ref',
+      'hash',
+      'memory',
+      'type_traits',
+      'bits',
+      'int128',
+      'random_random',
+      'random_distributions',
+      'random_bit_gen_ref',
+      'status',
+      'statusor',
+      'cord',
+      'strings_internal',
+      'str_format',
+      'strings',
+      'synchronization',
+      'time',
+      'optional',
+      'span',
+      'variant',
+      'if_constexpr',
+      'utility',
+      'absl_check',
+      'absl_log',
+      'check',
+      'die_if_null',
+      'log_globals',
+      'log_initialize',
+      'log',
+    ],
+  },
+
+  // ===== absl/algorithm =====
+  algorithm: {
+    type: 'export',
+    doc: ['Abseil algorithm: container-oriented versions of standard <algorithm> functions.'],
+    target: 'algorithm_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  algorithm_container: {
+    type: 'export',
+    doc: ['Abseil algorithm/container: range overloads of standard algorithms.'],
+    target: 'algorithm_container_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/base =====
+  base: {
+    type: 'export',
+    doc: ['Abseil base: low-level runtime support (call_once, cycleclock, spinlock, thread identity).'],
+    target: 'base_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  atomic_hook: {
+    type: 'export',
+    doc: ['Abseil base: internal atomic hook utility.'],
+    target: 'atomic_hook_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  base_internal: {
+    type: 'export',
+    doc: ['Abseil base: internal support utilities used across the library.'],
+    target: 'base_internal_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  config: {
+    type: 'export',
+    doc: ['Abseil base: configuration macros (config.h, options.h, policy_checks.h).'],
+    target: 'config_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  core_headers: {
+    type: 'export',
+    doc: ['Abseil base: core header-only utilities (attributes, macros, optimization, thread annotations).'],
+    target: 'core_headers_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  dynamic_annotations: {
+    type: 'export',
+    doc: ['Abseil base: dynamic annotations for race detectors.'],
+    target: 'dynamic_annotations_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_severity: {
+    type: 'export',
+    doc: ['Abseil base: absl::LogSeverity enumeration and helpers.'],
+    target: 'log_severity_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  no_destructor: {
+    type: 'export',
+    doc: ['Abseil base: absl::NoDestructor wrapper for never-destroyed objects.'],
+    target: 'no_destructor_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  nullability: {
+    type: 'export',
+    doc: ['Abseil base: nullability annotations for pointers.'],
+    target: 'nullability_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  raw_logging_internal: {
+    type: 'export',
+    doc: ['Abseil base: internal raw logging that avoids allocation.'],
+    target: 'raw_logging_internal_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  errno_saver: {
+    type: 'export',
+    doc: ['Abseil base: internal ErrnoSaver utility.'],
+    target: 'errno_saver_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  endian: {
+    type: 'export',
+    doc: ['Abseil base: byte-order (endianness) conversion helpers.'],
+    target: 'endian_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  fast_type_id: {
+    type: 'export',
+    doc: ['Abseil base: internal fast type identity utility.'],
+    target: 'fast_type_id_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  strerror: {
+    type: 'export',
+    doc: ['Abseil base: internal thread-safe strerror wrapper.'],
+    target: 'strerror_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  throw_delegate: {
+    type: 'export',
+    doc: ['Abseil base: internal exception-throwing delegates.'],
+    target: 'throw_delegate_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  malloc_internal: {
+    type: 'export',
+    doc: ['Abseil base: internal low-level allocator.'],
+    target: 'malloc_internal_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  prefetch: {
+    type: 'export',
+    doc: ['Abseil base: memory prefetch intrinsics.'],
+    target: 'prefetch_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  poison: {
+    type: 'export',
+    doc: ['Abseil base: internal memory poisoning helper.'],
+    target: 'poison_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/cleanup =====
+  cleanup: {
+    type: 'export',
+    doc: ['Abseil cleanup: absl::Cleanup scope-guard utility.'],
+    target: 'cleanup_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/container =====
+  inlined_vector: {
+    type: 'export',
+    doc: ['Abseil container: absl::InlinedVector, a vector with small-size inline storage.'],
+    target: 'inlined_vector_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  compressed_tuple: {
+    type: 'export',
+    doc: ['Abseil container: internal empty-base-optimized tuple.'],
+    target: 'compressed_tuple_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  fixed_array: {
+    type: 'export',
+    doc: ['Abseil container: absl::FixedArray, a fixed-size array with inline storage.'],
+    target: 'fixed_array_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  container_memory: {
+    type: 'export',
+    doc: ['Abseil container: internal memory utilities for containers.'],
+    target: 'container_memory_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  layout: {
+    type: 'export',
+    doc: ['Abseil container: internal heterogeneous layout helper.'],
+    target: 'layout_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  flat_hash_map: {
+    type: 'export',
+    doc: ['Abseil container: absl::flat_hash_map, an open-addressed hash map.'],
+    target: 'flat_hash_map_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  hash_function_defaults: {
+    type: 'export',
+    doc: ['Abseil container: internal default hash and equality functors.'],
+    target: 'hash_function_defaults_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  hash_container_defaults: {
+    type: 'export',
+    doc: ['Abseil container: default hash-container policy helpers.'],
+    target: 'hash_container_defaults_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  raw_hash_map: {
+    type: 'export',
+    doc: ['Abseil container: internal raw hash map underlying the flat/node maps.'],
+    target: 'raw_hash_map_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  raw_hash_set: {
+    type: 'export',
+    doc: ['Abseil container: internal SwissTable raw hash set.'],
+    target: 'raw_hash_set_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  flat_hash_set: {
+    type: 'export',
+    doc: ['Abseil container: absl::flat_hash_set, an open-addressed hash set.'],
+    target: 'flat_hash_set_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  btree: {
+    type: 'export',
+    doc: ['Abseil container: absl::btree_map/btree_set B-tree ordered containers.'],
+    target: 'btree_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/crc =====
+  crc_cord_state: {
+    type: 'export',
+    doc: ['Abseil crc: internal CRC state used by Cord.'],
+    target: 'crc_cord_state_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  crc32c: {
+    type: 'export',
+    doc: ['Abseil crc: absl::crc32c CRC-32C computation.'],
+    target: 'crc32c_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/debugging =====
+  symbolize: {
+    type: 'export',
+    doc: ['Abseil debugging: symbolization of program counters to names.'],
+    target: 'symbolize_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  examine_stack: {
+    type: 'export',
+    doc: ['Abseil debugging: internal stack examination helper.'],
+    target: 'examine_stack_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  stacktrace: {
+    type: 'export',
+    doc: ['Abseil debugging: capture of the current call stack.'],
+    target: 'stacktrace_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  demangle_internal: {
+    type: 'export',
+    doc: ['Abseil debugging: internal C++ symbol demangling.'],
+    target: 'demangle_internal_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  bounded_utf8_length_sequence: {
+    type: 'export',
+    doc: ['Abseil debugging: internal bounded UTF-8 length sequence.'],
+    target: 'bounded_utf8_length_sequence_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  decode_rust_punycode: {
+    type: 'export',
+    doc: ['Abseil debugging: internal Rust punycode decoder for demangling.'],
+    target: 'decode_rust_punycode_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  demangle_rust: {
+    type: 'export',
+    doc: ['Abseil debugging: internal Rust symbol demangling.'],
+    target: 'demangle_rust_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  utf8_for_code_point: {
+    type: 'export',
+    doc: ['Abseil debugging: internal UTF-8 encoding of a code point.'],
+    target: 'utf8_for_code_point_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  flags_marshalling: {
+    type: 'export',
+    doc: ['Abseil flags: parsing and unparsing of flag values (AbslParseFlag/AbslUnparseFlag).'],
+    target: 'flags_marshalling_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  flags: {
+    type: 'export',
+    doc: ['Abseil flags: absl::Flag definition and access (ABSL_FLAG).'],
+    target: 'flags_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/functional =====
+  function_ref: {
+    type: 'export',
+    doc: ['Abseil functional: absl::FunctionRef, a non-owning callable view.'],
+    target: 'function_ref_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  any_invocable: {
+    type: 'export',
+    doc: ['Abseil functional: absl::AnyInvocable, a move-only type-erased callable.'],
+    target: 'any_invocable_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  bind_front: {
+    type: 'export',
+    doc: ['Abseil functional: absl::bind_front partial application helper.'],
+    target: 'bind_front_internal',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/hash =====
+  hash: {
+    type: 'export',
+    doc: ['Abseil hash: the absl::Hash framework and hashing of common types.'],
+    target: 'hash_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/log =====
+  absl_check: {
+    type: 'export',
+    doc: ['Abseil log: ABSL_CHECK family of runtime assertion macros.'],
+    target: 'absl_check_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  absl_log: {
+    type: 'export',
+    doc: ['Abseil log: ABSL_LOG family of logging macros.'],
+    target: 'absl_log_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  check: {
+    type: 'export',
+    doc: ['Abseil log: CHECK family of runtime assertion macros.'],
+    target: 'check_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  die_if_null: {
+    type: 'export',
+    doc: ['Abseil log: absl::DieIfNull null-check helper.'],
+    target: 'die_if_null_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_globals: {
+    type: 'export',
+    doc: ['Abseil log: global logging configuration (verbosity, min log level).'],
+    target: 'log_globals_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_initialize: {
+    type: 'export',
+    doc: ['Abseil log: absl::InitializeLog logging initialization.'],
+    target: 'log_initialize_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log: {
+    type: 'export',
+    doc: ['Abseil log: the LOG family of logging macros.'],
+    target: 'log_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_entry: {
+    type: 'export',
+    doc: ['Abseil log: absl::LogEntry describing a single log statement.'],
+    target: 'log_entry_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_sink: {
+    type: 'export',
+    doc: ['Abseil log: absl::LogSink interface for custom log destinations.'],
+    target: 'log_sink_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_sink_registry: {
+    type: 'export',
+    doc: ['Abseil log: registration of absl::LogSink instances.'],
+    target: 'log_sink_registry_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  absl_vlog_is_on: {
+    type: 'export',
+    doc: ['Abseil log: ABSL_VLOG_IS_ON verbose-logging predicate.'],
+    target: 'absl_vlog_is_on_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/log/internal =====
+  log_internal_check_impl: {
+    type: 'export',
+    doc: ['Abseil log/internal: implementation of the CHECK macros.'],
+    target: 'log_internal_check_impl_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_internal_check_op: {
+    type: 'export',
+    doc: ['Abseil log/internal: comparison-operator support for CHECK_EQ etc.'],
+    target: 'log_internal_check_op_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_internal_conditions: {
+    type: 'export',
+    doc: ['Abseil log/internal: logging condition helpers (LOG_IF, LOG_EVERY_N).'],
+    target: 'log_internal_conditions_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_internal_config: {
+    type: 'export',
+    doc: ['Abseil log/internal: internal logging configuration constants.'],
+    target: 'log_internal_config_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_internal_globals: {
+    type: 'export',
+    doc: ['Abseil log/internal: internal logging global state.'],
+    target: 'log_internal_globals_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_internal_log_impl: {
+    type: 'export',
+    doc: ['Abseil log/internal: implementation of the LOG macros.'],
+    target: 'log_internal_log_impl_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_internal_message: {
+    type: 'export',
+    doc: ['Abseil log/internal: LogMessage, the core log-record builder.'],
+    target: 'log_internal_message_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_internal_nullguard: {
+    type: 'export',
+    doc: ['Abseil log/internal: null-argument guarding for logging.'],
+    target: 'log_internal_nullguard_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_internal_nullstream: {
+    type: 'export',
+    doc: ['Abseil log/internal: no-op stream used for disabled logging.'],
+    target: 'log_internal_nullstream_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_internal_strip: {
+    type: 'export',
+    doc: ['Abseil log/internal: log-statement stripping support.'],
+    target: 'log_internal_strip_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_internal_voidify: {
+    type: 'export',
+    doc: ['Abseil log/internal: voidify helper for the logging macros.'],
+    target: 'log_internal_voidify_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  log_internal_fnmatch: {
+    type: 'export',
+    doc: ['Abseil log/internal: fnmatch-style glob matching for VLOG module patterns.'],
+    target: 'log_internal_fnmatch_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  vlog_config_internal: {
+    type: 'export',
+    doc: ['Abseil log/internal: per-module verbose logging configuration.'],
+    target: 'vlog_config_internal_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/memory =====
+  memory: {
+    type: 'export',
+    doc: ['Abseil memory: memory management helpers (absl::WrapUnique, absl::make_unique).'],
+    target: 'memory_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/meta =====
+  type_traits: {
+    type: 'export',
+    doc: ['Abseil meta: extended C++ type traits.'],
+    target: 'type_traits_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/numeric =====
+  int128: {
+    type: 'export',
+    doc: ['Abseil numeric: absl::int128 and absl::uint128 128-bit integers.'],
+    target: 'int128_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  bits: {
+    type: 'export',
+    doc: ['Abseil numeric: bit-manipulation utilities (absl::popcount, rotate, etc.).'],
+    target: 'bits_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  numeric_representation: {
+    type: 'export',
+    doc: ['Abseil numeric: internal numeric representation helpers.'],
+    target: 'numeric_representation_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/profiling =====
+  exponential_biased: {
+    type: 'export',
+    doc: ['Abseil profiling: internal exponentially-biased sampling helper.'],
+    target: 'exponential_biased_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  sample_recorder: {
+    type: 'export',
+    doc: ['Abseil profiling: internal lock-free sample recorder.'],
+    target: 'sample_recorder_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/random =====
+  random_random: {
+    type: 'export',
+    doc: ['Abseil random: the absl::BitGen random number generation library.'],
+    target: 'random_random_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  random_distributions: {
+    type: 'export',
+    doc: ['Abseil random: random distributions (uniform, Bernoulli, Gaussian, etc.).'],
+    target: 'random_distributions_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  random_bit_gen_ref: {
+    type: 'export',
+    doc: ['Abseil random: absl::BitGenRef, a type-erased reference to a URBG.'],
+    target: 'random_bit_gen_ref_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  internal_pool_urbg: {
+    type: 'export',
+    doc: ['Abseil random: internal pooled uniform random bit generator.'],
+    target: 'internal_pool_urbg_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  random_internal_fast_uniform_bits: {
+    type: 'export',
+    doc: ['Abseil random: internal fast uniform bit extraction.'],
+    target: 'random_internal_fast_uniform_bits_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  random_internal_traits: {
+    type: 'export',
+    doc: ['Abseil random: internal trait helpers.'],
+    target: 'random_internal_traits_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  random_internal_salted_seed_seq: {
+    type: 'export',
+    doc: ['Abseil random: internal salted seed sequence.'],
+    target: 'random_internal_salted_seed_seq_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  random_internal_seed_material: {
+    type: 'export',
+    doc: ['Abseil random: internal seed material acquisition (uses OS entropy).'],
+    target: 'random_internal_seed_material_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/status =====
+  status: {
+    type: 'export',
+    doc: ['Abseil status: absl::Status error-carrying type.'],
+    target: 'status_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  statusor: {
+    type: 'export',
+    doc: ['Abseil status: absl::StatusOr<T> value-or-error type.'],
+    target: 'statusor_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/strings =====
+  string_view: {
+    type: 'export',
+    doc: ['Abseil strings: absl::string_view, a non-owning string reference.'],
+    target: 'string_view_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  strings: {
+    type: 'export',
+    doc: ['Abseil strings: string utilities (StrCat, StrSplit, StrJoin, numbers, ascii, etc.).'],
+    target: 'strings_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  strings_internal: {
+    type: 'export',
+    doc: ['Abseil strings: internal string helpers (escaping, ostringstream, utf8).'],
+    target: 'strings_internal_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  cord: {
+    type: 'export',
+    doc: ['Abseil strings: absl::Cord, a reference-counted rope-like string.'],
+    target: 'cord_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  str_format: {
+    type: 'export',
+    doc: ['Abseil strings: type-safe printf-style formatting (absl::StrFormat).'],
+    target: 'str_format_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  has_ostream_operator: {
+    type: 'export',
+    doc: ['Abseil strings: trait detecting an operator<< overload.'],
+    target: 'has_ostream_operator_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  charset: {
+    type: 'export',
+    doc: ['Abseil strings: absl::CharSet, a set of ASCII characters.'],
+    target: 'charset_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/synchronization =====
+  synchronization: {
+    type: 'export',
+    doc: ['Abseil synchronization: absl::Mutex, Notification, and related primitives.'],
+    target: 'synchronization_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/time =====
+  time: {
+    type: 'export',
+    doc: ['Abseil time: absl::Time and absl::Duration with time-zone support.'],
+    target: 'time_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/types =====
+  optional: {
+    type: 'export',
+    doc: ['Abseil types: absl::optional, a nullable value wrapper.'],
+    target: 'optional_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  variant: {
+    type: 'export',
+    doc: ['Abseil types: absl::variant, a type-safe tagged union.'],
+    target: 'variant_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  span: {
+    type: 'export',
+    doc: ['Abseil types: absl::Span, a non-owning view over a contiguous sequence.'],
+    target: 'span_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  compare: {
+    type: 'export',
+    doc: ['Abseil types: three-way comparison result helpers.'],
+    target: 'compare_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/utility =====
+  utility: {
+    type: 'export',
+    doc: ['Abseil utility: absl::apply, absl::exchange, and related helpers.'],
+    target: 'utility_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  if_constexpr: {
+    type: 'export',
+    doc: ['Abseil utility: internal absl::utility_internal::IfConstexpr helper.'],
+    target: 'if_constexpr_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // ===== absl/algorithm =====
+  algorithm_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_algorithm'],
+    hdrs: [
+      'absl/algorithm/algorithm.h',
+    ],
+    deps: [
+      'config',
+    ],
+  },
+
+  algorithm_container_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_algorithm_container'],
+    hdrs: ['absl/algorithm/container.h'],
+    deps: [
+      'algorithm',
+      'config',
+      'core_headers',
+      'nullability',
+      'type_traits',
+    ],
+  },
+
+  // ===== absl/base =====
+  base_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['OS', 'TOOLCHAIN_CONFIG', 'ARCH', 'TARGET_ARCH'],
+    name: ['absl_base'],
+    hdrs: [
+      'absl/base/call_once.h',
+      'absl/base/casts.h',
+      'absl/base/internal/cycleclock.h',
+      'absl/base/internal/cycleclock_config.h',
+      'absl/base/internal/low_level_scheduling.h',
+      'absl/base/internal/per_thread_tls.h',
+      'absl/base/internal/spinlock.h',
+      'absl/base/internal/sysinfo.h',
+      'absl/base/internal/thread_identity.h',
+      'absl/base/internal/tsan_mutex_interface.h',
+      'absl/base/internal/unscaledcycleclock.h',
+      'absl/base/internal/unscaledcycleclock_config.h',
+    ],
+    srcs: [
+      'absl/base/internal/cycleclock.cc',
+      'absl/base/internal/spinlock.cc',
+      'absl/base/internal/sysinfo.cc',
+      'absl/base/internal/thread_identity.cc',
+      'absl/base/internal/unscaledcycleclock.cc',
+    ],
+    'private-ldflags':
+      [
+        '-pthread',
+        '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+      ]
+      + (if compiler_family == 'mingw' then
+           ['-ladvapi32'])
+      + (if os == 'linux' then
+           ['-lrt'])
+      + (if target_arch == 'arm' || target_arch == 'unknown' then
+           ['-latomic']),
+    deps: [
+      'atomic_hook',
+      'base_internal',
+      'config',
+      'core_headers',
+      'cycleclock_internal',
+      'dynamic_annotations',
+      'log_severity',
+      'nullability',
+      'raw_logging_internal',
+      'spinlock_wait',
+      'type_traits',
+    ],
+  },
+
+  atomic_hook_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ARCH', 'TARGET_ARCH'],
+    name: ['absl_atomic_hook'],
+    hdrs: ['absl/base/internal/atomic_hook.h'],
+    'private-ldflags':
+      if target_arch == 'arm' || target_arch == 'unknown' then
+        ['-latomic'],
+    deps: [
+      'config',
+      'core_headers',
+    ],
+  },
+
+  base_internal_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_base_internal'],
+    hdrs: [
+      'absl/base/internal/hide_ptr.h',
+      'absl/base/internal/identity.h',
+      'absl/base/internal/inline_variable.h',
+      'absl/base/internal/invoke.h',
+      'absl/base/internal/scheduling_mode.h',
+    ],
+    deps: [
+      'config',
+      'type_traits',
+    ],
+  },
+
+  config_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_config'],
+    hdrs: [
+      'absl/base/config.h',
+      'absl/base/options.h',
+      'absl/base/policy_checks.h',
+    ],
+  },
+
+  'absl/base/options.h': {
+    type: @'rules//patch:file',
+    src: [jst.file('absl/base/options.h')],
+    patch: [@'patches//:options.h.diff'],
+  },
+
+  core_headers_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_core_headers'],
+    hdrs: [
+      'absl/base/attributes.h',
+      'absl/base/const_init.h',
+      'absl/base/macros.h',
+      'absl/base/optimization.h',
+      'absl/base/port.h',
+      'absl/base/thread_annotations.h',
+    ],
+    deps: [
+      'config',
+    ],
+  },
+
+  cycleclock_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_cycleclock_internal'],
+    hdrs: [
+      'absl/base/internal/cycleclock_config.h',
+      'absl/base/internal/unscaledcycleclock_config.h',
+    ],
+    deps: [
+      'base_internal',
+      'config',
+    ],
+  },
+
+  dynamic_annotations_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_dynamic_annotations'],
+    hdrs: [
+      'absl/base/dynamic_annotations.h',
+      'absl/base/internal/dynamic_annotations.h',
+    ],
+    deps: [
+      'config',
+      'core_headers',
+    ],
+  },
+
+  log_severity_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_severity'],
+    hdrs: ['absl/base/log_severity.h'],
+    srcs: ['absl/base/log_severity.cc'],
+    deps: [
+      'config',
+      'core_headers',
+    ],
+  },
+
+  no_destructor_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_no_destructor'],
+    hdrs: ['absl/base/no_destructor.h'],
+    deps: [
+      'config',
+      'nullability',
+    ],
+  },
+
+  nullability_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_nullability'],
+    hdrs: [
+      'absl/base/nullability.h',
+      'absl/base/internal/nullability_impl.h',
+    ],
+    deps: [
+      'config',
+      'core_headers',
+      'type_traits',
+    ],
+  },
+
+  raw_logging_internal_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ARCH', 'TARGET_ARCH'],
+    name: ['absl_raw_logging_internal'],
+    hdrs: ['absl/base/internal/raw_logging.h'],
+    srcs: ['absl/base/internal/raw_logging.cc'],
+    'private-ldflags':
+      if target_arch == 'arm' || target_arch == 'unknown' then
+        ['-latomic'],
+    deps: [
+      'atomic_hook',
+      'config',
+      'core_headers',
+      'errno_saver',
+      'log_severity',
+    ],
+  },
+
+  spinlock_wait: {
+    type: @'rules//CC:library',
+    name: ['absl_spinlock_wait'],
+    hdrs: ['absl/base/internal/spinlock_wait.h'],
+    srcs: ['absl/base/internal/spinlock_wait.cc'],
+    'private-hdrs': [
+      'absl/base/internal/spinlock_akaros.inc',
+      'absl/base/internal/spinlock_linux.inc',
+      'absl/base/internal/spinlock_posix.inc',
+      'absl/base/internal/spinlock_win32.inc',
+    ],
+    deps: [
+      'base_internal',
+      'core_headers',
+      'errno_saver',
+    ],
+  },
+
+  errno_saver_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_errno_saver'],
+    hdrs: ['absl/base/internal/errno_saver.h'],
+    deps: ['config'],
+  },
+
+  endian_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_endian'],
+    hdrs: [
+      'absl/base/internal/endian.h',
+      'absl/base/internal/unaligned_access.h',
+    ],
+    deps: [
+      'base',
+      'config',
+      'core_headers',
+      'nullability',
+    ],
+  },
+
+  fast_type_id_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_fast_type_id'],
+    hdrs: ['absl/base/internal/fast_type_id.h'],
+    deps: ['config'],
+  },
+
+  strerror_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_strerror'],
+    hdrs: ['absl/base/internal/strerror.h'],
+    srcs: ['absl/base/internal/strerror.cc'],
+    deps: [
+      'config',
+      'core_headers',
+      'errno_saver',
+    ],
+  },
+
+  throw_delegate_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_throw_delegate'],
+    hdrs: ['absl/base/internal/throw_delegate.h'],
+    srcs: ['absl/base/internal/throw_delegate.cc'],
+    deps: [
+      'config',
+      'raw_logging_internal',
+    ],
+  },
+
+  malloc_internal_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ARCH', 'TARGET_ARCH'],
+    name: ['absl_malloc_internal'],
+    hdrs: [
+      'absl/base/internal/direct_mmap.h',
+      'absl/base/internal/low_level_alloc.h',
+    ],
+    srcs: ['absl/base/internal/low_level_alloc.cc'],
+    'private-ldflags':
+      [
+        '-pthread',
+        '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+      ]
+      + if target_arch == 'arm' || target_arch == 'unknown' then
+        ['-latomic'],
+    deps: [
+      'base',
+      'base_internal',
+      'config',
+      'core_headers',
+      'dynamic_annotations',
+      'raw_logging_internal',
+    ],
+  },
+
+  prefetch_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_prefetch'],
+    hdrs: ['absl/base/prefetch.h'],
+    deps: [
+      'config',
+      'core_headers',
+    ],
+  },
+
+  poison_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_poison'],
+    srcs: ['absl/base/internal/poison.cc'],
+    hdrs: ['absl/base/internal/poison.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'malloc_internal',
+    ],
+  },
+
+  // ===== absl/cleanup =====
+  cleanup_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_cleanup'],
+    hdrs: ['absl/cleanup/cleanup.h'],
+    deps: [
+      'cleanup_internal',
+      'config',
+      'core_headers',
+    ],
+  },
+
+  cleanup_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_cleanup_internal'],
+    hdrs: ['absl/cleanup/internal/cleanup.h'],
+    deps: [
+      'base_internal',
+      'core_headers',
+      'utility',
+    ],
+  },
+
+  // ===== absl/container =====
+  inlined_vector_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_inlined_vector'],
+    hdrs: ['absl/container/inlined_vector.h'],
+    deps: [
+      'inlined_vector_internal',
+      'algorithm',
+      'config',
+      'core_headers',
+      'throw_delegate',
+      'memory',
+      'type_traits',
+    ],
+  },
+
+  inlined_vector_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_inlined_vector_internal'],
+    hdrs: ['absl/container/internal/inlined_vector.h'],
+    deps: [
+      'compressed_tuple',
+      'base_internal',
+      'core_headers',
+      'memory',
+      'type_traits',
+      'span',
+    ],
+  },
+
+  compressed_tuple_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_compressed_tuple'],
+    hdrs: ['absl/container/internal/compressed_tuple.h'],
+    deps: ['utility'],
+  },
+
+  fixed_array_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_fixed_array'],
+    hdrs: ['absl/container/fixed_array.h'],
+    deps: [
+      'compressed_tuple',
+      'algorithm',
+      'config',
+      'core_headers',
+      'dynamic_annotations',
+      'throw_delegate',
+      'memory',
+    ],
+  },
+
+  container_memory_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_container_memory'],
+    hdrs: ['absl/container/internal/container_memory.h'],
+    deps: [
+      'config',
+      'memory',
+      'type_traits',
+      'utility',
+    ],
+  },
+
+  layout_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_layout'],
+    hdrs: ['absl/container/internal/layout.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'demangle_internal',
+      'type_traits',
+      'strings',
+      'span',
+      'utility',
+    ],
+  },
+
+  flat_hash_map_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_flat_hash_map'],
+    hdrs: ['absl/container/flat_hash_map.h'],
+    deps: [
+      'container_memory',
+      'hash_container_defaults',
+      'raw_hash_map',
+      'algorithm_container',
+      'core_headers',
+      'type_traits',
+    ],
+  },
+
+  hash_function_defaults_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_hash_function_defaults'],
+    hdrs: ['absl/container/internal/hash_function_defaults.h'],
+    deps: [
+      'config',
+      'hash',
+      'cord',
+      'strings',
+    ],
+  },
+
+  hash_container_defaults_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_hash_container_defaults'],
+    hdrs: ['absl/container/hash_container_defaults.h'],
+    deps: [
+      'hash_function_defaults',
+      'config',
+    ],
+  },
+
+  raw_hash_map_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_raw_hash_map'],
+    hdrs: ['absl/container/internal/raw_hash_map.h'],
+    deps: [
+      'container_memory',
+      'raw_hash_set',
+      'config',
+      'core_headers',
+      'throw_delegate',
+    ],
+  },
+
+  common: {
+    type: @'rules//CC:library',
+    name: ['absl_common'],
+    hdrs: ['absl/container/internal/common.h'],
+    deps: [
+      'type_traits',
+      'optional',
+    ],
+  },
+
+  raw_hash_set_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_raw_hash_set'],
+    hdrs: ['absl/container/internal/raw_hash_set.h'],
+    srcs: ['absl/container/internal/raw_hash_set.cc'],
+    deps: [
+      'common',
+      'compressed_tuple',
+      'container_memory',
+      'hash_policy_traits',
+      'hashtable_debug_hooks',
+      'hashtablez_sampler',
+      'config',
+      'core_headers',
+      'dynamic_annotations',
+      'endian',
+      'prefetch',
+      'raw_logging_internal',
+      'hash',
+      'memory',
+      'type_traits',
+      'bits',
+      'utility',
+    ],
+  },
+
+  container_common: {
+    type: @'rules//CC:library',
+    name: ['absl_container_common'],
+    hdrs: ['absl/container/internal/common.h'],
+    deps: ['type_traits'],
+  },
+
+  hash_policy_traits: {
+    type: @'rules//CC:library',
+    name: ['absl_hash_policy_traits'],
+    hdrs: ['absl/container/internal/hash_policy_traits.h'],
+    deps: [
+      'common_policy_traits',
+      'type_traits',
+    ],
+  },
+
+  common_policy_traits: {
+    type: @'rules//CC:library',
+    name: ['absl_common_policy_traits'],
+    hdrs: ['absl/container/internal/common_policy_traits.h'],
+    deps: ['type_traits'],
+  },
+
+  hashtable_debug_hooks: {
+    type: @'rules//CC:library',
+    name: ['absl_hashtable_debug_hooks'],
+    hdrs: ['absl/container/internal/hashtable_debug_hooks.h'],
+    deps: ['config'],
+  },
+
+  hashtablez_sampler: {
+    type: @'rules//CC:library',
+    name: ['absl_hashtablez_sampler'],
+    hdrs: ['absl/container/internal/hashtablez_sampler.h'],
+    srcs: [
+      'absl/container/internal/hashtablez_sampler.cc',
+      'absl/container/internal/hashtablez_sampler_force_weak_definition.cc',
+    ],
+    deps: [
+      'base',
+      'config',
+      'core_headers',
+      'no_destructor',
+      'raw_logging_internal',
+      'stacktrace',
+      'memory',
+      'exponential_biased',
+      'sample_recorder',
+      'synchronization',
+      'time',
+      'utility',
+    ],
+  },
+
+  flat_hash_set_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_flat_hash_set'],
+    hdrs: ['absl/container/flat_hash_set.h'],
+    deps: [
+      'container_memory',
+      'hash_container_defaults',
+      'raw_hash_set',
+      'algorithm_container',
+      'core_headers',
+      'memory',
+      'type_traits',
+    ],
+  },
+
+  btree_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_btree'],
+    hdrs: [
+      'absl/container/btree_map.h',
+      'absl/container/btree_set.h',
+      'absl/container/internal/btree.h',
+      'absl/container/internal/btree_container.h',
+    ],
+    deps: [
+      'common',
+      'common_policy_traits',
+      'compressed_tuple',
+      'container_memory',
+      'layout',
+      'config',
+      'core_headers',
+      'raw_logging_internal',
+      'throw_delegate',
+      'memory',
+      'type_traits',
+      'cord',
+      'strings',
+      'compare',
+    ],
+  },
+
+  // ===== absl/crc =====
+  crc_cord_state_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_crc_cord_state'],
+    hdrs: ['absl/crc/internal/crc_cord_state.h'],
+    srcs: ['absl/crc/internal/crc_cord_state.cc'],
+    deps: [
+      'crc32c',
+      'config',
+      'no_destructor',
+      'bits',
+    ],
+  },
+
+  crc32c_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_crc32c'],
+    hdrs: [
+      'absl/crc/crc32c.h',
+      'absl/crc/internal/crc32c.h',
+      'absl/crc/internal/crc_memcpy.h',
+      'absl/crc/internal/crc32c_inline.h',
+    ],
+    srcs: [
+      'absl/crc/crc32c.cc',
+      'absl/crc/internal/crc_memcpy_fallback.cc',
+      'absl/crc/internal/crc_memcpy_x86_arm_combined.cc',
+      'absl/crc/internal/crc_non_temporal_memcpy.cc',
+    ],
+    deps: [
+      'cpu_detect',
+      'crc_internal',
+      'non_temporal_memcpy',
+      'config',
+      'core_headers',
+      'endian',
+      'prefetch',
+      'str_format',
+      'strings',
+    ],
+  },
+
+  cpu_detect: {
+    type: @'rules//CC:library',
+    name: ['absl_crc_cpu_detect'],
+    hdrs: ['absl/crc/internal/cpu_detect.h'],
+    srcs: ['absl/crc/internal/cpu_detect.cc'],
+    deps: [
+      'base',
+      'config',
+    ],
+  },
+
+  crc_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_crc_internal'],
+    hdrs: [
+      'absl/crc/internal/crc.h',
+      'absl/crc/internal/crc32_x86_arm_combined_simd.h',
+    ],
+    srcs: [
+      'absl/crc/internal/crc.cc',
+      'absl/crc/internal/crc_x86_arm_combined.cc',
+    ],
+    'private-hdrs': ['absl/crc/internal/crc_internal.h'],
+    deps: [
+      'cpu_detect',
+      'config',
+      'core_headers',
+      'endian',
+      'prefetch',
+      'raw_logging_internal',
+      'memory',
+      'bits',
+    ],
+  },
+
+  non_temporal_memcpy: {
+    type: @'rules//CC:library',
+    name: ['absl_non_temporal_memcpy'],
+    hdrs: ['absl/crc/internal/non_temporal_memcpy.h'],
+    deps: [
+      'non_temporal_arm_intrinsics',
+      'config',
+      'core_headers',
+    ],
+  },
+
+  non_temporal_arm_intrinsics: {
+    type: @'rules//CC:library',
+    name: ['absl_non_temporal_arm_intrinsics'],
+    hdrs: ['absl/crc/internal/non_temporal_arm_intrinsics.h'],
+    deps: ['config'],
+  },
+
+  // ===== absl/debugging =====
+  symbolize_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['TOOLCHAIN_CONFIG', 'ARCH', 'TARGET_ARCH'],
+    name: ['absl_symbolize'],
+    hdrs: [
+      'absl/debugging/internal/symbolize.h',
+      'absl/debugging/symbolize.h',
+    ],
+    srcs: ['absl/debugging/symbolize.cc'],
+    'private-hdrs': [
+      'absl/debugging/symbolize_darwin.inc',
+      'absl/debugging/symbolize_elf.inc',
+      'absl/debugging/symbolize_emscripten.inc',
+      'absl/debugging/symbolize_unimplemented.inc',
+      'absl/debugging/symbolize_win32.inc',
+    ],
+    'private-ldflags':
+      (if compiler_family == 'mingw' then
+         ['-ladvapi32'])
+      + (if target_arch == 'arm' || target_arch == 'unknown' then
+           ['-latomic']),
+    deps: [
+      'debugging_internal',
+      'demangle_internal',
+      'base',
+      'config',
+      'core_headers',
+      'dynamic_annotations',
+      'malloc_internal',
+      'raw_logging_internal',
+      'strings',
+    ],
+  },
+
+  examine_stack_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_examine_stack'],
+    srcs: ['absl/debugging/internal/examine_stack.cc'],
+    hdrs: ['absl/debugging/internal/examine_stack.h'],
+    deps: [
+      'stacktrace',
+      'symbolize',
+      'config',
+      'core_headers',
+      'raw_logging_internal',
+    ],
+  },
+
+  stacktrace_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_stacktrace'],
+    hdrs: [
+      'absl/debugging/stacktrace.h',
+      'absl/debugging/internal/stacktrace_x86-inl.inc',
+    ],
+    srcs: ['absl/debugging/stacktrace.cc'],
+    'private-hdrs': [
+      'absl/debugging/internal/stacktrace_config.h',
+      'absl/debugging/internal/stacktrace_aarch64-inl.inc',
+      'absl/debugging/internal/stacktrace_arm-inl.inc',
+      'absl/debugging/internal/stacktrace_emscripten-inl.inc',
+      'absl/debugging/internal/stacktrace_generic-inl.inc',
+      'absl/debugging/internal/stacktrace_powerpc-inl.inc',
+      'absl/debugging/internal/stacktrace_riscv-inl.inc',
+      'absl/debugging/internal/stacktrace_unimplemented-inl.inc',
+      'absl/debugging/internal/stacktrace_win32-inl.inc',
+    ],
+    deps: [
+      'debugging_internal',
+      'config',
+      'core_headers',
+      'dynamic_annotations',
+      'raw_logging_internal',
+    ],
+  },
+
+  debugging_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_debugging_internal'],
+    hdrs: [
+      'absl/debugging/internal/address_is_readable.h',
+      'absl/debugging/internal/elf_mem_image.h',
+      'absl/debugging/internal/vdso_support.h',
+    ],
+    srcs: [
+      'absl/debugging/internal/address_is_readable.cc',
+      'absl/debugging/internal/elf_mem_image.cc',
+      'absl/debugging/internal/vdso_support.cc',
+    ],
+    deps: [
+      'config',
+      'core_headers',
+      'dynamic_annotations',
+      'errno_saver',
+      'raw_logging_internal',
+    ],
+  },
+
+  demangle_internal_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_demangle_internal'],
+    hdrs: ['absl/debugging/internal/demangle.h'],
+    srcs: ['absl/debugging/internal/demangle.cc'],
+    deps: [
+      'demangle_rust',
+      'base',
+      'config',
+      'core_headers',
+      'nullability',
+      'bits',
+    ],
+  },
+
+  bounded_utf8_length_sequence_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_bounded_utf8_length_sequence'],
+    hdrs: ['absl/debugging/internal/bounded_utf8_length_sequence.h'],
+    deps: [
+      'config',
+      'bits',
+    ],
+  },
+
+  decode_rust_punycode_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_decode_rust_punycode'],
+    hdrs: ['absl/debugging/internal/decode_rust_punycode.h'],
+    srcs: ['absl/debugging/internal/decode_rust_punycode.cc'],
+    deps: [
+      'bounded_utf8_length_sequence',
+      'utf8_for_code_point',
+      'config',
+      'nullability',
+    ],
+  },
+
+  demangle_rust_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_demangle_rust'],
+    hdrs: ['absl/debugging/internal/demangle_rust.h'],
+    srcs: ['absl/debugging/internal/demangle_rust.cc'],
+    deps: [
+      'decode_rust_punycode',
+      'config',
+      'core_headers',
+    ],
+  },
+
+  utf8_for_code_point_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_utf8_for_code_point'],
+    hdrs: ['absl/debugging/internal/utf8_for_code_point.h'],
+    srcs: ['absl/debugging/internal/utf8_for_code_point.cc'],
+    deps: ['config'],
+  },
+
+  // ===== absl/flags =====
+  path_util: {
+    type: @'rules//CC:library',
+    name: ['absl_path_util'],
+    hdrs: ['absl/flags/internal/path_util.h'],
+    deps: [
+      'config',
+      'strings',
+    ],
+  },
+
+  program_name: {
+    type: @'rules//CC:library',
+    name: ['absl_program_name'],
+    srcs: ['absl/flags/internal/program_name.cc'],
+    hdrs: ['absl/flags/internal/program_name.h'],
+    deps: [
+      'path_util',
+      'config',
+      'core_headers',
+      'strings',
+      'synchronization',
+    ],
+  },
+
+  flags_config: {
+    type: @'rules//CC:library',
+    name: ['absl_flags_config'],
+    srcs: ['absl/flags/usage_config.cc'],
+    hdrs: [
+      'absl/flags/config.h',
+      'absl/flags/usage_config.h',
+    ],
+    deps: [
+      'path_util',
+      'program_name',
+      'config',
+      'core_headers',
+      'strings',
+      'synchronization',
+    ],
+  },
+
+  flags_marshalling_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_flags_marshalling'],
+    srcs: ['absl/flags/marshalling.cc'],
+    hdrs: ['absl/flags/marshalling.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'log_severity',
+      'int128',
+      'str_format',
+      'strings',
+      'optional',
+    ],
+  },
+
+  commandlineflag_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_commandlineflag_internal'],
+    srcs: ['absl/flags/internal/commandlineflag.cc'],
+    hdrs: ['absl/flags/internal/commandlineflag.h'],
+    deps: [
+      'config',
+      'fast_type_id',
+    ],
+  },
+
+  commandlineflag: {
+    type: @'rules//CC:library',
+    name: ['absl_commandlineflag'],
+    srcs: ['absl/flags/commandlineflag.cc'],
+    hdrs: ['absl/flags/commandlineflag.h'],
+    deps: [
+      'commandlineflag_internal',
+      'config',
+      'fast_type_id',
+      'strings',
+      'optional',
+    ],
+  },
+
+  private_handle_accessor: {
+    type: @'rules//CC:library',
+    name: ['absl_private_handle_accessor'],
+    srcs: ['absl/flags/internal/private_handle_accessor.cc'],
+    hdrs: ['absl/flags/internal/private_handle_accessor.h'],
+    deps: [
+      'commandlineflag',
+      'commandlineflag_internal',
+      'config',
+      'strings',
+    ],
+  },
+
+  reflection: {
+    type: @'rules//CC:library',
+    name: ['absl_reflection'],
+    srcs: ['absl/flags/reflection.cc'],
+    hdrs: [
+      'absl/flags/internal/registry.h',
+      'absl/flags/reflection.h',
+    ],
+    deps: [
+      'commandlineflag',
+      'commandlineflag_internal',
+      'flags_config',
+      'private_handle_accessor',
+      'config',
+      'core_headers',
+      'no_destructor',
+      'flat_hash_map',
+      'strings',
+      'synchronization',
+    ],
+  },
+
+  flag_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_flag_internal'],
+    srcs: ['absl/flags/internal/flag.cc'],
+    hdrs: [
+      'absl/flags/internal/flag.h',
+      'absl/flags/internal/sequence_lock.h',
+    ],
+    deps: [
+      'commandlineflag',
+      'commandlineflag_internal',
+      'flags_config',
+      'flags_marshalling',
+      'reflection',
+      'base',
+      'config',
+      'core_headers',
+      'dynamic_annotations',
+      'memory',
+      'type_traits',
+      'strings',
+      'synchronization',
+      'utility',
+    ],
+  },
+
+  flags_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_flags'],
+    hdrs: [
+      'absl/flags/declare.h',
+      'absl/flags/flag.h',
+    ],
+    deps: [
+      'commandlineflag',
+      'flags_config',
+      'flag_internal',
+      'reflection',
+      'config',
+      'core_headers',
+      'strings',
+    ],
+  },
+
+  // ===== absl/functional =====
+  function_ref_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_function_ref'],
+    hdrs: [
+      'absl/functional/function_ref.h',
+      'absl/functional/internal/function_ref.h',
+    ],
+    deps: [
+      'any_invocable',
+      'base_internal',
+      'core_headers',
+      'type_traits',
+    ],
+  },
+
+  any_invocable_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_any_invocable'],
+    hdrs: [
+      'absl/functional/any_invocable.h',
+      'absl/functional/internal/any_invocable.h',
+    ],
+    deps: [
+      'base_internal',
+      'config',
+      'core_headers',
+      'type_traits',
+      'utility',
+    ],
+  },
+
+  bind_front_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_bind_front'],
+    hdrs: [
+      'absl/functional/bind_front.h',
+      'absl/functional/internal/front_binder.h',
+    ],
+    deps: [
+      'base_internal',
+      'compressed_tuple',
+      'type_traits',
+      'utility',
+    ],
+  },
+
+  // ===== absl/hash =====
+  hash_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_hash'],
+    hdrs: [
+      'absl/hash/hash.h',
+      'absl/hash/internal/hash.h',
+    ],
+    srcs: ['absl/hash/internal/hash.cc'],
+    deps: [
+      'city',
+      'low_level_hash',
+      'config',
+      'core_headers',
+      'endian',
+      'fixed_array',
+      'function_ref',
+      'type_traits',
+      'bits',
+      'int128',
+      'strings',
+      'optional',
+      'variant',
+      'utility',
+    ],
+  },
+
+  city: {
+    type: @'rules//CC:library',
+    name: ['absl_city'],
+    hdrs: ['absl/hash/internal/city.h'],
+    srcs: ['absl/hash/internal/city.cc'],
+    deps: [
+      'config',
+      'core_headers',
+      'endian',
+    ],
+  },
+
+  low_level_hash: {
+    type: @'rules//CC:library',
+    name: ['absl_low_level_hash'],
+    hdrs: ['absl/hash/internal/low_level_hash.h'],
+    srcs: ['absl/hash/internal/low_level_hash.cc'],
+    deps: [
+      'config',
+      'endian',
+      'prefetch',
+      'int128',
+    ],
+  },
+
+  // ===== absl/log =====
+  absl_check_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_absl_check'],
+    hdrs: ['absl/log/absl_check.h'],
+    deps: [
+      'log_internal_check_impl',
+    ],
+  },
+
+  absl_log_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_absl_log'],
+    hdrs: ['absl/log/absl_log.h'],
+    deps: [
+      'log_internal_log_impl',
+    ],
+  },
+
+  check_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_check'],
+    hdrs: ['absl/log/check.h'],
+    deps: [
+      'log_internal_check_impl',
+      'log_internal_check_op',
+      'log_internal_conditions',
+      'log_internal_message',
+      'log_internal_strip',
+    ],
+  },
+
+  die_if_null_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_die_if_null'],
+    srcs: ['absl/log/die_if_null.cc'],
+    hdrs: ['absl/log/die_if_null.h'],
+    deps: [
+      'log',
+      'config',
+      'core_headers',
+      'strings',
+    ],
+  },
+
+  log_globals_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_globals'],
+    srcs: ['absl/log/globals.cc'],
+    hdrs: ['absl/log/globals.h'],
+    deps: [
+      'atomic_hook',
+      'config',
+      'core_headers',
+      'log_severity',
+      'raw_logging_internal',
+      'hash',
+      'vlog_config_internal',
+      'strings',
+    ],
+  },
+
+  log_initialize_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_initialize'],
+    srcs: ['absl/log/initialize.cc'],
+    hdrs: ['absl/log/initialize.h'],
+    deps: [
+      'log_globals',
+      'config',
+      'log_internal_globals',
+      'time',
+    ],
+  },
+
+  log_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log'],
+    hdrs: ['absl/log/log.h'],
+    deps: [
+      'vlog_is_on',
+      'log_internal_log_impl',
+    ],
+  },
+
+  log_entry_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_entry'],
+    srcs: ['absl/log/log_entry.cc'],
+    hdrs: ['absl/log/log_entry.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'log_severity',
+      'log_internal_config',
+      'strings',
+      'time',
+      'span',
+    ],
+  },
+
+  log_sink_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_sink'],
+    srcs: ['absl/log/log_sink.cc'],
+    hdrs: ['absl/log/log_sink.h'],
+    deps: [
+      'log_entry',
+      'config',
+    ],
+  },
+
+  log_sink_registry_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_sink_registry'],
+    hdrs: ['absl/log/log_sink_registry.h'],
+    deps: [
+      'log_sink',
+      'config',
+      'log_sink_set',
+    ],
+  },
+
+  absl_vlog_is_on_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_absl_vlog_is_on'],
+    hdrs: ['absl/log/absl_vlog_is_on.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'vlog_config_internal',
+      'strings',
+    ],
+  },
+
+  vlog_is_on: {
+    type: @'rules//CC:library',
+    name: ['absl_vlog_is_on'],
+    hdrs: ['absl/log/vlog_is_on.h'],
+    deps: ['absl_vlog_is_on'],
+  },
+
+  // ===== absl/log/internal =====
+  log_internal_check_impl_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_internal_check_impl'],
+    hdrs: ['absl/log/internal/check_impl.h'],
+    deps: [
+      'log_internal_check_op',
+      'log_internal_conditions',
+      'log_internal_message',
+      'log_internal_strip',
+      'core_headers',
+    ],
+  },
+
+  log_internal_check_op_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_internal_check_op'],
+    srcs: ['absl/log/internal/check_op.cc'],
+    hdrs: ['absl/log/internal/check_op.h'],
+    deps: [
+      'log_internal_nullguard',
+      'log_internal_nullstream',
+      'log_internal_strip',
+      'config',
+      'core_headers',
+      'strings',
+    ],
+  },
+
+  log_internal_conditions_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_internal_conditions'],
+    srcs: ['absl/log/internal/conditions.cc'],
+    hdrs: ['absl/log/internal/conditions.h'],
+    deps: [
+      'log_internal_voidify',
+      'base',
+      'config',
+      'core_headers',
+    ],
+  },
+
+  log_internal_config_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_internal_config'],
+    hdrs: ['absl/log/internal/config.h'],
+    deps: [
+      'config',
+      'core_headers',
+    ],
+  },
+
+  format: {
+    type: @'rules//CC:library',
+    name: ['absl_format'],
+    srcs: ['absl/log/internal/log_format.cc'],
+    hdrs: ['absl/log/internal/log_format.h'],
+    deps: [
+      'append_truncated',
+      'log_internal_config',
+      'log_internal_globals',
+      'config',
+      'core_headers',
+      'log_severity',
+      'str_format',
+      'strings',
+      'time',
+      'span',
+    ],
+  },
+
+  log_internal_globals_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_internal_globals'],
+    srcs: ['absl/log/internal/globals.cc'],
+    hdrs: ['absl/log/internal/globals.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'log_severity',
+      'raw_logging_internal',
+      'strings',
+      'time',
+    ],
+  },
+
+  log_internal_log_impl_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_internal_log_impl'],
+    hdrs: ['absl/log/internal/log_impl.h'],
+    deps: [
+      'log_internal_conditions',
+      'log_internal_message',
+      'log_internal_strip',
+      'absl_vlog_is_on',
+    ],
+  },
+
+  log_internal_message_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_internal_message'],
+    srcs: ['absl/log/internal/log_message.cc'],
+    hdrs: ['absl/log/internal/log_message.h'],
+    deps: [
+      'append_truncated',
+      'format',
+      'log_internal_globals',
+      'log_sink_set',
+      'log_internal_nullguard',
+      'proto',
+      'base',
+      'config',
+      'core_headers',
+      'errno_saver',
+      'log_severity',
+      'raw_logging_internal',
+      'strerror',
+      'inlined_vector',
+      'examine_stack',
+      'log_globals',
+      'log_entry',
+      'log_sink',
+      'log_sink_registry',
+      'memory',
+      'strings',
+      'time',
+      'span',
+    ],
+  },
+
+  append_truncated: {
+    type: @'rules//CC:library',
+    name: ['absl_append_truncated'],
+    hdrs: ['absl/log/internal/append_truncated.h'],
+    deps: [
+      'config',
+      'strings',
+      'span',
+    ],
+  },
+
+  log_sink_set: {
+    type: @'rules//CC:library',
+    name: ['absl_log_sink_set'],
+    srcs: ['absl/log/internal/log_sink_set.cc'],
+    hdrs: ['absl/log/internal/log_sink_set.h'],
+    deps: [
+      'log_internal_config',
+      'log_internal_globals',
+      'base',
+      'config',
+      'core_headers',
+      'log_severity',
+      'no_destructor',
+      'raw_logging_internal',
+      'cleanup',
+      'log_globals',
+      'log_entry',
+      'log_sink',
+      'strings',
+      'synchronization',
+      'span',
+    ],
+  },
+
+  log_internal_nullguard_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_internal_nullguard'],
+    srcs: ['absl/log/internal/nullguard.cc'],
+    hdrs: ['absl/log/internal/nullguard.h'],
+    deps: [
+      'config',
+      'core_headers',
+    ],
+  },
+
+  log_internal_nullstream_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_internal_nullstream'],
+    hdrs: ['absl/log/internal/nullstream.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'log_severity',
+      'strings',
+    ],
+  },
+
+  log_internal_strip_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_internal_strip'],
+    hdrs: ['absl/log/internal/strip.h'],
+    deps: [
+      'log_internal_message',
+      'log_internal_nullstream',
+      'core_headers',
+      'log_severity',
+    ],
+  },
+
+  log_internal_voidify_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_internal_voidify'],
+    hdrs: ['absl/log/internal/voidify.h'],
+    deps: ['config'],
+  },
+
+  proto: {
+    type: @'rules//CC:library',
+    name: ['absl_proto'],
+    srcs: ['absl/log/internal/proto.cc'],
+    hdrs: ['absl/log/internal/proto.h'],
+    deps: [
+      'base',
+      'config',
+      'core_headers',
+      'strings',
+      'span',
+    ],
+  },
+
+  log_internal_fnmatch_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_log_internal_fnmatch'],
+    hdrs: ['absl/log/internal/fnmatch.h'],
+    srcs: ['absl/log/internal/fnmatch.cc'],
+    deps: [
+      'config',
+      'strings',
+    ],
+  },
+
+  vlog_config_internal_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_vlog_config_internal'],
+    hdrs: ['absl/log/internal/vlog_config.h'],
+    srcs: ['absl/log/internal/vlog_config.cc'],
+    deps: [
+      'log_internal_fnmatch',
+      'base',
+      'config',
+      'core_headers',
+      'no_destructor',
+      'memory',
+      'strings',
+      'synchronization',
+      'optional',
+    ],
+  },
+
+  // ===== absl/memory =====
+  memory_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_memory'],
+    hdrs: ['absl/memory/memory.h'],
+    deps: [
+      'core_headers',
+      'type_traits',
+    ],
+  },
+
+  // ===== absl/meta =====
+  type_traits_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_type_traits'],
+    hdrs: ['absl/meta/type_traits.h'],
+    deps: [
+      'config',
+      'core_headers',
+    ],
+  },
+
+  // ===== absl/numeric =====
+  int128_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_int128'],
+    hdrs: [
+      'absl/numeric/int128.h',
+      'absl/numeric/int128_have_intrinsic.inc',
+      'absl/numeric/int128_no_intrinsic.inc',
+    ],
+    srcs: ['absl/numeric/int128.cc'],
+    deps: [
+      'bits',
+      'config',
+      'core_headers',
+      'compare',
+    ],
+  },
+
+  bits_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_bits'],
+    hdrs: [
+      'absl/numeric/bits.h',
+      'absl/numeric/internal/bits.h',
+    ],
+    deps: [
+      'config',
+      'core_headers',
+    ],
+  },
+
+  numeric_representation_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_numeric_representation'],
+    hdrs: ['absl/numeric/internal/representation.h'],
+    deps: ['config'],
+  },
+
+  // ===== absl/profiling =====
+  exponential_biased_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_exponential_biased'],
+    hdrs: ['absl/profiling/internal/exponential_biased.h'],
+    srcs: ['absl/profiling/internal/exponential_biased.cc'],
+    deps: [
+      'config',
+      'core_headers',
+    ],
+  },
+
+  sample_recorder_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_sample_recorder'],
+    hdrs: ['absl/profiling/internal/sample_recorder.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'synchronization',
+      'time',
+    ],
+  },
+
+  // ===== absl/random =====
+  random_random_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_random_random'],
+    hdrs: ['absl/random/random.h'],
+    deps: [
+      'random_distributions',
+      'internal_nonsecure_base',
+      'internal_pcg_engine',
+      'internal_pool_urbg',
+      'internal_randen_engine',
+      'seed_sequences',
+    ],
+  },
+
+  random_distributions_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_random_distributions'],
+    hdrs: [
+      'absl/random/bernoulli_distribution.h',
+      'absl/random/beta_distribution.h',
+      'absl/random/discrete_distribution.h',
+      'absl/random/distributions.h',
+      'absl/random/exponential_distribution.h',
+      'absl/random/gaussian_distribution.h',
+      'absl/random/log_uniform_int_distribution.h',
+      'absl/random/poisson_distribution.h',
+      'absl/random/uniform_int_distribution.h',
+      'absl/random/uniform_real_distribution.h',
+      'absl/random/zipf_distribution.h',
+    ],
+    srcs: [
+      'absl/random/discrete_distribution.cc',
+      'absl/random/gaussian_distribution.cc',
+    ],
+    deps: [
+      'internal_distribution_caller',
+      'random_internal_fast_uniform_bits',
+      'internal_fastmath',
+      'internal_generate_real',
+      'internal_iostream_state_saver',
+      'random_internal_traits',
+      'internal_uniform_helper',
+      'internal_wide_multiply',
+      'base_internal',
+      'config',
+      'core_headers',
+      'type_traits',
+      'bits',
+      'strings',
+    ],
+  },
+
+  random_bit_gen_ref_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_random_bit_gen_ref'],
+    hdrs: ['absl/random/bit_gen_ref.h'],
+    deps: [
+      'internal_pool_urbg',
+      'random_internal_salted_seed_seq',
+      'random_internal_seed_material',
+      'random_random',
+      'core_headers',
+      'fast_type_id',
+      'span',
+    ],
+  },
+
+  internal_nonsecure_base: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_nonsecure_base'],
+    hdrs: ['absl/random/internal/nonsecure_base.h'],
+    deps: [
+      'internal_pool_urbg',
+      'random_internal_salted_seed_seq',
+      'random_internal_seed_material',
+      'core_headers',
+      'inlined_vector',
+      'type_traits',
+      'span',
+    ],
+  },
+
+  internal_pcg_engine: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_pcg_engine'],
+    hdrs: ['absl/random/internal/pcg_engine.h'],
+    deps: [
+      'internal_fastmath',
+      'internal_iostream_state_saver',
+      'config',
+      'type_traits',
+      'int128',
+    ],
+  },
+
+  internal_pool_urbg_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_pool_urbg'],
+    hdrs: ['absl/random/internal/pool_urbg.h'],
+    srcs: ['absl/random/internal/pool_urbg.cc'],
+    'private-ldflags': [
+      '-pthread',
+      '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+    ],
+    deps: [
+      'internal_randen',
+      'random_internal_seed_material',
+      'random_internal_traits',
+      'seed_gen_exception',
+      'base',
+      'config',
+      'core_headers',
+      'endian',
+      'raw_logging_internal',
+      'span',
+    ],
+  },
+
+  internal_randen_engine: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_randen_engine'],
+    hdrs: ['absl/random/internal/randen_engine.h'],
+    deps: [
+      'internal_iostream_state_saver',
+      'internal_randen',
+      'endian',
+      'type_traits',
+    ],
+  },
+
+  seed_sequences: {
+    type: @'rules//CC:library',
+    name: ['absl_seed_sequences'],
+    hdrs: ['absl/random/seed_sequences.h'],
+    srcs: ['absl/random/seed_sequences.cc'],
+    deps: [
+      'internal_pool_urbg',
+      'random_internal_salted_seed_seq',
+      'random_internal_seed_material',
+      'seed_gen_exception',
+      'config',
+      'nullability',
+      'string_view',
+      'span',
+    ],
+  },
+
+  internal_generate_real: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_generate_real'],
+    hdrs: ['absl/random/internal/generate_real.h'],
+    deps: [
+      'internal_fastmath',
+      'random_internal_traits',
+      'type_traits',
+      'bits',
+    ],
+  },
+
+  internal_distribution_caller: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_distribution_caller'],
+    hdrs: ['absl/random/internal/distribution_caller.h'],
+    deps: [
+      'config',
+      'fast_type_id',
+      'utility',
+    ],
+  },
+
+  random_internal_fast_uniform_bits_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_random_internal_fast_uniform_bits'],
+    hdrs: ['absl/random/internal/fast_uniform_bits.h'],
+    deps: [
+      'random_internal_traits',
+      'config',
+      'type_traits',
+    ],
+  },
+
+  internal_fastmath: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_fastmath'],
+    hdrs: ['absl/random/internal/fastmath.h'],
+    deps: ['bits'],
+  },
+
+  internal_iostream_state_saver: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_iostream_state_saver'],
+    hdrs: ['absl/random/internal/iostream_state_saver.h'],
+    deps: [
+      'type_traits',
+      'int128',
+    ],
+  },
+
+  random_internal_traits_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_random_internal_traits'],
+    hdrs: ['absl/random/internal/traits.h'],
+    deps: [
+      'config',
+      'bits',
+      'int128',
+    ],
+  },
+
+  internal_uniform_helper: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_uniform_helper'],
+    hdrs: ['absl/random/internal/uniform_helper.h'],
+    deps: [
+      'random_internal_traits',
+      'config',
+      'type_traits',
+      'int128',
+    ],
+  },
+
+  internal_wide_multiply: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_wide_multiply'],
+    hdrs: ['absl/random/internal/wide_multiply.h'],
+    deps: [
+      'random_internal_traits',
+      'config',
+      'bits',
+      'int128',
+    ],
+  },
+
+  random_internal_salted_seed_seq_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_random_internal_salted_seed_seq'],
+    hdrs: ['absl/random/internal/salted_seed_seq.h'],
+    deps: [
+      'random_internal_seed_material',
+      'inlined_vector',
+      'type_traits',
+      'optional',
+      'span',
+    ],
+  },
+
+  random_internal_seed_material_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'OS'],
+    name: ['absl_random_internal_seed_material'],
+    hdrs: ['absl/random/internal/seed_material.h'],
+    srcs: ['absl/random/internal/seed_material.cc'],
+    'private-ldflags':
+      if jst.env('USE_SYSTEM_LIBS') && os == 'windows' then
+        ['-lbcrypt'],
+    deps:
+      [
+        'random_internal_fast_uniform_bits',
+        'core_headers',
+        'dynamic_annotations',
+        'raw_logging_internal',
+        'strings',
+        'optional',
+        'span',
+      ]
+      + (if !jst.env('USE_SYSTEM_LIBS') && os == 'windows' then
+           [@'bcrypt//:bcrypt']),
+  },
+
+  internal_randen: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_randen'],
+    hdrs: ['absl/random/internal/randen.h'],
+    srcs: ['absl/random/internal/randen.cc'],
+    deps: [
+      'internal_platform',
+      'internal_randen_hwaes',
+      'internal_randen_slow',
+      'raw_logging_internal',
+    ],
+  },
+
+  seed_gen_exception: {
+    type: @'rules//CC:library',
+    name: ['absl_seed_gen_exception'],
+    hdrs: ['absl/random/seed_gen_exception.h'],
+    srcs: ['absl/random/seed_gen_exception.cc'],
+    deps: [
+      'config',
+    ],
+  },
+
+  internal_platform: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_platform'],
+    hdrs: [
+      'absl/random/internal/randen_traits.h',
+      'absl/random/internal/platform.h',
+    ],
+    srcs: [
+      'absl/random/internal/randen_round_keys.cc',
+    ],
+    deps: [
+      'config',
+    ],
+  },
+
+  internal_randen_hwaes: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_randen_hwaes'],
+    hdrs: [
+      'absl/random/internal/randen_detect.h',
+      'absl/random/internal/randen_hwaes.h',
+    ],
+    srcs: [
+      'absl/random/internal/randen_detect.cc',
+    ],
+    deps: [
+      'internal_platform',
+      'internal_randen_hwaes_impl',
+      'config',
+    ],
+  },
+
+  internal_randen_slow: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_randen_slow'],
+    hdrs: ['absl/random/internal/randen_slow.h'],
+    srcs: ['absl/random/internal/randen_slow.cc'],
+    deps: [
+      'internal_platform',
+      'config',
+      'core_headers',
+      'endian',
+      'int128',
+    ],
+  },
+
+  internal_randen_hwaes_impl: {
+    type: @'rules//CC:library',
+    name: ['absl_internal_randen_hwaes_impl'],
+    arguments_config: ['ARCH', 'TARGET_ARCH', 'TOOLCHAIN_CONFIG'],
+    'private-hdrs': ['absl/random/internal/randen_hwaes.h'],
+    srcs: ['absl/random/internal/randen_hwaes.cc'],
+    'private-cflags':
+      if target_arch == 'arm' then
+        ['-mfpu=neon']
+      else if target_arch == 'arm64' then
+        ['-march=armv8-a+crypto']
+      else if target_arch == 'x86_64' &&
+              compiler_family != 'msvc' then
+        ['-maes', '-msse4.1'],
+    deps: [
+      'internal_platform',
+      'config',
+      'core_headers',
+      'int128',
+    ],
+  },
+
+  // ===== absl/status =====
+  status_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_status'],
+    hdrs: [
+      'absl/status/status.h',
+      'absl/status/status_payload_printer.h',
+      'absl/status/internal/status_internal.h',
+    ],
+    srcs: [
+      'absl/status/internal/status_internal.cc',
+      'absl/status/status.cc',
+      'absl/status/status_payload_printer.cc',
+    ],
+    deps: [
+      'atomic_hook',
+      'config',
+      'core_headers',
+      'no_destructor',
+      'nullability',
+      'raw_logging_internal',
+      'strerror',
+      'inlined_vector',
+      'stacktrace',
+      'symbolize',
+      'function_ref',
+      'memory',
+      'cord',
+      'str_format',
+      'strings',
+      'optional',
+      'span',
+    ],
+  },
+
+  statusor_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_statusor'],
+    hdrs: [
+      'absl/status/statusor.h',
+      'absl/status/internal/statusor_internal.h',
+    ],
+    srcs: ['absl/status/statusor.cc'],
+    deps: [
+      'status',
+      'base',
+      'config',
+      'core_headers',
+      'nullability',
+      'raw_logging_internal',
+      'type_traits',
+      'has_ostream_operator',
+      'str_format',
+      'strings',
+      'variant',
+      'utility',
+    ],
+  },
+
+  // ===== absl/strings =====
+  string_view_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_string_view'],
+    hdrs: ['absl/strings/string_view.h'],
+    srcs: ['absl/strings/string_view.cc'],
+    deps: [
+      'base',
+      'config',
+      'core_headers',
+      'nullability',
+      'throw_delegate',
+    ],
+  },
+
+  strings_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_strings'],
+    hdrs: [
+      'absl/strings/ascii.h',
+      'absl/strings/charconv.h',
+      'absl/strings/escaping.h',
+      'absl/strings/has_absl_stringify.h',
+      'absl/strings/internal/damerau_levenshtein_distance.h',
+      'absl/strings/internal/string_constant.h',
+      'absl/strings/match.h',
+      'absl/strings/numbers.h',
+      'absl/strings/str_cat.h',
+      'absl/strings/str_join.h',
+      'absl/strings/str_replace.h',
+      'absl/strings/str_split.h',
+      'absl/strings/string_view.h',
+      'absl/strings/strip.h',
+      'absl/strings/substitute.h',
+      'absl/strings/internal/stringify_sink.h',
+      'absl/strings/internal/str_join_internal.h',
+      'absl/strings/internal/str_split_internal.h',
+      'absl/strings/internal/stl_type_traits.h',
+    ],
+    srcs: [
+      'absl/strings/ascii.cc',
+      'absl/strings/charconv.cc',
+      'absl/strings/escaping.cc',
+      'absl/strings/internal/charconv_bigint.cc',
+      'absl/strings/internal/charconv_parse.cc',
+      'absl/strings/internal/damerau_levenshtein_distance.cc',
+      'absl/strings/internal/memutil.cc',
+      'absl/strings/internal/stringify_sink.cc',
+      'absl/strings/match.cc',
+      'absl/strings/numbers.cc',
+      'absl/strings/str_cat.cc',
+      'absl/strings/str_replace.cc',
+      'absl/strings/str_split.cc',
+      'absl/strings/substitute.cc',
+    ],
+    'private-hdrs': [
+      'absl/strings/internal/charconv_bigint.h',
+      'absl/strings/internal/charconv_parse.h',
+      'absl/strings/internal/memutil.h',
+    ],
+    deps: [
+      'charset',
+      'strings_internal',
+      'string_view',
+      'base',
+      'config',
+      'core_headers',
+      'endian',
+      'nullability',
+      'raw_logging_internal',
+      'throw_delegate',
+      'memory',
+      'type_traits',
+      'bits',
+      'int128',
+    ],
+  },
+
+  strings_internal_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_strings_internal'],
+    hdrs: [
+      'absl/strings/internal/escaping.h',
+      'absl/strings/internal/ostringstream.h',
+      'absl/strings/internal/resize_uninitialized.h',
+      'absl/strings/internal/utf8.h',
+    ],
+    srcs: [
+      'absl/strings/internal/escaping.cc',
+      'absl/strings/internal/ostringstream.cc',
+      'absl/strings/internal/utf8.cc',
+    ],
+    deps: [
+      'config',
+      'core_headers',
+      'endian',
+      'raw_logging_internal',
+      'type_traits',
+    ],
+  },
+
+  cord_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_cord'],
+    hdrs: [
+      'absl/strings/cord.h',
+      'absl/strings/cord_buffer.h',
+      'absl/strings/cord_analysis.h',
+    ],
+    srcs: [
+      'absl/strings/cord.cc',
+      'absl/strings/cord_analysis.cc',
+      'absl/strings/cord_buffer.cc',
+    ],
+    deps: [
+      'cord_internal',
+      'cordz_functions',
+      'cordz_info',
+      'cordz_statistics',
+      'cordz_update_scope',
+      'cordz_update_tracker',
+      'strings_internal',
+      'strings',
+      'base',
+      'config',
+      'core_headers',
+      'endian',
+      'nullability',
+      'raw_logging_internal',
+      'inlined_vector',
+      'crc32c',
+      'crc_cord_state',
+      'function_ref',
+      'type_traits',
+      'bits',
+      'compare',
+      'optional',
+      'span',
+    ],
+  },
+
+  cord_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_cord_internal'],
+    hdrs: [
+      'absl/strings/internal/cord_data_edge.h',
+      'absl/strings/internal/cord_internal.h',
+      'absl/strings/internal/cord_rep_btree.h',
+      'absl/strings/internal/cord_rep_btree_navigator.h',
+      'absl/strings/internal/cord_rep_btree_reader.h',
+      'absl/strings/internal/cord_rep_crc.h',
+      'absl/strings/internal/cord_rep_consume.h',
+      'absl/strings/internal/cord_rep_flat.h',
+    ],
+    srcs: [
+      'absl/strings/internal/cord_internal.cc',
+      'absl/strings/internal/cord_rep_btree.cc',
+      'absl/strings/internal/cord_rep_btree_navigator.cc',
+      'absl/strings/internal/cord_rep_btree_reader.cc',
+      'absl/strings/internal/cord_rep_crc.cc',
+      'absl/strings/internal/cord_rep_consume.cc',
+    ],
+    deps: [
+      'strings',
+      'base_internal',
+      'config',
+      'core_headers',
+      'endian',
+      'raw_logging_internal',
+      'throw_delegate',
+      'compressed_tuple',
+      'container_memory',
+      'inlined_vector',
+      'layout',
+      'crc_cord_state',
+      'function_ref',
+      'type_traits',
+      'span',
+    ],
+  },
+
+  cordz_functions: {
+    type: @'rules//CC:library',
+    name: ['absl_cordz_functions'],
+    hdrs: ['absl/strings/internal/cordz_functions.h'],
+    srcs: ['absl/strings/internal/cordz_functions.cc'],
+    deps: [
+      'config',
+      'core_headers',
+      'raw_logging_internal',
+      'exponential_biased',
+    ],
+  },
+
+  cordz_info: {
+    type: @'rules//CC:library',
+    arguments_config: ['ARCH', 'TARGET_ARCH'],
+    name: ['absl_cordz_info'],
+    hdrs: ['absl/strings/internal/cordz_info.h'],
+    srcs: ['absl/strings/internal/cordz_info.cc'],
+    'private-ldflags':
+      if target_arch == 'arm' || target_arch == 'unknown' then
+        ['-latomic'],
+    deps: [
+      'cord_internal',
+      'cordz_functions',
+      'cordz_handle',
+      'cordz_statistics',
+      'cordz_update_tracker',
+      'base',
+      'config',
+      'core_headers',
+      'raw_logging_internal',
+      'inlined_vector',
+      'stacktrace',
+      'synchronization',
+      'time',
+      'span',
+    ],
+  },
+
+  cordz_update_scope: {
+    type: @'rules//CC:library',
+    name: ['absl_cordz_update_scope'],
+    hdrs: ['absl/strings/internal/cordz_update_scope.h'],
+    deps: [
+      'cord_internal',
+      'cordz_info',
+      'cordz_update_tracker',
+      'config',
+      'core_headers',
+    ],
+  },
+
+  cordz_update_tracker: {
+    type: @'rules//CC:library',
+    name: ['absl_cordz_update_tracker'],
+    hdrs: ['absl/strings/internal/cordz_update_tracker.h'],
+    deps: [
+      'config',
+    ],
+  },
+
+  cordz_handle: {
+    type: @'rules//CC:library',
+    name: ['absl_cordz_handle'],
+    hdrs: ['absl/strings/internal/cordz_handle.h'],
+    srcs: ['absl/strings/internal/cordz_handle.cc'],
+    deps: [
+      'config',
+      'no_destructor',
+      'raw_logging_internal',
+      'synchronization',
+    ],
+  },
+
+  cordz_statistics: {
+    type: @'rules//CC:library',
+    name: ['absl_cordz_statistics'],
+    hdrs: ['absl/strings/internal/cordz_statistics.h'],
+    deps: [
+      'cordz_update_tracker',
+      'config',
+    ],
+  },
+
+  str_format_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_str_format'],
+    hdrs: ['absl/strings/str_format.h'],
+    deps: [
+      'str_format_internal',
+      'string_view',
+      'config',
+      'core_headers',
+      'nullability',
+      'span',
+    ],
+  },
+
+  str_format_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_str_format_internal'],
+    hdrs: [
+      'absl/strings/internal/str_format/arg.h',
+      'absl/strings/internal/str_format/bind.h',
+      'absl/strings/internal/str_format/checker.h',
+      'absl/strings/internal/str_format/constexpr_parser.h',
+      'absl/strings/internal/str_format/extension.h',
+      'absl/strings/internal/str_format/float_conversion.h',
+      'absl/strings/internal/str_format/output.h',
+      'absl/strings/internal/str_format/parser.h',
+    ],
+    srcs: [
+      'absl/strings/internal/str_format/arg.cc',
+      'absl/strings/internal/str_format/bind.cc',
+      'absl/strings/internal/str_format/extension.cc',
+      'absl/strings/internal/str_format/float_conversion.cc',
+      'absl/strings/internal/str_format/output.cc',
+      'absl/strings/internal/str_format/parser.cc',
+    ],
+    deps: [
+      'strings',
+      'config',
+      'core_headers',
+      'fixed_array',
+      'inlined_vector',
+      'function_ref',
+      'type_traits',
+      'bits',
+      'int128',
+      'numeric_representation',
+      'optional',
+      'span',
+      'utility',
+    ],
+  },
+
+  has_ostream_operator_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_has_ostream_operator'],
+    hdrs: ['absl/strings/has_ostream_operator.h'],
+    deps: ['config'],
+  },
+
+  charset_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_charset'],
+    hdrs: ['absl/strings/charset.h'],
+    deps: [
+      'string_view',
+      'core_headers',
+    ],
+  },
+
+  // ===== absl/synchronization =====
+  synchronization_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ARCH', 'TARGET_ARCH'],
+    name: ['absl_synchronization'],
+    hdrs: [
+      'absl/synchronization/barrier.h',
+      'absl/synchronization/blocking_counter.h',
+      'absl/synchronization/internal/create_thread_identity.h',
+      'absl/synchronization/internal/futex.h',
+      'absl/synchronization/internal/futex_waiter.h',
+      'absl/synchronization/internal/per_thread_sem.h',
+      'absl/synchronization/internal/pthread_waiter.h',
+      'absl/synchronization/internal/sem_waiter.h',
+      'absl/synchronization/internal/stdcpp_waiter.h',
+      'absl/synchronization/internal/waiter.h',
+      'absl/synchronization/internal/waiter_base.h',
+      'absl/synchronization/internal/win32_waiter.h',
+      'absl/synchronization/mutex.h',
+      'absl/synchronization/notification.h',
+    ],
+    srcs: [
+      'absl/synchronization/barrier.cc',
+      'absl/synchronization/blocking_counter.cc',
+      'absl/synchronization/internal/create_thread_identity.cc',
+      'absl/synchronization/internal/futex_waiter.cc',
+      'absl/synchronization/internal/per_thread_sem.cc',
+      'absl/synchronization/internal/pthread_waiter.cc',
+      'absl/synchronization/internal/sem_waiter.cc',
+      'absl/synchronization/internal/stdcpp_waiter.cc',
+      'absl/synchronization/internal/waiter_base.cc',
+      'absl/synchronization/internal/win32_waiter.cc',
+      'absl/synchronization/mutex.cc',
+      'absl/synchronization/notification.cc',
+    ],
+    'private-ldflags':
+      [
+        '-pthread',
+        '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+      ]
+      + (if target_arch == 'arm' || target_arch == 'unknown' then
+           ['-latomic']),
+    deps: [
+      'graphcycles_internal',
+      'kernel_timeout_internal',
+      'atomic_hook',
+      'base',
+      'base_internal',
+      'config',
+      'core_headers',
+      'dynamic_annotations',
+      'malloc_internal',
+      'raw_logging_internal',
+      'stacktrace',
+      'symbolize',
+      'time',
+    ],
+  },
+
+  graphcycles_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_graphcycles_internal'],
+    hdrs: ['absl/synchronization/internal/graphcycles.h'],
+    srcs: ['absl/synchronization/internal/graphcycles.cc'],
+    deps: [
+      'base',
+      'base_internal',
+      'config',
+      'core_headers',
+      'malloc_internal',
+      'raw_logging_internal',
+    ],
+  },
+
+  kernel_timeout_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_kernel_timeout_internal'],
+    srcs: ['absl/synchronization/internal/kernel_timeout.cc'],
+    hdrs: ['absl/synchronization/internal/kernel_timeout.h'],
+    deps: [
+      'base',
+      'config',
+      'core_headers',
+      'raw_logging_internal',
+      'time',
+    ],
+  },
+
+  // ===== absl/time =====
+  time_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_time'],
+    hdrs: [
+      'absl/time/civil_time.h',
+      'absl/time/clock.h',
+      'absl/time/time.h',
+    ],
+    srcs: [
+      'absl/time/civil_time.cc',
+      'absl/time/clock.cc',
+      'absl/time/duration.cc',
+      'absl/time/format.cc',
+      'absl/time/time.cc',
+    ],
+    'private-hdrs': [
+      'absl/time/internal/get_current_time_chrono.inc',
+      'absl/time/internal/get_current_time_posix.inc',
+    ],
+    deps: [
+      'civil_time',
+      'time_zone',
+      'base',
+      'config',
+      'core_headers',
+      'raw_logging_internal',
+      'int128',
+      'strings',
+      'optional',
+    ],
+  },
+
+  civil_time: {
+    type: @'rules//CC:library',
+    name: ['absl_civil_time'],
+    hdrs: [
+      'absl/time/internal/cctz/include/cctz/civil_time.h',
+      'absl/time/internal/cctz/include/cctz/civil_time_detail.h',
+    ],
+    srcs: ['absl/time/internal/cctz/src/civil_time_detail.cc'],
+    deps: ['config'],
+  },
+
+  time_zone: {
+    type: @'rules//CC:library',
+    arguments_config: ['ARCH', 'TARGET_ARCH'],
+    name: ['absl_time_zone'],
+    hdrs: [
+      'absl/time/internal/cctz/include/cctz/time_zone.h',
+      'absl/time/internal/cctz/include/cctz/zone_info_source.h',
+    ],
+    srcs: [
+      'absl/time/internal/cctz/src/time_zone_fixed.cc',
+      'absl/time/internal/cctz/src/time_zone_format.cc',
+      'absl/time/internal/cctz/src/time_zone_if.cc',
+      'absl/time/internal/cctz/src/time_zone_impl.cc',
+      'absl/time/internal/cctz/src/time_zone_info.cc',
+      'absl/time/internal/cctz/src/time_zone_libc.cc',
+      'absl/time/internal/cctz/src/time_zone_lookup.cc',
+      'absl/time/internal/cctz/src/time_zone_posix.cc',
+      'absl/time/internal/cctz/src/zone_info_source.cc',
+    ],
+    'private-hdrs': [
+      'absl/time/internal/cctz/src/time_zone_fixed.h',
+      'absl/time/internal/cctz/src/time_zone_if.h',
+      'absl/time/internal/cctz/src/time_zone_impl.h',
+      'absl/time/internal/cctz/src/time_zone_info.h',
+      'absl/time/internal/cctz/src/time_zone_libc.h',
+      'absl/time/internal/cctz/src/time_zone_posix.h',
+      'absl/time/internal/cctz/src/tzfile.h',
+    ],
+    'private-ldflags':
+      if target_arch == 'arm' || target_arch == 'unknown' then
+        ['-latomic'],
+    deps: [
+      'civil_time',
+      'config',
+    ],
+  },
+
+  // ===== absl/types =====
+  optional_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_optional'],
+    hdrs: [
+      'absl/types/optional.h',
+      'absl/types/internal/optional.h',
+    ],
+    deps: [
+      'bad_optional_access',
+      'base_internal',
+      'config',
+      'core_headers',
+      'nullability',
+      'memory',
+      'type_traits',
+      'utility',
+    ],
+  },
+
+  bad_optional_access: {
+    type: @'rules//CC:library',
+    name: ['absl_bad_optional_access'],
+    hdrs: ['absl/types/bad_optional_access.h'],
+    srcs: ['absl/types/bad_optional_access.cc'],
+    deps: [
+      'config',
+      'raw_logging_internal',
+    ],
+  },
+
+  variant_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_variant'],
+    hdrs: [
+      'absl/types/variant.h',
+      'absl/types/internal/variant.h',
+    ],
+    deps: [
+      'bad_variant_access',
+      'base_internal',
+      'config',
+      'core_headers',
+      'type_traits',
+      'utility',
+    ],
+  },
+
+  bad_variant_access: {
+    type: @'rules//CC:library',
+    name: ['absl_bad_variant_access'],
+    hdrs: ['absl/types/bad_variant_access.h'],
+    srcs: ['absl/types/bad_variant_access.cc'],
+    deps: [
+      'config',
+      'raw_logging_internal',
+    ],
+  },
+
+  span_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_span'],
+    hdrs: [
+      'absl/types/span.h',
+      'absl/types/internal/span.h',
+    ],
+    deps: [
+      'algorithm',
+      'core_headers',
+      'nullability',
+      'throw_delegate',
+      'type_traits',
+    ],
+  },
+
+  compare_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_compare'],
+    hdrs: ['absl/types/compare.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'type_traits',
+    ],
+  },
+
+  // ===== absl/utility =====
+  utility_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_utility'],
+    hdrs: ['absl/utility/utility.h'],
+    deps: [
+      'base_internal',
+      'config',
+      'type_traits',
+    ],
+  },
+
+  if_constexpr_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_if_constexpr'],
+    hdrs: ['absl/utility/internal/if_constexpr.h'],
+    deps: ['config'],
+  },
+}
