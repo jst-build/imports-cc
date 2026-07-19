@@ -1,0 +1,1275 @@
+// Options supported by this project
+local options_doc = {
+  ENV: [|||
+    Map from strings to strings. The build environment to be used for
+    build actions. Typically used to include an unusual value of PATH.
+  |||],
+  LOCALBASE: [|||
+    Use this localbase for building against system libs (e.g. "/usr").
+  |||],
+  PKG_CONFIG_ARGS: [|||
+    Additional "pkg-config" arguments (e.g. "--define-prefix" or "--static").
+  |||],
+};
+
+{
+  algorithm: {
+    type: 'export',
+    target: 'algorithm_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  algorithm_container: {
+    type: 'export',
+    target: 'algorithm_container_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  base: {
+    type: 'export',
+    target: 'base_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  atomic_hook: {
+    type: 'export',
+    target: 'atomic_hook_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  base_internal: {
+    type: 'export',
+    target: 'base_internal_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  config: {
+    type: 'export',
+    target: 'config_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  core_headers: {
+    type: 'export',
+    target: 'core_headers_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  dynamic_annotations: {
+    type: 'export',
+    target: 'dynamic_annotations_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_severity: {
+    type: 'export',
+    target: 'log_severity_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  no_destructor: {
+    type: 'export',
+    target: 'no_destructor_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  nullability: {
+    type: 'export',
+    target: 'nullability_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  raw_logging_internal: {
+    type: 'export',
+    target: 'raw_logging_internal_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  errno_saver: {
+    type: 'export',
+    target: 'errno_saver_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  endian: {
+    type: 'export',
+    target: 'endian_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  fast_type_id: {
+    type: 'export',
+    target: 'fast_type_id_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  strerror: {
+    type: 'export',
+    target: 'strerror_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  throw_delegate: {
+    type: 'export',
+    target: 'throw_delegate_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  malloc_internal: {
+    type: 'export',
+    target: 'malloc_internal_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  prefetch: {
+    type: 'export',
+    target: 'prefetch_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  poison: {
+    type: 'export',
+    target: 'poison_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  cleanup: {
+    type: 'export',
+    target: 'cleanup_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  inlined_vector: {
+    type: 'export',
+    target: 'inlined_vector_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  compressed_tuple: {
+    type: 'export',
+    target: 'compressed_tuple_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  fixed_array: {
+    type: 'export',
+    target: 'fixed_array_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  container_memory: {
+    type: 'export',
+    target: 'container_memory_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  layout: {
+    type: 'export',
+    target: 'layout_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  flat_hash_map: {
+    type: 'export',
+    target: 'flat_hash_map_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  hash_function_defaults: {
+    type: 'export',
+    target: 'hash_function_defaults_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  hash_container_defaults: {
+    type: 'export',
+    target: 'hash_container_defaults_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  raw_hash_map: {
+    type: 'export',
+    target: 'raw_hash_map_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  raw_hash_set: {
+    type: 'export',
+    target: 'raw_hash_set_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  flat_hash_set: {
+    type: 'export',
+    target: 'flat_hash_set_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  btree: {
+    type: 'export',
+    target: 'btree_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  crc_cord_state: {
+    type: 'export',
+    target: 'crc_cord_state_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  crc32c: {
+    type: 'export',
+    target: 'crc32c_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  symbolize: {
+    type: 'export',
+    target: 'symbolize_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  examine_stack: {
+    type: 'export',
+    target: 'examine_stack_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  stacktrace: {
+    type: 'export',
+    target: 'stacktrace_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  demangle_internal: {
+    type: 'export',
+    target: 'demangle_internal_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  bounded_utf8_length_sequence: {
+    type: 'export',
+    target: 'bounded_utf8_length_sequence_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  decode_rust_punycode: {
+    type: 'export',
+    target: 'decode_rust_punycode_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  demangle_rust: {
+    type: 'export',
+    target: 'demangle_rust_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  utf8_for_code_point: {
+    type: 'export',
+    target: 'utf8_for_code_point_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  flags_marshalling: {
+    type: 'export',
+    target: 'flags_marshalling_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  flags: {
+    type: 'export',
+    target: 'flags_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  function_ref: {
+    type: 'export',
+    target: 'function_ref_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  any_invocable: {
+    type: 'export',
+    target: 'any_invocable_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  bind_front: {
+    type: 'export',
+    target: 'bind_front_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  hash: {
+    type: 'export',
+    target: 'hash_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  absl_check: {
+    type: 'export',
+    target: 'absl_check_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  absl_log: {
+    type: 'export',
+    target: 'absl_log_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  check: {
+    type: 'export',
+    target: 'check_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  die_if_null: {
+    type: 'export',
+    target: 'die_if_null_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_globals: {
+    type: 'export',
+    target: 'log_globals_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_initialize: {
+    type: 'export',
+    target: 'log_initialize_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log: {
+    type: 'export',
+    target: 'log_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_entry: {
+    type: 'export',
+    target: 'log_entry_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_sink: {
+    type: 'export',
+    target: 'log_sink_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_sink_registry: {
+    type: 'export',
+    target: 'log_sink_registry_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  absl_vlog_is_on: {
+    type: 'export',
+    target: 'absl_vlog_is_on_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_internal_check_impl: {
+    type: 'export',
+    target: 'log_internal_check_impl_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_internal_check_op: {
+    type: 'export',
+    target: 'log_internal_check_op_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_internal_conditions: {
+    type: 'export',
+    target: 'log_internal_conditions_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_internal_config: {
+    type: 'export',
+    target: 'log_internal_config_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_internal_globals: {
+    type: 'export',
+    target: 'log_internal_globals_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_internal_log_impl: {
+    type: 'export',
+    target: 'log_internal_log_impl_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_internal_message: {
+    type: 'export',
+    target: 'log_internal_message_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_internal_nullguard: {
+    type: 'export',
+    target: 'log_internal_nullguard_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_internal_nullstream: {
+    type: 'export',
+    target: 'log_internal_nullstream_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_internal_strip: {
+    type: 'export',
+    target: 'log_internal_strip_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_internal_voidify: {
+    type: 'export',
+    target: 'log_internal_voidify_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  log_internal_fnmatch: {
+    type: 'export',
+    target: 'log_internal_fnmatch_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  vlog_config_internal: {
+    type: 'export',
+    target: 'vlog_config_internal_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  memory: {
+    type: 'export',
+    target: 'memory_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  type_traits: {
+    type: 'export',
+    target: 'type_traits_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  int128: {
+    type: 'export',
+    target: 'int128_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  bits: {
+    type: 'export',
+    target: 'bits_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  numeric_representation: {
+    type: 'export',
+    target: 'numeric_representation_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  exponential_biased: {
+    type: 'export',
+    target: 'exponential_biased_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  sample_recorder: {
+    type: 'export',
+    target: 'sample_recorder_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  random_random: {
+    type: 'export',
+    target: 'random_random_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  random_distributions: {
+    type: 'export',
+    target: 'random_distributions_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  random_bit_gen_ref: {
+    type: 'export',
+    target: 'random_bit_gen_ref_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  internal_pool_urbg: {
+    type: 'export',
+    target: 'internal_pool_urbg_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  random_internal_fast_uniform_bits: {
+    type: 'export',
+    target: 'random_internal_fast_uniform_bits_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  random_internal_traits: {
+    type: 'export',
+    target: 'random_internal_traits_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  random_internal_salted_seed_seq: {
+    type: 'export',
+    target: 'random_internal_salted_seed_seq_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  random_internal_seed_material: {
+    type: 'export',
+    target: 'random_internal_seed_material_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  status: {
+    type: 'export',
+    target: 'status_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  statusor: {
+    type: 'export',
+    target: 'statusor_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  string_view: {
+    type: 'export',
+    target: 'string_view_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  strings: {
+    type: 'export',
+    target: 'strings_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  strings_internal: {
+    type: 'export',
+    target: 'strings_internal_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  cord: {
+    type: 'export',
+    target: 'cord_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  str_format: {
+    type: 'export',
+    target: 'str_format_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  has_ostream_operator: {
+    type: 'export',
+    target: 'has_ostream_operator_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  charset: {
+    type: 'export',
+    target: 'charset_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  synchronization: {
+    type: 'export',
+    target: 'synchronization_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  time: {
+    type: 'export',
+    target: 'time_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  optional: {
+    type: 'export',
+    target: 'optional_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  variant: {
+    type: 'export',
+    target: 'variant_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  span: {
+    type: 'export',
+    target: 'span_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  compare: {
+    type: 'export',
+    target: 'compare_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  utility: {
+    type: 'export',
+    target: 'utility_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  if_constexpr: {
+    type: 'export',
+    target: 'if_constexpr_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  algorithm_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_algorithm'],
+  },
+
+  algorithm_container_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_algorithm_container'],
+  },
+
+  base_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_base'],
+  },
+
+  atomic_hook_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_atomic_hook'],
+  },
+
+  base_internal_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_base_internal'],
+  },
+
+  config_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_config'],
+  },
+
+  core_headers_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_core_headers'],
+  },
+
+  dynamic_annotations_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_dynamic_annotations'],
+  },
+
+  log_severity_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_severity'],
+  },
+
+  no_destructor_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_no_destructor'],
+  },
+
+  nullability_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_nullability'],
+  },
+
+  raw_logging_internal_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_raw_logging_internal'],
+  },
+
+  errno_saver_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_errno_saver'],
+  },
+
+  endian_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_endian'],
+  },
+
+  fast_type_id_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_fast_type_id'],
+  },
+
+  strerror_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_strerror'],
+  },
+
+  throw_delegate_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_throw_delegate'],
+  },
+
+  malloc_internal_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_malloc_internal'],
+  },
+
+  prefetch_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_prefetch'],
+  },
+
+  poison_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_poison'],
+  },
+
+  cleanup_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_cleanup'],
+  },
+
+  inlined_vector_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_inlined_vector'],
+  },
+
+  compressed_tuple_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_compressed_tuple'],
+  },
+
+  fixed_array_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_fixed_array'],
+  },
+
+  container_memory_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_container_memory'],
+  },
+
+  layout_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_layout'],
+  },
+
+  flat_hash_map_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_flat_hash_map'],
+  },
+
+  hash_function_defaults_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_hash_function_defaults'],
+  },
+
+  hash_container_defaults_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_hash_container_defaults'],
+  },
+
+  raw_hash_map_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_raw_hash_map'],
+  },
+
+  raw_hash_set_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_raw_hash_set'],
+  },
+
+  flat_hash_set_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_flat_hash_set'],
+  },
+
+  btree_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_btree'],
+  },
+
+  crc_cord_state_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_crc_cord_state'],
+  },
+
+  crc32c_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_crc32c'],
+  },
+
+  symbolize_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_symbolize'],
+  },
+
+  examine_stack_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_examine_stack'],
+  },
+
+  stacktrace_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_stacktrace'],
+  },
+
+  demangle_internal_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_demangle_internal'],
+  },
+
+  bounded_utf8_length_sequence_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_bounded_utf8_length_sequence'],
+  },
+
+  decode_rust_punycode_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_decode_rust_punycode'],
+  },
+
+  demangle_rust_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_demangle_rust'],
+  },
+
+  utf8_for_code_point_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_utf8_for_code_point'],
+  },
+
+  flags_marshalling_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_flags_marshalling'],
+  },
+
+  flags_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_flags'],
+  },
+
+  function_ref_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_function_ref'],
+  },
+
+  any_invocable_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_any_invocable'],
+  },
+
+  bind_front_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_bind_front'],
+  },
+
+  hash_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_hash'],
+  },
+
+  absl_check_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_absl_check'],
+  },
+
+  absl_log_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_absl_log'],
+  },
+
+  check_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_check'],
+  },
+
+  die_if_null_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_die_if_null'],
+  },
+
+  log_globals_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_globals'],
+  },
+
+  log_initialize_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_initialize'],
+  },
+
+  log_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log'],
+  },
+
+  log_entry_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_entry'],
+  },
+
+  log_sink_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_sink'],
+  },
+
+  log_sink_registry_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_sink_registry'],
+  },
+
+  absl_vlog_is_on_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_absl_vlog_is_on'],
+  },
+
+  log_internal_check_impl_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_internal_check_impl'],
+  },
+
+  log_internal_check_op_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_internal_check_op'],
+  },
+
+  log_internal_conditions_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_internal_conditions'],
+  },
+
+  log_internal_config_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_internal_config'],
+  },
+
+  log_internal_globals_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_internal_globals'],
+  },
+
+  log_internal_log_impl_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_internal_log_impl'],
+  },
+
+  log_internal_message_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_internal_message'],
+  },
+
+  log_internal_nullguard_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_internal_nullguard'],
+  },
+
+  log_internal_nullstream_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_internal_nullstream'],
+  },
+
+  log_internal_strip_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_internal_strip'],
+  },
+
+  log_internal_voidify_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_internal_voidify'],
+  },
+
+  log_internal_fnmatch_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_log_internal_fnmatch'],
+  },
+
+  vlog_config_internal_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_vlog_config_internal'],
+  },
+
+  memory_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_memory'],
+  },
+
+  type_traits_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_type_traits'],
+  },
+
+  int128_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_int128'],
+  },
+
+  bits_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_bits'],
+  },
+
+  numeric_representation_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_numeric_representation'],
+  },
+
+  exponential_biased_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_exponential_biased'],
+  },
+
+  sample_recorder_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_sample_recorder'],
+  },
+
+  random_random_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_random_random'],
+  },
+
+  random_distributions_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_random_distributions'],
+  },
+
+  random_bit_gen_ref_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_random_bit_gen_ref'],
+  },
+
+  internal_pool_urbg_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_internal_pool_urbg'],
+  },
+
+  random_internal_fast_uniform_bits_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_random_internal_fast_uniform_bits'],
+  },
+
+  random_internal_traits_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_random_internal_traits'],
+  },
+
+  random_internal_salted_seed_seq_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_random_internal_salted_seed_seq'],
+  },
+
+  random_internal_seed_material_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_random_internal_seed_material'],
+  },
+
+  status_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_status'],
+  },
+
+  statusor_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_statusor'],
+  },
+
+  string_view_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_string_view'],
+  },
+
+  strings_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_strings'],
+  },
+
+  strings_internal_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_strings_internal'],
+  },
+
+  cord_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_cord'],
+  },
+
+  str_format_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_str_format'],
+  },
+
+  has_ostream_operator_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_has_ostream_operator'],
+  },
+
+  charset_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_charset'],
+  },
+
+  synchronization_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_synchronization'],
+  },
+
+  time_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_time'],
+  },
+
+  optional_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_optional'],
+  },
+
+  variant_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_variant'],
+  },
+
+  span_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_span'],
+  },
+
+  compare_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_compare'],
+  },
+
+  utility_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_utility'],
+  },
+
+  if_constexpr_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_if_constexpr'],
+  },
+}
