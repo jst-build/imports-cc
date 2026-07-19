@@ -1,0 +1,15 @@
+{
+  "main": "re2",
+  "imports": [
+    {
+      "source": "git",
+      "branch": "system",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [{"alias": "toolchain"}]
+    }
+  ],
+  "repositories": {
+    "targets": {"repository": {"type": "file", "path": "targets"}},
+    "re2": {"repository": "targets", "bindings": {"rules": "toolchain"}}
+  }
+}
