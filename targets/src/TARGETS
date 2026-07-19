@@ -1,0 +1,237 @@
+{
+  curl_ares: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'ENABLE_ARES'],
+    name: ['curl_ares'],
+    'private-ldflags':
+      if jst.env('USE_SYSTEM_LIBS') && jst.env('ENABLE_ARES') then
+        ['-lcares'],
+    deps:
+      if !jst.env('USE_SYSTEM_LIBS') && jst.env('ENABLE_ARES') then
+        [@'cares//:ares'],
+  },
+
+  curl_ipv6: {
+    type: @'rules//CC:library',
+    arguments_config: ['OS', 'ENABLE_IPV6', 'ENABLE_ARES'],
+    name: ['curl_ipv6'],
+    'private-ldflags':
+      if jst.env('ENABLE_IPV6') && !jst.env('ENABLE_ARES') && jst.env('OS') == 'darwin' then
+        [
+          '-framework',
+          'SystemConfiguration',
+          '-framework',
+          'CoreFoundation',
+          '-framework',
+          'CoreServices',
+        ],
+  },
+
+  curl_async_dns: {
+    type: @'rules//CC:library',
+    arguments_config: ['OS', 'ENABLE_THREADED_RESOLVER'],
+    name: ['curl_async_dns'],
+    'private-ldflags':
+      if jst.env('ENABLE_THREADED_RESOLVER') && jst.env('OS') == 'linux' then
+        [
+          '-pthread',
+          '-Wl,--whole-archive,-lpthread,--no-whole-archive',
+        ],
+  },
+
+  curl_ssl: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'CURL_ENABLE_SSL'],
+    name: ['curl_ssl'],
+    'private-ldflags':
+      if jst.env('USE_SYSTEM_LIBS') then
+        if jst.env('CURL_ENABLE_SSL') then
+          ['-lssl']
+        else
+          jst.fail('libcurl only supported currently with openSSL/boringSSL.'),
+    deps:
+      if !jst.env('USE_SYSTEM_LIBS') then
+        if jst.env('CURL_ENABLE_SSL') then
+          [@'ssl//:ssl', @'ssl//:crypto']
+        else
+          (jst.fail('libcurl only supported currently with openSSL/boringSSL.')),
+  },
+
+  curl_nghttp2: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'USE_NGHTTP2'],
+    name: ['curl_nghttp2'],
+    'private-ldflags':
+      if jst.env('USE_NGHTTP2') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lnghttp2'],
+    deps:
+      if jst.env('USE_NGHTTP2') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'nghttp2//:nghttp2'],
+  },
+
+  curl_ngtcp2: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'USE_NGTCP2'],
+    name: ['curl_ngtcp2'],
+    'private-ldflags':
+      if jst.env('USE_NGTCP2') && jst.env('USE_SYSTEM_LIBS') then
+        [
+          '-lngtcp2',
+          '-lngthhp3',
+        ],
+    deps:
+      if jst.env('USE_NGTCP2') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'ngtcp2//:ngtcp2', @'nghttp3//:nghttp3'],
+  },
+
+  curl_quiche: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'USE_QUICHE'],
+    name: ['curl_quiche'],
+    'private-ldflags':
+      if jst.env('USE_QUICHE') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lquiche'],
+    deps:
+      if jst.env('USE_QUICHE') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'quiche//:quiche'],
+  },
+
+  curl_msh3: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'USE_MSH3'],
+    name: ['curl_msh3'],
+    'private-ldflags':
+      if jst.env('USE_MSH3') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lmsh3'],
+    deps:
+      if jst.env('USE_MSH3') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'msh3//:msh3'],
+  },
+
+  curl_idn2: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'USE_LIBIDN2', 'OS'],
+    name: ['curl_quiche'],
+    'private-ldflags':
+      if jst.env('USE_LIBIDN2') && jst.env('USE_SYSTEM_LIBS') then
+        if jst.env('OS') == 'linux' then
+          ['-lidn2']
+        else if jst.env('OS') == 'windows' then
+          ['-lnormaliz'],
+    deps:
+      if jst.env('USE_LIBIDN2') && !jst.env('USE_SYSTEM_LIBS') && jst.env('USE_NGTCP2') then
+        if jst.env('OS') == 'linux' then
+          [@'idn2//:idn2']
+        else if jst.env('OS') == 'windows' then
+          [@'normaliz//:idn2'],
+  },
+
+  curl_zlib: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'USE_ZLIB'],
+    name: ['curl_zlib'],
+    'private-ldflags':
+      if jst.env('USE_ZLIB') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lz'],
+    deps:
+      if jst.env('USE_ZLIB') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'zlib//:zlib'],
+  },
+
+  curl_brotli: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'USE_BROTLI'],
+    name: ['curl_brotli'],
+    'private-ldflags':
+      if jst.env('USE_BROTLI') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lbrotlidec'],
+    deps:
+      if jst.env('USE_BROTLI') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'brotli//:brotli'],
+  },
+
+  curl_zstd: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'CURL_ZSTD'],
+    name: ['curl_zstd'],
+    'private-ldflags':
+      if jst.env('CURL_ZSTD') && jst.env('USE_SYSTEM_LIBS') then
+        ['-zstd'],
+    deps:
+      if jst.env('CURL_ZSTD') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'zstd//:zstd'],
+  },
+
+  curl_psl: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'CURL_USE_LIBPSL'],
+    name: ['curl_psl'],
+    'private-ldflags':
+      if jst.env('CURL_USE_LIBPSL') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lpsl'],
+    deps:
+      if jst.env('CURL_USE_LIBPSL') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'psl//:psl'],
+  },
+
+  curl_ssh2: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'CURL_USE_LIBSSH2'],
+    name: ['curl_ssh2'],
+    'private-ldflags':
+      if jst.env('CURL_USE_LIBSSH2') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lssh'],
+    deps:
+      if jst.env('CURL_USE_LIBSSH2') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'ssh2//:ssh'],
+  },
+
+  curl_ssh: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'CURL_USE_LIBSSH'],
+    name: ['curl_ssh'],
+    'private-ldflags':
+      if jst.env('CURL_USE_LIBSSH') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lssh'],
+    deps:
+      if jst.env('CURL_USE_LIBSSH') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'ssh//:ssh'],
+  },
+
+  curl_gssapi: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_SYSTEM_LIBS', 'CURL_USE_GSSAPI'],
+    name: ['curl_gssapi'],
+    'private-ldflags':
+      if jst.env('CURL_USE_GSSAPI') && jst.env('USE_SYSTEM_LIBS') then
+        ['-lgssapi'],
+    deps:
+      if jst.env('CURL_USE_GSSAPI') && !jst.env('USE_SYSTEM_LIBS') then
+        [@'heimdal//:gssapi'],
+  },
+
+  curl_crypt_win32: {
+    type: @'rules//CC:library',
+    arguments_config: ['OS', 'USE_SYSTEM_LIBS'],
+    name: ['curl_crypt_win32'],
+    'private-ldflags':
+      if jst.env('OS') == 'windows' && jst.env('USE_SYSTEM_LIBS') then
+        ['-lbcrypt'],
+    deps:
+      if jst.env('OS') == 'windows' && !jst.env('USE_SYSTEM_LIBS') then
+        [@'bcrypt//:bcrypt'],
+  },
+
+  curl_hidden_symbols: {
+    type: @'rules//CC:library',
+    arguments_config: ['TOOLCHAIN_CONFIG', 'CURL_HIDDEN_SYMBOLS'],
+    name: ['curl_hidden_symbols'],
+    'private-ldflags':
+      local compiler_family = jst.get('FAMILY', jst.env('TOOLCHAIN_CONFIG', default={}));
+      if compiler_family != 'msvc' && jst.env('CURL_HIDDEN_SYMBOLS') then
+        if compiler_family == 'clang' || compiler_family == 'gnu' || compiler_family == 'intel' then
+          ['-fvisibility=hidden']
+        else if compiler_family == 'sunpro' then
+          ['-xldscope=hidden'],
+  },
+}

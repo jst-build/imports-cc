@@ -1,0 +1,33 @@
+local arch = jst.env('ARCH', default='x86_64');
+local target_arch = jst.env('TARGET_ARCH', default=arch);
+local toolchain_config = jst.env('TOOLCHAIN_CONFIG', default={});
+local compiler_family = jst.get('FAMILY', toolchain_config, default='unknown');
+
+{
+  defaults: {
+    type: @'//CC:defaults',
+    arguments_config: ['TOOLCHAIN_CONFIG', 'ARCH', 'TARGET_ARCH'],
+    base: [@'base//CC:defaults'],
+    ADD_CFLAGS:
+      (if (compiler_family == 'msvc') then
+         [
+           '-D_CRT_SECURE_NO_DEPRECATE',
+           '-D_CRT_NONSTDC_NO_DEPRECATE',
+           '/W4',
+           '/MP',
+         ])
+      + ['-DHAVE_CONFIG_H', '-DBUILDING_LIBCURL']
+      + (if compiler_family != 'msvc' then
+           if jst.env('CURL_HIDDEN_SYMBOLS') then
+             if compiler_family == 'clang' then
+               ['-DCURL_HIDDEN_SYMBOLS']
+             else if (compiler_family == 'gnu') then
+               ['-DCURL_HIDDEN_SYMBOLS']
+             else if (compiler_family == 'sunpro') then
+               ['-DCURL_HIDDEN_SYMBOLS']
+             else if (compiler_family == 'intel') then
+               ['-DCURL_HIDDEN_SYMBOLS'])
+      + (if (target_arch == 'arm') then
+           ['-Wno-atomic-alignment']),
+  },
+}

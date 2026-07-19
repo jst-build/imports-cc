@@ -1,0 +1,747 @@
+{
+  curl_config_h: {
+    type: 'configure',
+    arguments_config: [
+      'OS',
+      'TARGET_ARCH',
+      'TOOLCHAIN_CONFIG',
+      'CURL_HIDDEN_SYMBOLS',
+      'USE_ZLIB',
+      'ENABLE_ARES',
+      'ENABLE_THREADED_RESOLVER',
+      'CURL_DISABLE_DICT',
+      'CURL_DISABLE_FILE',
+      'CURL_DISABLE_FORM_API',
+      'CURL_DISABLE_FTP',
+      'CURL_DISABLE_GOPHER',
+      'CURL_DISABLE_IMAP',
+      'CURL_DISABLE_LDAP',
+      'CURL_DISABLE_LDAPS',
+      'CURL_DISABLE_MQTT',
+      'CURL_DISABLE_POP3',
+      'CURL_DISABLE_RTSP',
+      'CURL_DISABLE_SMB',
+      'CURL_DISABLE_SMTP',
+      'CURL_DISABLE_TELNET',
+      'CURL_DISABLE_TFTP',
+      'HTTP_ONLY',
+      'CURL_DISABLE_ALTSVC',
+      'CURL_DISABLE_SRP',
+      'CURL_DISABLE_COOKIES',
+      'CURL_DISABLE_BASIC_AUTH',
+      'CURL_DISABLE_BEARER_AUTH',
+      'CURL_DISABLE_DIGEST_AUTH',
+      'CURL_DISABLE_KERBEROS_AUTH',
+      'CURL_DISABLE_NEGOTIATE_AUTH',
+      'CURL_DISABLE_AWS',
+      'CURL_DISABLE_NTLM',
+      'CURL_DISABLE_DOH',
+      'CURL_DISABLE_GETOPTIONS',
+      'CURL_DISABLE_HEADERS_API',
+      'CURL_DISABLE_BINDLOCAL',
+      'CURL_DISABLE_HSTS',
+      'CURL_DISABLE_MIME',
+      'CURL_DISABLE_NETRC',
+      'CURL_DISABLE_PARSEDATE',
+      'CURL_DISABLE_PROGRESS_METER',
+      'CURL_DISABLE_SHUFFLE_DNS',
+      'CURL_DISABLE_SOCKETPAIR',
+      'ENABLE_IPV6',
+      'CURL_ENABLE_SSL',
+      'CURL_DISABLE_OPENSSL_AUTO_LOAD_CONFIG',
+      'USE_NGHTTP2',
+      'USE_NGTCP2',
+      'USE_QUICHE',
+      'USE_MSH3',
+      'USE_LIBIDN2',
+      'USE_BROTLI',
+      'CURL_ZSTD',
+      'CURL_USE_LIBPSL',
+      'CURL_USE_LIBSSH2',
+      'CURL_USE_LIBSSH',
+      'CURL_USE_GSSAPI',
+      'ENABLE_UNIX_SOCKETS',
+      'CURL_CA_BUNDLE',
+      'CURL_CA_PATH',
+      'CURL_CA_FALLBACK',
+      'USE_GNU_STRERROR_R',
+      'HAVE_BORINGSSL',
+      'HAVE_AWSLC',
+      'HAVE_SSL_SET0_WBIO',
+      'HAVE_OPENSSL_SRP',
+      'HAVE_SSL_CTX_SET_QUIC_METHOD',
+      'HAVE_QUICHE_CONN_SET_QLOG_FD',
+    ],
+    target: 'curl_config_h_gen',
+    config:
+      local compiler_family = jst.get('FAMILY', jst.env('TOOLCHAIN_CONFIG', default={}));
+      local sys_hdrs =
+        (if jst.env('OS') == 'windows' then
+           ['windows.h', 'ws2tcpip.h', 'winsock2.h'])
+        + [
+          'sys/filio.h',
+          'sys/wait.h',
+          'sys/ioctl.h',
+          'sys/param.h',
+          'sys/poll.h',
+          'sys/resource.h',
+          'sys/select.h',
+          'sys/socket.h',
+          'sys/sockio.h',
+          'sys/stat.h',
+          'sys/time.h',
+          'sys/types.h',
+          'sys/un.h',
+          'sys/utime.h',
+          'sys/xattr.h',
+          'arpa/inet.h',
+          'assert.h',
+          'errno.h',
+          'fcntl.h',
+          'fnmatch.h',
+          'idn2.h',
+          'ifaddrs.h',
+          'io.h',
+          'libgen.h',
+          'locale.h',
+          'net/if.h',
+          'netdb.h',
+          'netinet/in.h',
+          'netinet/tcp.h',
+          'netinet/udp.h',
+          'linux/tcp.h',
+          'poll.h',
+          'pwd.h',
+          'setjmp.h',
+          'sched.h',
+          'signal.h',
+          'signal.h',
+          'ssl.h',
+          'signal.h',
+          'ssl.h',
+          'stdatomic.h',
+          'stdbool.h',
+          'stdint.h',
+          'stdlib.h',
+          'string.h',
+          'strings.h',
+          'stropts.h',
+          'termio.h',
+          'termios.h',
+          'time.h',
+          'unistd.h',
+          'utime.h',
+          'process.h',
+        ]
+        + (if jst.env('CURL_USE_GSSAPI') then
+             ['gssapi/gssapi.h', 'gssapi/gssapi_generic.h', 'gssapi/gssapi_krb5.h']);
+      {
+        defines1:
+          [
+            ['BUILDING_LIBCURL', 1],
+            ['HAVE_BOOL_T', 1],
+            ['HAVE_RECV', 1],
+            ['HAVE_SEND', 1],
+            ['HAVE_STRUCT_TIMEVAL', 1],
+            ['HAVE_WRITABLE_ARGV', 1],
+            ['STDC_HEADERS', 1],
+            ['HAVE_VARIADIC_MACROS_C99', 1],
+            ['HAVE_VARIADIC_MACROS_GCC', 1],
+            ['HAVE_RAND_EGD', jst.env('HAVE_RAND_EGD')],
+            ['HAVE_BORINGSSL', jst.env('HAVE_BORINGSSL')],
+            ['HAVE_AWSLC', jst.env('HAVE_AWSLC')],
+            ['HAVE_LIBZ', jst.env('USE_ZLIB')],
+          ]
+          + (if jst.env('ENABLE_THREADED_RESOLVER') then
+               if jst.env('OS') == 'windows' then
+                 [['USE_THREADS_WIN32', 1]]
+               else
+                 [
+                   ['USE_THREADS_POSIX', 1],
+                   ['HAVE_PTHREAD_H', 1],
+                 ])
+          + (if jst.env('HTTP_ONLY') then
+               [
+                 ['CURL_DISABLE_DICT', 1],
+                 ['CURL_DISABLE_FILE', 1],
+                 ['CURL_DISABLE_FTP', 1],
+                 ['CURL_DISABLE_GOPHER', 1],
+                 ['CURL_DISABLE_IMAP', 1],
+                 ['CURL_DISABLE_LDAP', 1],
+                 ['CURL_DISABLE_LDAPS', 1],
+                 ['CURL_DISABLE_MQTT', 1],
+                 ['CURL_DISABLE_POP3', 1],
+                 ['CURL_DISABLE_RTSP', 1],
+                 ['CURL_DISABLE_SMB', 1],
+                 ['CURL_DISABLE_SMTP', 1],
+                 ['CURL_DISABLE_TELNET', 1],
+                 ['CURL_DISABLE_TFTP', 1],
+               ]
+             else
+               (if jst.env('CURL_DISABLE_DICT') then
+                  [['CURL_DISABLE_DICT', 1]])
+               + (if jst.env('CURL_DISABLE_FILE') then
+                    [['CURL_DISABLE_FILE', 1]])
+               + (if jst.env('CURL_DISABLE_FTP') then
+                    [['CURL_DISABLE_FTP', 1]])
+               + (if jst.env('CURL_DISABLE_GOPHER') then
+                    [['CURL_DISABLE_GOPHER', 1]])
+               + (if jst.env('CURL_DISABLE_IMAP') then
+                    [['CURL_DISABLE_IMAP', 1]])
+               + (if jst.env('CURL_DISABLE_LDAP') then
+                    [['CURL_DISABLE_LDAP', 1]])
+               + (if jst.env('CURL_DISABLE_LDAPS') then
+                    [['CURL_DISABLE_LDAPS', 1]])
+               + (if jst.env('CURL_DISABLE_MQTT') then
+                    [['CURL_DISABLE_MQTT', 1]])
+               + (if jst.env('CURL_DISABLE_POP3') then
+                    [['CURL_DISABLE_POP3', 1]])
+               + (if jst.env('CURL_DISABLE_RTSP') then
+                    [['CURL_DISABLE_RTSP', 1]])
+               + (if jst.env('CURL_DISABLE_SMB') then
+                    [['CURL_DISABLE_SMB', 1]])
+               + (if jst.env('CURL_DISABLE_SMTP') then
+                    [['CURL_DISABLE_SMTP', 1]])
+               + (if jst.env('CURL_DISABLE_TELNET') then
+                    [['CURL_DISABLE_TELNET', 1]])
+               + (if jst.env('CURL_DISABLE_TFTP') then
+                    [['CURL_DISABLE_TFTP', 1]]))
+          + [
+            ['USE_ARES', jst.env('ENABLE_ARES')],
+            ['CURL_DISABLE_ALTSVC', jst.env('CURL_DISABLE_ALTSVC')],
+            ['CURL_DISABLE_COOKIES', jst.env('CURL_DISABLE_COOKIES')],
+            ['CURL_DISABLE_NTLM', jst.env('CURL_DISABLE_NTLM')],
+            ['CURL_DISABLE_DOH', jst.env('CURL_DISABLE_DOH')],
+            ['CURL_DISABLE_GETOPTIONS', jst.env('CURL_DISABLE_GETOPTIONS')],
+            ['CURL_DISABLE_HSTS', jst.env('CURL_DISABLE_HSTS')],
+            ['CURL_DISABLE_MIME', jst.env('CURL_DISABLE_MIME')],
+            ['CURL_DISABLE_NETRC', jst.env('CURL_DISABLE_NETRC')],
+            ['CURL_DISABLE_PARSEDATE', jst.env('CURL_DISABLE_PARSEDATE')],
+            ['CURL_DISABLE_PROGRESS_METER', jst.env('CURL_DISABLE_PROGRESS_METER')],
+            ['CURL_DISABLE_SHUFFLE_DNS', jst.env('CURL_DISABLE_SHUFFLE_DNS')],
+            ['CURL_DISABLE_SOCKETPAIR', jst.env('CURL_DISABLE_SOCKETPAIR')],
+            ['ENABLE_IPV6', jst.env('ENABLE_IPV6')],
+            ['CURL_DISABLE_OPENSSL_AUTO_LOAD_CONFIG', jst.env('CURL_DISABLE_OPENSSL_AUTO_LOAD_CONFIG')],
+            ['USE_NGHTTP2', jst.env('USE_NGHTTP2')],
+            ['HAVE_LIBIDN2', jst.env('USE_LIBIDN2')],
+            ['HAVE_BROTLI', jst.env('USE_BROTLI')],
+            ['HAVE_ZSTD', jst.env('CURL_ZSTD')],
+            ['CURL_CA_FALLBACK', jst.env('CURL_CA_FALLBACK')],
+          ]
+          + (if jst.env('CURL_ENABLE_SSL') then
+               [
+                 ['USE_OPENSSL', 1],
+                 ['SSL_ENABLED', 1],
+               ])
+          + (if jst.env('USE_NGTCP2') then
+               if jst.env('CURL_ENABLE_SSL') then
+                 [
+                   ['USE_NGTCP2', 1],
+                   ['USE_NGHTTP3', 1],
+                 ]
+               else
+                 jst.fail('libcurl: ngtcp2 requires OpenSSL/BoringSSL.'))
+          + (if jst.env('USE_QUICHE') then
+               if jst.env('USE_NGTCP2') then
+                 jst.fail('libcurl: only one HTTP/3 backend can be selected, but both quiche and ngtcp2 given.')
+               else
+                 [
+                   ['HAVE_SSL_CTX_SET_QUIC_METHOD', jst.env('HAVE_SSL_CTX_SET_QUIC_METHOD')],
+                   ['USE_QUICHE', 1],
+                   ['HAVE_QUICHE_CONN_SET_QLOG_FD', jst.env('HAVE_QUICHE_CONN_SET_QLOG_FD')],
+                 ])
+          + (if jst.env('USE_MSH3') then
+               if jst.env('USE_NGTCP2') || jst.env('USE_QUICHE') then
+                 jst.fail('libcurl: only one HTTP/3 backend can be selected, but both msh3 and ngtcp2 or quiche given.')
+               else
+                 [['USE_MSH3', 1]])
+          + (if !jst.env('CURL_DISABLE_SRP') && jst.env('HAVE_OPENSSL_SRP') then
+               [['USE_TLS_SRP', 1]])
+          + [
+            ['USE_LIBPSL', jst.env('CURL_USE_LIBPSL')],
+            ['USE_LIBSSH2', jst.env('CURL_USE_LIBSSH2')],
+          ]
+          + (if jst.env('CURL_USE_LIBSSH') then
+               if !jst.env('CURL_USE_LIBSSH2') then
+                 [['USE_LIBSSH', 1]])
+          + (if jst.env('CURL_USE_GSSAPI') then
+               [
+                 ['HAVE_GSSAPI', 1],
+                 ['HAVE_GSSHEIMDAL', 1],
+               ])
+          + [
+            ['USE_WIN32_LARGE_FILES', jst.env('OS') == 'windows'],
+            ['HAVE_SOCKADDR_IN6_SIN6_SCOPE_ID', jst.env('ENABLE_IPV6') && jst.env('OS') != 'windows'],
+          ]
+          + (if jst.env('USE_GNU_STRERROR_R') then
+               [['HAVE_GLIBC_STRERROR_R', 1]]
+             else
+               [['HAVE_POSIX_STRERROR_R', 1]])
+          + (if compiler_family == 'clang' then
+               if jst.env('OS') == 'mac' then
+                 [['HAVE_BUILTIN_AVAILABLE', 1]]
+               else if jst.env('OS') == 'android' then
+                 [['HAVE_BUILTIN_AVAILABLE', 1]])
+          + [
+            ['HAVE_SA_FAMILY_T', 1],
+          ],
+        have_cfile:
+          [
+            ['HAVE_SYS_FILIO_H', 'sys/filio.h'],
+            ['HAVE_SYS_WAIT_H', 'sys/wait.h'],
+            ['HAVE_SYS_IOCTL_H', 'sys/ioctl.h'],
+            ['HAVE_SYS_PARAM_H', 'sys/param.h'],
+            ['HAVE_SYS_POLL_H', 'sys/poll.h'],
+            ['HAVE_SYS_RESOURCE_H', 'sys/resource.h'],
+            ['HAVE_SYS_SELECT_H', 'sys/select.h'],
+            ['HAVE_SYS_SOCKET_H', 'sys/socket.h'],
+            ['HAVE_SYS_SOCKIO_H', 'sys/sockio.h'],
+            ['HAVE_SYS_STAT_H', 'sys/stat.h'],
+            ['HAVE_SYS_TIME_H', 'sys/time.h'],
+            ['HAVE_SYS_TYPES_H', 'sys/types.h'],
+            ['HAVE_SYS_UN_H', 'sys/un.h'],
+            ['HAVE_SYS_UTIME_H', 'sys/utime.h'],
+            ['HAVE_SYS_XATTR_H', 'sys/xattr.h'],
+            ['HAVE_ARPA_INET_H', 'arpa/inet.h'],
+            ['HAVE_FCNTL_H', 'fcntl.h'],
+            ['HAVE_IDN2_H', 'idn2.h'],
+            ['HAVE_IFADDRS_H', 'ifaddrs.h'],
+            ['HAVE_IO_H', 'io.h'],
+            ['HAVE_LIBGEN_H', 'libgen.h'],
+            ['HAVE_LOCALE_H', 'locale.h'],
+            ['HAVE_NET_IF_H', 'net/if.h'],
+            ['HAVE_NETDB_H', 'netdb.h'],
+            ['HAVE_NETINET_IN_H', 'netinet/in.h'],
+            ['HAVE_NETINET_TCP_H', 'netinet/tcp.h'],
+            ['HAVE_NETINET_UDP_H', 'netinet/udp.h'],
+            ['HAVE_LINUX_TCP_H', 'linux/tcp.h'],
+            ['HAVE_POLL_H', 'poll.h'],
+            ['HAVE_PWD_H', 'pwd.h'],
+            ['HAVE_STDATOMIC_H', 'stdatomic.h'],
+            ['HAVE_STDBOOL_H', 'stdbool.h'],
+            ['HAVE_STRINGS_H', 'strings.h'],
+            ['HAVE_STROPTS_H', 'stropts.h'],
+            ['HAVE_TERMIO_H', 'termio.h'],
+            ['HAVE_TERMIOS_H', 'termios.h'],
+            ['HAVE_UNISTD_H', 'unistd.h'],
+            ['HAVE_UTIME_H', 'utime.h'],
+            ['HAVE_ATOMIC', 'stdatomic.h'],
+          ]
+          + (if jst.env('CURL_USE_GSSAPI') then
+               [
+                 ['HAVE_GSSAPI_GSSAPI_GENERIC_H', 'gssapi/gssapi_generic.h'],
+                 ['HAVE_GSSAPI_GSSAPI_H', 'gssapi/gssapi.h'],
+                 ['HAVE_GSSAPI_GSSAPI_KRB5_H', 'gssapi/gssapi_krb5.h'],
+               ]),
+        have_csymbol:
+          (if jst.env('CURL_ENABLE_SSL') && !jst.env('HAVE_RAND_EGD') then
+             [['HAVE_RAND_EGD', ['RAND_egd', sys_hdrs]]])
+          + (if jst.env('CURL_ENABLE_SSL') && !jst.env('HAVE_BORINGSSL') then
+               [['HAVE_BORINGSSL', ['OPENSSL_IS_BORINGSSL', ['openssl/base.h']]]])
+          + (if jst.env('CURL_ENABLE_SSL') && !jst.env('HAVE_AWSLC') then
+               [['HAVE_AWSLC', ['OPENSSL_IS_AWSLC', ['openssl/base.h']]]])
+          + (if jst.env('USE_QUICHE') then
+               if jst.env('USE_NGTCP2') then
+                 jst.fail('libcurl: only one HTTP/3 backend can be selected, but both quiche and ngtcp2 given.')
+               else
+                 if !jst.env('HAVE_SSL_CTX_SET_QUIC_METHOD') then
+                   [['HAVE_SSL_CTX_SET_QUIC_METHOD', ['SSL_CTX_set_quic_method', ['openssl/ssl.h']]]])
+          + (if jst.env('USE_QUICHE') then
+               if jst.env('USE_NGTCP2') then
+                 jst.fail('libcurl: only one HTTP/3 backend can be selected, but both quiche and ngtcp2 given.')
+               else
+                 if !jst.env('HAVE_QUICHE_CONN_SET_QLOG_FD') then
+                   [['HAVE_QUICHE_CONN_SET_QLOG_FD', ['quiche_conn_set_qlog_fd', ['quiche.h']]]])
+          + (if !jst.env('HAVE_SSL_SET0_WBIO') then
+               [['HAVE_SSL_SET0_WBIO', ['SSL_set0_wbio', ['openssl/ssl.h']]]])
+          + (if !jst.env('HAVE_OPENSSL_SRP') && !jst.env('CURL_DISABLE_SRP') then
+               [['HAVE_OPENSSL_SRP', ['SSL_CTX_set_srp_username', ['openssl/ssl.h']]]])
+          + (if jst.env('OS') == 'windows' then
+               [['USE_WIN32_CRYPTO', ['CryptAcquireContext', ['windows.h', 'wincrypt.h']]]])
+          + (if jst.env('ENABLE_UNIX_SOCKETS') && jst.env('OS') != 'windows' then
+               [['USE_UNIX_SOCKETS', ['((struct sockaddr_un*)NULL)->sun_path', sys_hdrs]]])
+          + [
+            ['HAVE_FNMATCH', ['fnmatch', sys_hdrs]],
+            ['HAVE_BASENAME', ['basename', sys_hdrs]],
+            ['HAVE_SOCKET', ['socket', sys_hdrs]],
+            ['HAVE_SCHED_YIELD', ['sched_yield', sys_hdrs]],
+            ['HAVE_SELECT', ['select', sys_hdrs]],
+            ['HAVE_STRDUP', ['strdup', sys_hdrs]],
+            ['HAVE_STRTOK_R', ['strtok_r', sys_hdrs]],
+            ['HAVE_STRCASECMP', ['strcasecmp', sys_hdrs]],
+            ['HAVE_STRICMP', ['stricmp', sys_hdrs]],
+            ['HAVE_STRCMPI', ['strccmp', sys_hdrs]],
+            ['HAVE_MEMRCHR', ['memrchr', sys_hdrs]],
+            ['HAVE_ALARM', ['alarm', sys_hdrs]],
+            ['HAVE_ARC4RANDOM', ['arc4random', sys_hdrs]],
+            ['HAVE_FCNTL', ['fcntl', sys_hdrs]],
+            ['HAVE_GETPPID', ['getppid', sys_hdrs]],
+            ['HAVE_UTIMES', ['utimes', sys_hdrs]],
+            ['HAVE_GETTIMEOFDAY', ['gettimeofday', sys_hdrs]],
+            ['HAVE_CLOSESOCKET', ['closesocket', sys_hdrs]],
+            ['HAVE_SIGSETJMP', ['sigsetjmp', sys_hdrs]],
+            ['HAVE_GETPASS_R', ['getpass_r', sys_hdrs]],
+            ['HAVE_GETPWUID', ['getpwuid', sys_hdrs]],
+            ['HAVE_GETPWUID_R', ['getpwuid_r', sys_hdrs]],
+            ['HAVE_GETEUID', ['geteuid', sys_hdrs]],
+            ['HAVE_UTIME', ['utime', sys_hdrs]],
+            ['HAVE_GMTIME_R', ['gmtime_r', sys_hdrs]],
+            ['HAVE_GETHOSTBYNAME_R', ['gethostbyname_r', sys_hdrs]],
+            ['HAVE_SIGNAL', ['signal', sys_hdrs]],
+            ['HAVE_STRTOLL', ['strtoll', sys_hdrs]],
+            ['HAVE_STRERROR_R', ['strerror_r', sys_hdrs]],
+            ['HAVE_SIGINTERRUPT', ['siginterrupt', sys_hdrs]],
+            ['HAVE_GETADDRINFO', ['getaddrinfo', sys_hdrs]],
+            ['HAVE_GETIFADDRS', ['getifaddrs', sys_hdrs]],
+            ['HAVE_FREEADDRINFO', ['freeaddrinfo', sys_hdrs]],
+            ['HAVE_PIPE', ['pipe', sys_hdrs]],
+            ['HAVE_FTRUNCATE', ['ftruncate', sys_hdrs]],
+            ['HAVE_FSEEKO', ['fseeko', sys_hdrs]],
+            ['HAVE_DECL_FSEEKO', ['fseeko', sys_hdrs]],
+            ['HAVE__FSEEKI64', ['_fseeki64', sys_hdrs]],
+            ['HAVE_GETPEERNAME', ['getpeername', sys_hdrs]],
+            ['HAVE_GETSOCKNAME', ['getsockname', sys_hdrs]],
+            ['HAVE_IF_NAMETOINDEX', ['if_nametoindex', sys_hdrs]],
+            ['HAVE_GETRLIMIT', ['getrlimit', sys_hdrs]],
+            ['HAVE_SETLOCALE', ['setlocale', sys_hdrs]],
+            ['HAVE_SETMODE', ['setmode', sys_hdrs]],
+            ['HAVE_SETRLIMIT', ['setrlimit', sys_hdrs]],
+            ['HAVE_MACH_ABSOLUTE_TIME', ['mach_absolute_time', sys_hdrs]],
+            ['HAVE_INET_NTOP', ['inet_ntop', sys_hdrs]],
+            ['HAVE_INET_PTON', ['inet_pton', sys_hdrs]],
+            ['HAVE_FSETXATTR', ['fsetxattr', sys_hdrs]],
+            ['HAVE_SIGACTION', ['sigaction', ['signal.h']]],
+            ['HAVE_FCNTL_O_NONBLOCK', ['O_NONBLOCK', ['sys/types.h', 'unistd.h', 'fcntl.h']]],
+            ['HAVE_FNMATCH', ['fnmatch', sys_hdrs]],
+            ['HAVE_SENDMSG', ['sendmsg', sys_hdrs]],
+            ['HAVE_SOCKETPAIR', ['socketpair', sys_hdrs]],
+          ]
+          + (if compiler_family == 'msvc' then
+               [['HAVE_SNPRINTF', ['snprintf', ['stdio.h']]]])
+          + (if jst.env('OS') == 'linux' then
+               [['HAVE_FSETXATTR_5', ['fsetxattr', sys_hdrs]]]
+             else if jst.env('OS') == 'windows' then
+               [['HAVE_FSETXATTR_5', ['fsetxattr', sys_hdrs]]]
+             else if jst.env('OS') == 'mac' then
+               [['HAVE_FSETXATTR_6', ['fsetxattr', sys_hdrs]]])
+          + [
+            ['HAVE_IOCTLSOCKET', ['ioctlsocket', ['windows.h', 'winsock2.h']]],
+            ['HAVE_IOCTLSOCKET_CAMEL', ['IoctlSocket', ['windows.h', 'winsock2.h']]],
+            ['HAVE_IOCTLSOCKET_FIONBIO', ['FIONBIO', ['windows.h', 'winsock2.h']]],
+            ['HAVE_IOCTLSOCKET_CAMEL_FIONBIO', ['FIONBIO', ['windows.h', 'winsock2.h']]],
+            ['HAVE_IOCTL_FIONBIO', ['FIONBIO', ['sys/types.h', 'unistd.h', 'sys/socket.h', 'sys/ioctl.h', 'stropts.h']]],
+            ['HAVE_IOCTL_SIOCGIFADDR', ['SIOCGIFADDR', ['sys/types.h', 'unistd.h', 'sys/socket.h', 'sys/ioctl.h', 'stropts.h', 'net/if.h']]],
+            ['HAVE_SETSOCKOPT_SO_NONBLOCK', ['SO_NONBLOCK', ['windows.h', 'winsock2.h', 'sys/types.h', 'sys/socket.h']]],
+            ['HAVE_CLOCK_GETTIME_MONOTONIC', ['CLOCK_MONOTONIC', ['time.h']]],
+            ['HAVE_WIN32_WINNT', ['_WIN32_WINNT', sys_hdrs]],
+          ],
+        have_ctype: [
+          ['HAVE_LONGLONG', 'long long'],
+          ['HAVE_SUSECONDS_T', 'suseconds_t'],
+        ],
+        size_ctype: [
+          ['SIZEOF_SIZE_T', ['size_t', [1, 2, 4, 8, 16]]],
+          ['SIZEOF_SSIZE_T', ['ssize_t', [1, 2, 4, 8, 16]]],
+          ['SIZEOF_LONG_LONG', ['long long', [1, 2, 4, 8, 16]]],
+          ['SIZEOF_LONG', ['long', [1, 2, 4, 8, 16]]],
+          ['SIZEOF_INT', ['int', [1, 2, 4, 8, 16]]],
+          ['SIZEOF_TIME_T', ['time_t', [1, 2, 4, 8, 16]]],
+          ['SIZEOF_SUSECONDS_T', ['suseconds_t', [1, 2, 4, 8, 16]]],
+          ['SIZEOF_OFF_T', ['off_t', [1, 2, 4, 8, 16]]],
+        ],
+        defines:
+          [[
+            'OS',
+            if jst.env('OS') == 'windows' then
+              (if jst.env('TARGET_ARCH') == 'x86' then
+                 '"i386-pc-win32"'
+               else if jst.env('TARGET_ARCH') == 'x86_64' then
+                 '"x86_64-pc-win32"'
+               else if jst.env('TARGET_ARCH') == 'arm' then
+                 '"thumbv7a-pc-win32"'
+               else if jst.env('TARGET_ARCH') == 'arm64' then
+                 '"aarch64-pc-win32"'
+               else
+                 '"unknown-pc-win32"')
+            else if jst.env('OS') == 'linux' then
+              jst.join(
+                (if jst.env('TARGET_ARCH') == 'x86' then
+                   ['"i386']
+                 else if jst.env('TARGET_ARCH') == 'x86_64' then
+                   ['"x86_64']
+                 else if jst.env('TARGET_ARCH') == 'arm' then
+                   ['"thumbv7a']
+                 else if jst.env('TARGET_ARCH') == 'arm64' then
+                   ['"aarch64']
+                 else
+                   ['"unknown'])
+                + ['-pc-linux']
+                + (if compiler_family == 'gnu' then
+                     ['-gnu"']
+                   else if compiler_family == 'clang' then
+                     ['-clang"']
+                   else
+                     ['"'])
+              )
+            else if jst.env('OS') == 'mac' then
+              '"mac"',
+          ]]
+          + (if jst.env('OS') == 'linux' then
+               [
+                 ['RECV_TYPE_ARG1', 'int'],
+                 ['RECV_TYPE_ARG2', 'void *'],
+                 ['RECV_TYPE_ARG3', 'size_t'],
+                 ['RECV_TYPE_ARG4', 'int'],
+                 ['RECV_TYPE_RETV', 'ssize_t'],
+                 ['SELECT_QUAL_ARG5', ' '],
+                 ['SELECT_TYPE_ARG1', 'int'],
+                 ['SELECT_TYPE_ARG234', 'fd_set *'],
+                 ['SELECT_TYPE_ARG5', 'struct timeval *'],
+                 ['SELECT_TYPE_RETV', 'int'],
+                 ['SEND_QUAL_ARG2', 'const'],
+                 ['SEND_TYPE_ARG1', 'int'],
+                 ['SEND_TYPE_ARG2', 'void *'],
+                 ['SEND_TYPE_ARG3', 'size_t'],
+                 ['SEND_TYPE_ARG4', 'int'],
+                 ['SEND_TYPE_RETV', 'ssize_t'],
+               ]
+             else if jst.env('OS') == 'windows' then
+               [
+                 ['RECV_TYPE_ARG1', 'SOCKET'],
+                 ['RECV_TYPE_ARG2', 'char *'],
+                 ['RECV_TYPE_ARG3', 'int'],
+                 ['RECV_TYPE_ARG4', 'int'],
+                 ['RECV_TYPE_RETV', 'int'],
+                 ['SEND_QUAL_ARG2', 'const'],
+                 ['SEND_TYPE_ARG1', 'SOCKET'],
+                 ['SEND_TYPE_ARG2', 'char *'],
+                 ['SEND_TYPE_ARG3', 'int'],
+                 ['SEND_TYPE_ARG4', 'int'],
+                 ['SEND_TYPE_RETV', 'int'],
+               ])
+          + (if jst.env('CURL_CA_BUNDLE') == 'auto' || jst.env('CURL_CA_BUNDLE') == 'none' then
+               []
+             else if jst.env('CURL_CA_BUNDLE') == '' then
+               jst.fail("Invalid value of CURL_CA_BUNDLE. Use 'none', 'auto' or file path.")
+             else
+               [['CURL_CA_BUNDLE', jst.env('CURL_CA_BUNDLE')]])
+          + (if jst.env('CURL_CA_PATH') == 'auto' || jst.env('CURL_CA_PATH') == 'none' then
+               []
+             else if jst.env('CURL_CA_PATH') == '' then
+               jst.fail("Invalid value of CURL_CA_PATH. Use 'none', 'auto' or file path.")
+             else
+               [['CURL_CA_PATH', jst.env('CURL_CA_PATH')]])
+          + (if jst.env('ENABLE_UNIX_SOCKETS') && jst.env('OS') == 'windows' then
+               [['USE_UNIX_SOCKETS', ' ']])
+          + (if compiler_family == 'msvc' then
+               [['CURL_EXTERN_SYMBOL', ' ']]
+             else
+               (if jst.env('CURL_HIDDEN_SYMBOLS') then
+                  (if compiler_family == 'clang' then
+                     [['CURL_EXTERN_SYMBOL', '__attribute__ ((__visibility__ ("default")))']]
+                   else if compiler_family == 'gnu' then
+                     [['CURL_EXTERN_SYMBOL', '__attribute__ ((__visibility__ ("default")))']]
+                   else if compiler_family == 'sunpro' then
+                     [['CURL_EXTERN_SYMBOL', '__global']]
+                   else if compiler_family == 'intel' then
+                     [['CURL_EXTERN_SYMBOL', '__attribute__ ((__visibility__ ("default")))']]
+                   else
+                     [['CURL_EXTERN_SYMBOL', ' ']])
+                else
+                  [['CURL_EXTERN_SYMBOL', ' ']]))
+          + [
+            ['SIZEOF_CURL_OFF_T', '8'],
+            ['SIZEOF_CURL_SOCKET_T', '4'],
+            ['SIZEOF_SA_FAMILY_T', '2'],
+          ],
+      },
+  },
+
+  curl_config_h_gen: {
+    type: @'rules//CC/auto:config',
+    name: ['curl_config.h'],
+    guard: ['INCLUDE_curl_config_h__'],
+    deps: [
+      @'//src:curl_ares',
+      @'//src:curl_async_dns',
+      @'//src:curl_brotli',
+      @'//src:curl_crypt_win32',
+      @'//src:curl_gssapi',
+      @'//src:curl_hidden_symbols',
+      @'//src:curl_idn2',
+      @'//src:curl_ipv6',
+      @'//src:curl_msh3',
+      @'//src:curl_nghttp2',
+      @'//src:curl_ngtcp2',
+      @'//src:curl_psl',
+      @'//src:curl_quiche',
+      @'//src:curl_ssh',
+      @'//src:curl_ssh2',
+      @'//src:curl_ssl',
+      @'//src:curl_zlib',
+      @'//src:curl_zstd',
+    ],
+  },
+
+  libcurl_csources: {
+    type: @'rules//data:staged',
+    srcs: [jst.glob('*.c')],
+  },
+
+  libcurl_hheaders: {
+    type: @'rules//data:staged',
+    srcs: [jst.glob('*.h')],
+  },
+
+  curl_vauth_cfiles: {
+    type: @'rules//data:staged',
+    srcs: [
+      'vauth/cleartext.c',
+      'vauth/cram.c',
+      'vauth/digest.c',
+      'vauth/digest_sspi.c',
+      'vauth/gsasl.c',
+      'vauth/krb5_gssapi.c',
+      'vauth/krb5_sspi.c',
+      'vauth/ntlm.c',
+      'vauth/ntlm_sspi.c',
+      'vauth/oauth2.c',
+      'vauth/spnego_gssapi.c',
+      'vauth/spnego_sspi.c',
+      'vauth/vauth.c',
+    ],
+  },
+
+  curl_vauth_hfiles: {
+    type: @'rules//data:staged',
+    srcs: [
+      'vauth/digest.h',
+      'vauth/ntlm.h',
+      'vauth/vauth.h',
+    ],
+  },
+
+  curl_vtls_cfiles: {
+    type: @'rules//data:staged',
+    srcs: [
+      'vtls/bearssl.c',
+      'vtls/gtls.c',
+      'vtls/hostcheck.c',
+      'vtls/keylog.c',
+      'vtls/mbedtls.c',
+      'vtls/mbedtls_threadlock.c',
+      'vtls/openssl.c',
+      'vtls/rustls.c',
+      'vtls/schannel.c',
+      'vtls/schannel_verify.c',
+      'vtls/sectransp.c',
+      'vtls/vtls.c',
+      'vtls/wolfssl.c',
+      'vtls/x509asn1.c',
+    ],
+  },
+
+  curl_vtls_hfiles: {
+    type: @'rules//data:staged',
+    srcs: [
+      'vtls/bearssl.h',
+      'vtls/gtls.h',
+      'vtls/hostcheck.h',
+      'vtls/keylog.h',
+      'vtls/mbedtls.h',
+      'vtls/mbedtls_threadlock.h',
+      'vtls/openssl.h',
+      'vtls/rustls.h',
+      'vtls/schannel.h',
+      'vtls/schannel_int.h',
+      'vtls/sectransp.h',
+      'vtls/vtls.h',
+      'vtls/vtls_int.h',
+      'vtls/wolfssl.h',
+      'vtls/x509asn1.h',
+    ],
+  },
+
+  curl_vquic_cfiles: {
+    type: @'rules//data:staged',
+    srcs: [
+      'vquic/curl_msh3.c',
+      'vquic/curl_ngtcp2.c',
+      'vquic/curl_osslq.c',
+      'vquic/curl_quiche.c',
+      'vquic/vquic.c',
+      'vquic/vquic-tls.c',
+    ],
+  },
+
+  curl_vquic_hfiles: {
+    type: @'rules//data:staged',
+    srcs: [
+      'vquic/curl_msh3.h',
+      'vquic/curl_ngtcp2.h',
+      'vquic/curl_osslq.h',
+      'vquic/curl_quiche.h',
+      'vquic/vquic.h',
+      'vquic/vquic_int.h',
+      'vquic/vquic-tls.h',
+    ],
+  },
+
+  curl_vssh_cfiles: {
+    type: @'rules//data:staged',
+    srcs: [
+      'vssh/libssh.c',
+      'vssh/libssh2.c',
+      'vssh/wolfssh.c',
+    ],
+  },
+
+  curl_vssh_hfiles: {
+    type: @'rules//data:staged',
+    srcs: ['vssh/ssh.h'],
+  },
+
+  libcurl: {
+    type: @'rules//CC:library',
+    name: ['curl'],
+    'pkg-name': ['libcurl'],
+    'pure C': ['yes'],
+    srcs: [
+      'libcurl_csources',
+      'curl_vauth_cfiles',
+      'curl_vquic_cfiles',
+      'curl_vssh_cfiles',
+      'curl_vtls_cfiles',
+    ],
+    hdrs: [@'//include/curl:curl_public_headers'],
+    'private-hdrs': [
+      'libcurl_hheaders',
+      'curl_vauth_hfiles',
+      'curl_vquic_hfiles',
+      'curl_vssh_hfiles',
+      'curl_vtls_hfiles',
+      'curl_config_h',
+      @'//include/curl:curl_public_headers',
+    ],
+    deps: [
+      @'//src:curl_ares',
+      @'//src:curl_async_dns',
+      @'//src:curl_brotli',
+      @'//src:curl_crypt_win32',
+      @'//src:curl_gssapi',
+      @'//src:curl_hidden_symbols',
+      @'//src:curl_idn2',
+      @'//src:curl_ipv6',
+      @'//src:curl_msh3',
+      @'//src:curl_nghttp2',
+      @'//src:curl_ngtcp2',
+      @'//src:curl_psl',
+      @'//src:curl_quiche',
+      @'//src:curl_ssh',
+      @'//src:curl_ssh2',
+      @'//src:curl_ssl',
+      @'//src:curl_zlib',
+      @'//src:curl_zstd',
+    ],
+  },
+}
