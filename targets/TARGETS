@@ -1,0 +1,107 @@
+// Options supported by this project
+local options_doc = {
+  OS: ['Operating system to build for.'],
+  ARCH: [|||
+    The underlying architecture. Is taken as a default for "TARGET_ARCH".
+
+    Typical values are "x86", "x86_64", "arm", "arm64", but the actual set
+    of supported values depends on the toolchain in use.
+  |||],
+  HOST_ARCH: ['The architecture on which the build actions are carried out.'],
+  TARGET_ARCH: ['The architecture for which to build the binary.'],
+  TOOLCHAIN_CONFIG: [|||
+    The toolchain configuration.
+
+    Use field "FAMILY" to specify the compiler family. Typical values are
+    "clang" and "gnu", but the actual set of supported values depends on
+    the toolchain in use.
+  |||],
+  DEBUG: [|||
+    Map enabling and configuring the debug version. Specify a map that is
+    logically true (e.g., non-null, non-empty map) to enable debug mode.
+  |||],
+  CC: ['The C compiler to use.'],
+  CFLAGS: ['The C compiler flags to use.'],
+  ADD_CFLAGS: ['Additional C compiler flags.'],
+  CXX: ['The C++ compiler to use.'],
+  CXXFLAGS: ['The C++ compiler flags to use.'],
+  ADD_CXXFLAGS: ['Additional C++ compiler flags.'],
+  AR: ['The archiver to use.'],
+  ENV: [|||
+    Map from strings to strings. The build environment to be used for
+    build actions. Typically used to include an unusual value of PATH.
+  |||],
+  LOCALBASE: [|||
+    Use this localbase for building against system libs (e.g. "/usr").
+  |||],
+  PKG_CONFIG_ARGS: [|||
+    Additional "pkg-config" arguments (e.g. "--define-prefix" or "--static").
+  |||],
+};
+
+{
+  // Default target: installs the protoc compiler, its libraries, and their
+  // public headers into a LOCALBASE-shaped tree (bin/protoc,
+  // include/google/protobuf/*.h, lib/libprotobuf.a, lib/libprotoc.a, ...).
+  ALL: {
+    type: 'export',
+    target: 'INSTALL',
+    doc: ['Installs protoc and the protobuf libraries into a LOCALBASE-style tree.'],
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  // Predefined target combining all libs, binaries, and public headers of
+  // this project into a single LOCALBASE-shaped tree.
+  INSTALL: {
+    type: @'rules//CC:install-with-deps',
+    targets: ['protoc', 'libprotobuf', 'libprotobuf_lite'],
+  },
+
+  protoc: {
+    type: 'export',
+    doc: [
+      'The protobuffer compiler.',
+      '',
+      'This target typically is used as an implicit dependency of',
+      'the protobuffer rules.',
+    ],
+    target: @'//src/google/protobuf:protoc',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  libprotobuf: {
+    type: 'export',
+    doc: ['The protobuf runtime library (libprotobuf.a).'],
+    target: @'//src/google/protobuf:libprotobuf',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  libprotobuf_lite: {
+    type: 'export',
+    doc: ['The lite (reduced-footprint) protobuf runtime library (libprotobuf-lite.a).'],
+    target: @'//src/google/protobuf:libprotobuf_lite',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  // Internal library needed by gRPC (not part of INSTALL)
+  libprotoc: {
+    type: 'export',
+    doc: ['The protobuf compiler support library (libprotoc.a).'],
+    target: @'//src/google/protobuf:libprotoc',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  // Internal library needed by gRPC (not part of INSTALL)
+  utf8_range: {
+    type: 'export',
+    doc: ['UTF-8 validation and range routines (C), vendored from protobuf\'s third_party/utf8_range.'],
+    target: @'//third_party/utf8_range:utf8_range',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+}

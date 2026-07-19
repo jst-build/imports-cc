@@ -1,0 +1,20 @@
+{
+  utf8_range: {
+    type: @'rules//CC:library',
+    name: ['protobuf_utf8_range'],
+    hdrs: ['utf8_range.h'],
+    srcs: ['utf8_range.c'],
+    'pure C': ['YES'],
+  },
+
+  utf8_validity: {
+    type: @'rules//CC:library',
+    name: ['protobuf_utf8_validity'],
+    hdrs: ['utf8_validity.h'],
+    srcs: ['utf8_validity.cc'],
+    deps: [
+      @'//:utf8_range',
+      @'absl//:strings',
+    ],
+  },
+}

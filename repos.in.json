@@ -1,0 +1,45 @@
+{
+  "main": "protobuf",
+  "imports": [
+    {
+      "source": "git",
+      "branch": "system",
+      "url": "https://github.com/jst-build/toolchains-cc.git",
+      "repos": [{"alias": "toolchain"}]
+    },
+    {
+      "source": "git",
+      "branch": "absl/system",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "absl"}]
+    },
+    {
+      "source": "git",
+      "branch": "zlib/system",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "zlib"}]
+    }
+  ],
+  "repositories": {
+    "config": {"repository": {"type": "file", "path": "config"}},
+    "targets": {"repository": {"type": "file", "path": "targets"}},
+    "rules": {
+      "repository": "toolchain",
+      "target_root": "config",
+      "rule_root": "toolchain",
+      "bindings": {"base": "toolchain"}
+    },
+    "protobuf": {
+      "repository": {
+        "type": "archive",
+        "content": "e8787a2f6d661aaaec426743c4e9667be7c8ba2f",
+        "fetch": "https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz",
+        "sha256": "10a0d58f39a1a909e95e00e8ba0b5b1dc64d02997f741151953a2b3659f6e78c",
+        "sha512": "c5637486a533557ea909d1f880b0f0064fff0c4665612e023170941310c45bf8e7373d2c67de621824b056530e98792c00799d71ec4ff7b6af9142cdc4cb8dee",
+        "subdir": "protobuf-29.0"
+      },
+      "target_root": "targets",
+      "bindings": {"rules": "rules", "zlib": "zlib", "absl": "absl"}
+    }
+  }
+}
