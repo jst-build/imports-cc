@@ -18,6 +18,7 @@ about its setup and usage.
 - [`curl/v8.6.0`](https://github.com/jst-build/imports-cc/blob/curl/v8.6.0/README.md)
 - [`fmt/system`](https://github.com/jst-build/imports-cc/blob/fmt/system/README.md)
 - [`fmt/v11.2.0`](https://github.com/jst-build/imports-cc/blob/fmt/v11.2.0/README.md)
+- [`fmt/v12.2.0`](https://github.com/jst-build/imports-cc/blob/fmt/v12.2.0/README.md)
 - [`grpc/system`](https://github.com/jst-build/imports-cc/blob/grpc/system/README.md)
 - [`grpc/v1.70.2`](https://github.com/jst-build/imports-cc/blob/grpc/v1.70.2/README.md)
 - [`libarchive/system`](https://github.com/jst-build/imports-cc/blob/libarchive/system/README.md)
