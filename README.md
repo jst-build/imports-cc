@@ -19,7 +19,7 @@ repository lock-file
 "imports": [
   {
     "source": "git",
-    "branch": "fmt/v11.2.0",
+    "branch": "fmt/v12.2.0",
     "url": "https://github.com/jst-build/imports-cc",
     "repos": [{"alias": "fmt"}]
   },
