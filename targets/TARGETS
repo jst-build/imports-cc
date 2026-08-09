@@ -111,7 +111,7 @@ local options_doc = {
       'bcm_sources',
       'crypto_sources',
     ],
-    'private-deps': [
+    'components': [
       'crypto_asm'
     ],
     'private-ldflags':
