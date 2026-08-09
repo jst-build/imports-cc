@@ -20,14 +20,11 @@
     "ssl": {
       "repository": {
         "type": "archive",
-        "content": "d9ff3aa3d22337e93cb0a0e2df00ca8abea2fac6",
-        "fetch": "https://github.com/google/boringssl/archive/dec0d8f681348af8bb675e07bd89989665fca8bc.tar.gz",
-        "sha256": "2f12c33d2cf25a658a1b981fb96923dac87e9175fb20e45db6950ee36c526356",
-        "sha512": "51f91bee640e38ce20c180195de6811b5be7522240faae2b57158fa9c298ed09292ecb09c770df5d4fc6a3100bc2459de4e9d312e315265c1ea7ade347bad3f2",
-        "subdir": "boringssl-dec0d8f681348af8bb675e07bd89989665fca8bc",
-        "mirrors": [
-          "https://storage.googleapis.com/grpc-bazel-mirror/github.com/google/boringssl/archive/dec0d8f681348af8bb675e07bd89989665fca8bc.tar.gz"
-        ]
+        "content": "42beec27e36d954e240b7ae277527b5e4176f9b4",
+        "fetch": "https://github.com/google/boringssl/archive/188ce3c13adb70fc416e7e81c5b8052142e8eb8c.tar.gz",
+        "sha256": "5a23284cf0ab813fd655b9c76bcdc5b906d9be91851749864fb4955c4167d52b",
+        "sha512": "067b09619b74d1824641140600e1c8d91f5411b4a5f5c3892536650a941ef6055b53906ae92f2544ba39196ca3c46aec368c50c23409de317cc32dd2a652d2d6",
+        "subdir": "boringssl-188ce3c13adb70fc416e7e81c5b8052142e8eb8c"
       },
       "target_root": "targets",
       "bindings": {"rules": "rules"}

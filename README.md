@@ -19,7 +19,7 @@ final repository lock-file
 "imports": [
   {
     "source": "git",
-    "branch": "boringssl/dec0d8f6",
+    "branch": "boringssl/v0.20260803.0",
     "url": "https://github.com/jst-build/imports-cc",
     "repos": [{"alias": "boringssl"}]
   },
@@ -62,9 +62,15 @@ Available targets are:
 | `ENV` | Map from strings to strings. The build environment to be used for build actions. Typically used to include an unusual value of `PATH`. |
 | `LOCALBASE` | Use this localbase for building against system libs (e.g., `"/usr"`). |
 | `PKG_CONFIG_ARGS` | Additional `pkg-config` arguments (e.g. `"--define-prefix"` or `"--static"`) |
+| `BORINGSSL_BUILD_SHARED` | Boolean. Build shared (`*.so`) libraries instead of static (`*.a`) ones. Default `false`. |
 
 > This list is generated — run `jst describe` for the always-current,
 > authoritative version.
+
+> **Example:** Build as shared libraries instead of the static default:
+> ```sh
+> jst install -D'{"BORINGSSL_BUILD_SHARED": true}' -o .local
+> ```
 
 ## Repository Remapping
 
