@@ -19,7 +19,7 @@ final repository lock-file
 "imports": [
   {
     "source": "git",
-    "branch": "absl/v20240722.0",
+    "branch": "absl/v20260526.0",
     "url": "https://github.com/jst-build/imports-cc",
     "repos": [{"alias": "absl"}]
   },
@@ -33,10 +33,10 @@ The provided targets are either producing an installation directory
 (`{bin,lib,include}`) or a build dependency target, to be consumed via the
 `deps` field of `//CC:binary` and `//CC:library` rules.
 
-There is one target per Abseil library (roughly 100 in total). A few of
+There is one target per Abseil library (roughly 120 in total). A few of
 the most commonly consumed ones:
 
-- `ALL`/`INSTALL`: Installs all publicly-consumed Abseil libraries and
+- `ALL`/`INSTALL`: Installs all publicly-consumable Abseil libraries and
   headers into an installation-style tree.
 - `base`: Low-level runtime support (call_once, cycleclock, spinlock,
   thread identity).
@@ -74,10 +74,16 @@ the most commonly consumed ones:
 | `ENV` | Map from strings to strings. The build environment to be used for build actions. Typically used to include an unusual value of `PATH`. |
 | `LOCALBASE` | Use this localbase for building against system libs (e.g., `"/usr"`). |
 | `PKG_CONFIG_ARGS` | Additional `pkg-config` arguments (e.g. `"--define-prefix"` or `"--static"`) |
+| `ABSL_BUILD_SHARED` | Boolean. Build shared (`*.so`) libraries instead of static (`*.a`) ones. Default `false`. |
 | `USE_SYSTEM_LIBS` | If set, prefer system libraries. This project reads it in the random seed generator to link the system `bcrypt` (Windows only) instead of a bundled dependency. Has no effect on other platforms. |
 
 > This list is generated — run `jst describe` for the always-current,
 > authoritative version.
+
+> **Example:** Build as shared libraries instead of the static default:
+> ```sh
+> jst install -D'{"ABSL_BUILD_SHARED": true}' -o .local
+> ```
 
 ## Repository Remapping
 

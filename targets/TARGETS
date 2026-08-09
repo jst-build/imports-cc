@@ -13,6 +13,12 @@ local target_arch = jst.env('TARGET_ARCH', default=arch);
 local toolchain_config = jst.env('TOOLCHAIN_CONFIG', default={});
 local compiler_family = jst.get('FAMILY', toolchain_config);
 
+// Soversion mirrors upstream's own CMake/AbseilHelpers.cmake
+// ABSL_SOVERSION for this release ("2605.0.0", i.e. YYMM.0.0 derived
+// from the 20260526.0 tag).
+local is_shared = if $'ABSL_BUILD_SHARED' then ['yes'];
+local soversion = ['2605', '0', '0'];
+
 // Options supported by this project. Every export target advertises these via
 // its flexible_config/config_doc so `jst describe <target>` documents them.
 local options_doc = {
@@ -71,73 +77,91 @@ local options_doc = {
   CXXFLAGS: ['The C++ compiler flags to use.'],
   ADD_CFLAGS: ['Additional C compiler flags.'],
   ADD_CXXFLAGS: ['Additional C++ compiler flags.'],
+  BUILD_POSITION_INDEPENDENT: ["Build as position independent code."],
   USE_SYSTEM_LIBS: [|||
     If set, prefer system libraries. This project reads it in the random seed
     generator to link the system "bcrypt" (Windows only) instead of a bundled
     dependency. Has no effect on other platforms.
   |||],
+  ABSL_BUILD_SHARED: [|||
+    Boolean. Build shared ("*.so") libraries instead of static ("*.a") ones.
+    Default "false".
+  |||],
 };
 
 {
-  // Default target: all publicly-consumed Abseil libraries and their headers,
+  // Default target: all publicly-consumable Abseil libraries and their headers,
   // staged into a LOCALBASE-shaped tree (lib/, include/, lib/pkgconfig/).
   ALL: {
     type: 'export',
-    doc: ['All publicly-consumed Abseil libraries and headers as a LOCALBASE-shaped tree.'],
+    doc: ['All publicly-consumable Abseil libraries and headers as a LOCALBASE-shaped tree.'],
     target: 'INSTALL',
     flexible_config: jst.keys(options_doc),
     config_doc: options_doc,
   },
 
-  // Predefined target combining the public Abseil libraries and headers into a
-  // single LOCALBASE-shaped tree. Only the components actually referenced by
-  // downstream consumers (grpc, protobuf, libgit2, curl) are installed; the
-  // remaining targets in this file are internal building blocks kept as
-  // export targets for inspectability.
+  // Every publicly-exported target in this file, staged into a single
+  // LOCALBASE-shaped tree. "iterator_traits_test_helper_internal" is the
+  // one export excluded: it's upstream's own test fixture
+  // (absl/base/internal/iterator_traits_test_helper.h), not a real
+  // library.
   INSTALL: {
     type: @'rules//CC:install-with-deps',
     targets: [
+      'algorithm',
       'algorithm_container',
       'base',
+      'atomic_hook',
+      'base_internal',
       'config',
       'core_headers',
       'dynamic_annotations',
-      'endian',
       'log_severity',
       'no_destructor',
+      'nullability',
+      'raw_logging_internal',
+      'errno_saver',
+      'endian',
+      'fast_type_id',
+      'strerror',
+      'throw_delegate',
+      'malloc_internal',
       'prefetch',
+      'poison',
+      'iterator_traits_internal',
+      'nullability_traits_internal',
       'cleanup',
-      'btree',
-      'fixed_array',
-      'flat_hash_map',
-      'flat_hash_set',
       'inlined_vector',
-      'flags',
+      'compressed_tuple',
+      'fixed_array',
+      'container_memory',
+      'layout',
+      'flat_hash_map',
+      'hash_function_defaults',
+      'hash_container_defaults',
+      'raw_hash_map',
+      'raw_hash_set',
+      'raw_hash_set_resize_impl',
+      'flat_hash_set',
+      'btree',
+      'crc_cord_state',
+      'crc32c',
+      'symbolize',
+      'examine_stack',
+      'stacktrace',
+      'demangle_internal',
+      'bounded_utf8_length_sequence',
+      'decode_rust_punycode',
+      'demangle_rust',
+      'utf8_for_code_point',
+      'leak_check',
       'flags_marshalling',
+      'flags',
+      'function_ref',
       'any_invocable',
       'bind_front',
-      'function_ref',
+      'bind_back',
       'hash',
-      'memory',
-      'type_traits',
-      'bits',
-      'int128',
-      'random_random',
-      'random_distributions',
-      'random_bit_gen_ref',
-      'status',
-      'statusor',
-      'cord',
-      'strings_internal',
-      'str_format',
-      'strings',
-      'synchronization',
-      'time',
-      'optional',
-      'span',
-      'variant',
-      'if_constexpr',
-      'utility',
       'absl_check',
       'absl_log',
       'check',
@@ -145,6 +169,62 @@ local options_doc = {
       'log_globals',
       'log_initialize',
       'log',
+      'log_entry',
+      'log_sink',
+      'log_sink_registry',
+      'absl_vlog_is_on',
+      'log_internal_check_impl',
+      'log_internal_check_op',
+      'log_internal_conditions',
+      'log_internal_config',
+      'log_internal_globals',
+      'log_internal_log_impl',
+      'log_internal_message',
+      'log_internal_nullguard',
+      'log_internal_nullstream',
+      'log_internal_strip',
+      'log_internal_voidify',
+      'log_internal_structured_proto',
+      'log_internal_fnmatch',
+      'vlog_config_internal',
+      'memory',
+      'type_traits',
+      'meta',
+      'int128',
+      'bits',
+      'numeric_representation',
+      'exponential_biased',
+      'sample_recorder',
+      'random_random',
+      'random_distributions',
+      'random_bit_gen_ref',
+      'internal_entropy_pool',
+      'random_internal_fast_uniform_bits',
+      'random_internal_traits',
+      'random_internal_salted_seed_seq',
+      'random_internal_seed_material',
+      'status',
+      'statusor',
+      'status_builder',
+      'status_macros',
+      'string_view',
+      'strings',
+      'strings_internal',
+      'cord',
+      'str_format',
+      'has_ostream_operator',
+      'charset',
+      'synchronization',
+      'time',
+      'any',
+      'any_span',
+      'source_location',
+      'internal_optional_ref',
+      'optional',
+      'variant',
+      'span',
+      'compare',
+      'utility',
     ],
   },
 
@@ -310,6 +390,30 @@ local options_doc = {
     config_doc: options_doc,
   },
 
+  iterator_traits_internal: {
+    type: 'export',
+    doc: ['Abseil base: internal iterator-traits helper.'],
+    target: 'iterator_traits_internal_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  iterator_traits_test_helper_internal: {
+    type: 'export',
+    doc: ['Abseil base: internal iterator-traits test helper.'],
+    target: 'iterator_traits_test_helper_internal_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  nullability_traits_internal: {
+    type: 'export',
+    doc: ['Abseil base: internal nullability-traits helper.'],
+    target: 'nullability_traits_internal_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
   // ===== absl/cleanup =====
   cleanup: {
     type: 'export',
@@ -396,6 +500,14 @@ local options_doc = {
     type: 'export',
     doc: ['Abseil container: internal SwissTable raw hash set.'],
     target: 'raw_hash_set_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  raw_hash_set_resize_impl: {
+    type: 'export',
+    doc: ['Abseil container: internal SwissTable resize implementation helper.'],
+    target: 'raw_hash_set_resize_impl_unexported',
     flexible_config: jst.keys(options_doc),
     config_doc: options_doc,
   },
@@ -498,6 +610,14 @@ local options_doc = {
     config_doc: options_doc,
   },
 
+  leak_check: {
+    type: 'export',
+    doc: ['Abseil debugging: LeakSanitizer integration (absl::LeakCheckDisabler, etc.).'],
+    target: 'leak_check_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
   flags_marshalling: {
     type: 'export',
     doc: ['Abseil flags: parsing and unparsing of flag values (AbslParseFlag/AbslUnparseFlag).'],
@@ -535,6 +655,14 @@ local options_doc = {
     type: 'export',
     doc: ['Abseil functional: absl::bind_front partial application helper.'],
     target: 'bind_front_internal',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  bind_back: {
+    type: 'export',
+    doc: ['Abseil functional: absl::bind_back partial application helper.'],
+    target: 'bind_back_unexported',
     flexible_config: jst.keys(options_doc),
     config_doc: options_doc,
   },
@@ -726,6 +854,14 @@ local options_doc = {
     config_doc: options_doc,
   },
 
+  log_internal_structured_proto: {
+    type: 'export',
+    doc: ['Abseil log/internal: structured-logging protobuf-like value encoding.'],
+    target: 'structured_proto',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
   log_internal_fnmatch: {
     type: 'export',
     doc: ['Abseil log/internal: fnmatch-style glob matching for VLOG module patterns.'],
@@ -756,6 +892,14 @@ local options_doc = {
     type: 'export',
     doc: ['Abseil meta: extended C++ type traits.'],
     target: 'type_traits_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  meta: {
+    type: 'export',
+    doc: ['Abseil meta: umbrella component target for absl/meta.'],
+    target: 'meta_unexported',
     flexible_config: jst.keys(options_doc),
     config_doc: options_doc,
   },
@@ -827,10 +971,10 @@ local options_doc = {
     config_doc: options_doc,
   },
 
-  internal_pool_urbg: {
+  internal_entropy_pool: {
     type: 'export',
-    doc: ['Abseil random: internal pooled uniform random bit generator.'],
-    target: 'internal_pool_urbg_unexported',
+    doc: ['Abseil random: internal pooled entropy source (replaces the old pool_urbg).'],
+    target: 'internal_entropy_pool_unexported',
     flexible_config: jst.keys(options_doc),
     config_doc: options_doc,
   },
@@ -880,6 +1024,22 @@ local options_doc = {
     type: 'export',
     doc: ['Abseil status: absl::StatusOr<T> value-or-error type.'],
     target: 'statusor_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  status_builder: {
+    type: 'export',
+    doc: ['Abseil status: absl::StatusBuilder for constructing an annotated absl::Status.'],
+    target: 'status_builder_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  status_macros: {
+    type: 'export',
+    doc: ['Abseil status: RETURN_IF_ERROR/ASSIGN_OR_RETURN-style status-propagation macros.'],
+    target: 'status_macros_unexported',
     flexible_config: jst.keys(options_doc),
     config_doc: options_doc,
   },
@@ -960,6 +1120,38 @@ local options_doc = {
   },
 
   // ===== absl/types =====
+  any: {
+    type: 'export',
+    doc: ['Abseil types: absl::any, a type-safe container for single values of any type.'],
+    target: 'any_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  any_span: {
+    type: 'export',
+    doc: ['Abseil types: absl::AnySpan, a type-erased span over a contiguous sequence.'],
+    target: 'any_span_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  source_location: {
+    type: 'export',
+    doc: ['Abseil types: absl::SourceLocation, capturing call-site file/line/function info.'],
+    target: 'source_location_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  internal_optional_ref: {
+    type: 'export',
+    doc: ['Abseil types: internal reference-wrapping helper for absl::optional.'],
+    target: 'internal_optional_ref_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
   optional: {
     type: 'export',
     doc: ['Abseil types: absl::optional, a nullable value wrapper.'],
@@ -1001,44 +1193,46 @@ local options_doc = {
     config_doc: options_doc,
   },
 
-  if_constexpr: {
-    type: 'export',
-    doc: ['Abseil utility: internal absl::utility_internal::IfConstexpr helper.'],
-    target: 'if_constexpr_unexported',
-    flexible_config: jst.keys(options_doc),
-    config_doc: options_doc,
-  },
-
   // ===== absl/algorithm =====
   algorithm_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_algorithm'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/algorithm/algorithm.h',
     ],
     deps: [
       'config',
+      'core_headers',
     ],
   },
 
   algorithm_container_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_algorithm_container'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/algorithm/container.h'],
     deps: [
       'algorithm',
       'config',
       'core_headers',
-      'nullability',
-      'type_traits',
+      'hardening',
+      'iterator_traits_internal',
+      'meta',
     ],
   },
 
   // ===== absl/base =====
   base_unexported: {
     type: @'rules//CC:library',
-    arguments_config: ['OS', 'TOOLCHAIN_CONFIG', 'ARCH', 'TARGET_ARCH'],
+    arguments_config: ['OS', 'TOOLCHAIN_CONFIG', 'ARCH', 'TARGET_ARCH', 'ABSL_BUILD_SHARED'],
     name: ['absl_base'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/base/call_once.h',
       'absl/base/casts.h',
@@ -1054,6 +1248,7 @@ local options_doc = {
       'absl/base/internal/unscaledcycleclock_config.h',
     ],
     srcs: [
+      'absl/base/casts.cc',
       'absl/base/internal/cycleclock.cc',
       'absl/base/internal/spinlock.cc',
       'absl/base/internal/sysinfo.cc',
@@ -1071,6 +1266,7 @@ local options_doc = {
            ['-lrt'])
       + (if target_arch == 'arm' || target_arch == 'unknown' then
            ['-latomic']),
+    components: ['spinlock_wait'],
     deps: [
       'atomic_hook',
       'base_internal',
@@ -1081,15 +1277,16 @@ local options_doc = {
       'log_severity',
       'nullability',
       'raw_logging_internal',
-      'spinlock_wait',
       'type_traits',
     ],
   },
 
   atomic_hook_unexported: {
     type: @'rules//CC:library',
-    arguments_config: ['ARCH', 'TARGET_ARCH'],
+    arguments_config: ['ARCH', 'TARGET_ARCH', 'ABSL_BUILD_SHARED'],
     name: ['absl_atomic_hook'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/base/internal/atomic_hook.h'],
     'private-ldflags':
       if target_arch == 'arm' || target_arch == 'unknown' then
@@ -1102,12 +1299,12 @@ local options_doc = {
 
   base_internal_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_base_internal'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/base/internal/hide_ptr.h',
-      'absl/base/internal/identity.h',
-      'absl/base/internal/inline_variable.h',
-      'absl/base/internal/invoke.h',
       'absl/base/internal/scheduling_mode.h',
     ],
     deps: [
@@ -1118,7 +1315,10 @@ local options_doc = {
 
   config_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_config'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/base/config.h',
       'absl/base/options.h',
@@ -1134,7 +1334,10 @@ local options_doc = {
 
   core_headers_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_core_headers'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/base/attributes.h',
       'absl/base/const_init.h',
@@ -1150,7 +1353,10 @@ local options_doc = {
 
   cycleclock_internal: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_cycleclock_internal'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/base/internal/cycleclock_config.h',
       'absl/base/internal/unscaledcycleclock_config.h',
@@ -1163,7 +1369,10 @@ local options_doc = {
 
   dynamic_annotations_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_dynamic_annotations'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/base/dynamic_annotations.h',
       'absl/base/internal/dynamic_annotations.h',
@@ -1176,7 +1385,10 @@ local options_doc = {
 
   log_severity_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_severity'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/base/log_severity.h'],
     srcs: ['absl/base/log_severity.cc'],
     deps: [
@@ -1187,7 +1399,10 @@ local options_doc = {
 
   no_destructor_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_no_destructor'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/base/no_destructor.h'],
     deps: [
       'config',
@@ -1197,22 +1412,20 @@ local options_doc = {
 
   nullability_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_nullability'],
-    hdrs: [
-      'absl/base/nullability.h',
-      'absl/base/internal/nullability_impl.h',
-    ],
-    deps: [
-      'config',
-      'core_headers',
-      'type_traits',
-    ],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/base/nullability.h'],
+    deps: ['config'],
   },
 
   raw_logging_internal_unexported: {
     type: @'rules//CC:library',
-    arguments_config: ['ARCH', 'TARGET_ARCH'],
+    arguments_config: ['ARCH', 'TARGET_ARCH', 'ABSL_BUILD_SHARED'],
     name: ['absl_raw_logging_internal'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/base/internal/raw_logging.h'],
     srcs: ['absl/base/internal/raw_logging.cc'],
     'private-ldflags':
@@ -1247,14 +1460,20 @@ local options_doc = {
 
   errno_saver_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_errno_saver'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/base/internal/errno_saver.h'],
     deps: ['config'],
   },
 
   endian_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_endian'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/base/internal/endian.h',
       'absl/base/internal/unaligned_access.h',
@@ -1269,14 +1488,20 @@ local options_doc = {
 
   fast_type_id_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_fast_type_id'],
-    hdrs: ['absl/base/internal/fast_type_id.h'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/base/fast_type_id.h'],
     deps: ['config'],
   },
 
   strerror_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_strerror'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/base/internal/strerror.h'],
     srcs: ['absl/base/internal/strerror.cc'],
     deps: [
@@ -1288,9 +1513,12 @@ local options_doc = {
 
   throw_delegate_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_throw_delegate'],
-    hdrs: ['absl/base/internal/throw_delegate.h'],
-    srcs: ['absl/base/internal/throw_delegate.cc'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/base/throw_delegate.h'],
+    srcs: ['absl/base/throw_delegate.cc'],
     deps: [
       'config',
       'raw_logging_internal',
@@ -1299,8 +1527,10 @@ local options_doc = {
 
   malloc_internal_unexported: {
     type: @'rules//CC:library',
-    arguments_config: ['ARCH', 'TARGET_ARCH'],
+    arguments_config: ['ARCH', 'TARGET_ARCH', 'ABSL_BUILD_SHARED'],
     name: ['absl_malloc_internal'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/base/internal/direct_mmap.h',
       'absl/base/internal/low_level_alloc.h',
@@ -1325,7 +1555,10 @@ local options_doc = {
 
   prefetch_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_prefetch'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/base/prefetch.h'],
     deps: [
       'config',
@@ -1335,7 +1568,10 @@ local options_doc = {
 
   poison_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_poison'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/base/internal/poison.cc'],
     hdrs: ['absl/base/internal/poison.h'],
     deps: [
@@ -1345,25 +1581,89 @@ local options_doc = {
     ],
   },
 
-  // ===== absl/cleanup =====
-  cleanup_unexported: {
+  hardening: {
     type: @'rules//CC:library',
-    name: ['absl_cleanup'],
-    hdrs: ['absl/cleanup/cleanup.h'],
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_hardening'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/base/internal/hardening.h'],
     deps: [
-      'cleanup_internal',
       'config',
       'core_headers',
     ],
   },
 
+  iterator_traits_internal_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_iterator_traits_internal'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/base/internal/iterator_traits.h'],
+    deps: [
+      'config',
+      'type_traits',
+    ],
+  },
+
+  iterator_traits_test_helper_internal_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_iterator_traits_test_helper_internal'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/base/internal/iterator_traits_test_helper.h'],
+    deps: ['config'],
+  },
+
+  nullability_traits_internal_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_nullability_traits_internal'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/base/internal/nullability_traits.h'],
+    deps: [
+      'config',
+      'nullability',
+    ],
+  },
+
+  tracing_internal: {
+    type: @'rules//CC:library',
+    name: ['absl_tracing_internal'],
+    hdrs: ['absl/base/internal/tracing.h'],
+    srcs: ['absl/base/internal/tracing.cc'],
+    deps: ['base'],
+  },
+
+  // ===== absl/cleanup =====
+  cleanup_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_cleanup'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/cleanup/cleanup.h'],
+    deps: [
+      'cleanup_internal',
+      'config',
+      'core_headers',
+      'hardening',
+    ],
+  },
+
   cleanup_internal: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_cleanup_internal'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/cleanup/internal/cleanup.h'],
     deps: [
-      'base_internal',
       'core_headers',
+      'hardening',
       'utility',
     ],
   },
@@ -1371,27 +1671,36 @@ local options_doc = {
   // ===== absl/container =====
   inlined_vector_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_inlined_vector'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/inlined_vector.h'],
     deps: [
       'inlined_vector_internal',
       'algorithm',
       'config',
       'core_headers',
+      'hardening',
       'throw_delegate',
       'memory',
       'type_traits',
+      'weakly_mixed_integer',
     ],
   },
 
   inlined_vector_internal: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_inlined_vector_internal'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/internal/inlined_vector.h'],
     deps: [
       'compressed_tuple',
       'base_internal',
       'core_headers',
+      'hardening',
       'memory',
       'type_traits',
       'span',
@@ -1400,14 +1709,20 @@ local options_doc = {
 
   compressed_tuple_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_compressed_tuple'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/internal/compressed_tuple.h'],
     deps: ['utility'],
   },
 
   fixed_array_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_fixed_array'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/fixed_array.h'],
     deps: [
       'compressed_tuple',
@@ -1415,17 +1730,24 @@ local options_doc = {
       'config',
       'core_headers',
       'dynamic_annotations',
+      'hardening',
+      'iterator_traits_internal',
       'throw_delegate',
       'memory',
+      'weakly_mixed_integer',
     ],
   },
 
   container_memory_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_container_memory'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/internal/container_memory.h'],
     deps: [
       'config',
+      'hash',
       'memory',
       'type_traits',
       'utility',
@@ -1434,7 +1756,10 @@ local options_doc = {
 
   layout_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_layout'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/internal/layout.h'],
     deps: [
       'config',
@@ -1449,7 +1774,10 @@ local options_doc = {
 
   flat_hash_map_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_flat_hash_map'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/flat_hash_map.h'],
     deps: [
       'container_memory',
@@ -1463,7 +1791,10 @@ local options_doc = {
 
   hash_function_defaults_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_hash_function_defaults'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/internal/hash_function_defaults.h'],
     deps: [
       'config',
@@ -1475,7 +1806,10 @@ local options_doc = {
 
   hash_container_defaults_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_hash_container_defaults'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/hash_container_defaults.h'],
     deps: [
       'hash_function_defaults',
@@ -1485,20 +1819,66 @@ local options_doc = {
 
   raw_hash_map_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_raw_hash_map'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/internal/raw_hash_map.h'],
     deps: [
       'container_memory',
       'raw_hash_set',
+      'common_policy_traits',
       'config',
       'core_headers',
       'throw_delegate',
+      'type_traits',
     ],
   },
 
-  common: {
+  raw_hash_set_unexported: {
     type: @'rules//CC:library',
-    name: ['absl_common'],
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_raw_hash_set'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/container/internal/raw_hash_set.h'],
+    srcs: ['absl/container/internal/raw_hash_set.cc'],
+    deps: [
+      'container_common',
+      'common_policy_traits',
+      'compressed_tuple',
+      'container_memory',
+      'function_ref',
+      'hash_function_defaults',
+      'hash_policy_traits',
+      'hashtable_control_bytes',
+      'hashtable_debug_hooks',
+      'hashtablez_sampler',
+      'iterator_traits_internal',
+      'config',
+      'core_headers',
+      'dynamic_annotations',
+      'endian',
+      'prefetch',
+      'raw_logging_internal',
+      'base',
+      'hash',
+      'memory',
+      'meta',
+      'optional',
+      'type_traits',
+      'bits',
+      'utility',
+      'weakly_mixed_integer',
+    ],
+  },
+
+  container_common: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_container_common'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/internal/common.h'],
     deps: [
       'type_traits',
@@ -1506,66 +1886,46 @@ local options_doc = {
     ],
   },
 
-  raw_hash_set_unexported: {
-    type: @'rules//CC:library',
-    name: ['absl_raw_hash_set'],
-    hdrs: ['absl/container/internal/raw_hash_set.h'],
-    srcs: ['absl/container/internal/raw_hash_set.cc'],
-    deps: [
-      'common',
-      'compressed_tuple',
-      'container_memory',
-      'hash_policy_traits',
-      'hashtable_debug_hooks',
-      'hashtablez_sampler',
-      'config',
-      'core_headers',
-      'dynamic_annotations',
-      'endian',
-      'prefetch',
-      'raw_logging_internal',
-      'hash',
-      'memory',
-      'type_traits',
-      'bits',
-      'utility',
-    ],
-  },
-
-  container_common: {
-    type: @'rules//CC:library',
-    name: ['absl_container_common'],
-    hdrs: ['absl/container/internal/common.h'],
-    deps: ['type_traits'],
-  },
-
   hash_policy_traits: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_hash_policy_traits'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/internal/hash_policy_traits.h'],
     deps: [
       'common_policy_traits',
+      'container_memory',
       'type_traits',
     ],
   },
 
   common_policy_traits: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_common_policy_traits'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/internal/common_policy_traits.h'],
     deps: ['type_traits'],
   },
 
   hashtable_debug_hooks: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_hashtable_debug_hooks'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/internal/hashtable_debug_hooks.h'],
     deps: ['config'],
   },
 
   hashtablez_sampler: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_hashtablez_sampler'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/internal/hashtablez_sampler.h'],
     srcs: [
       'absl/container/internal/hashtablez_sampler.cc',
@@ -1589,7 +1949,10 @@ local options_doc = {
 
   flat_hash_set_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_flat_hash_set'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/container/flat_hash_set.h'],
     deps: [
       'container_memory',
@@ -1604,7 +1967,10 @@ local options_doc = {
 
   btree_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_btree'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/container/btree_map.h',
       'absl/container/btree_set.h',
@@ -1612,13 +1978,14 @@ local options_doc = {
       'absl/container/internal/btree_container.h',
     ],
     deps: [
-      'common',
+      'container_common',
       'common_policy_traits',
       'compressed_tuple',
       'container_memory',
       'layout',
       'config',
       'core_headers',
+      'hardening',
       'raw_logging_internal',
       'throw_delegate',
       'memory',
@@ -1626,13 +1993,92 @@ local options_doc = {
       'cord',
       'strings',
       'compare',
+      'weakly_mixed_integer',
+    ],
+  },
+
+  raw_hash_set_resize_impl_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_raw_hash_set_resize_impl'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/container/internal/raw_hash_set_resize_impl.h'],
+    deps: ['config'],
+  },
+
+  hashtable_control_bytes: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_hashtable_control_bytes'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/container/internal/hashtable_control_bytes.h'],
+    deps: [
+      'bits',
+      'config',
+      'core_headers',
+      'endian',
+    ],
+  },
+
+  chunked_queue: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_chunked_queue'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: [
+      'absl/container/chunked_queue.h',
+      'absl/container/internal/chunked_queue.h',
+    ],
+    deps: [
+      'config',
+      'core_headers',
+      'hardening',
+      'iterator_traits_internal',
+      'layout',
+    ],
+  },
+
+  linked_hash_map: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_linked_hash_map'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/container/linked_hash_map.h'],
+    deps: [
+      'config',
+      'container_common',
+      'core_headers',
+      'flat_hash_set',
+      'throw_delegate',
+    ],
+  },
+
+  linked_hash_set: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_linked_hash_set'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/container/linked_hash_set.h'],
+    deps: [
+      'config',
+      'container_common',
+      'core_headers',
+      'flat_hash_set',
     ],
   },
 
   // ===== absl/crc =====
   crc_cord_state_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_crc_cord_state'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/crc/internal/crc_cord_state.h'],
     srcs: ['absl/crc/internal/crc_cord_state.cc'],
     deps: [
@@ -1645,7 +2091,10 @@ local options_doc = {
 
   crc32c_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_crc32c'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/crc/crc32c.h',
       'absl/crc/internal/crc32c.h',
@@ -1658,9 +2107,9 @@ local options_doc = {
       'absl/crc/internal/crc_memcpy_x86_arm_combined.cc',
       'absl/crc/internal/crc_non_temporal_memcpy.cc',
     ],
+    components: ['crc_internal'],
     deps: [
       'cpu_detect',
-      'crc_internal',
       'non_temporal_memcpy',
       'config',
       'core_headers',
@@ -1673,7 +2122,10 @@ local options_doc = {
 
   cpu_detect: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_crc_cpu_detect'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/crc/internal/cpu_detect.h'],
     srcs: ['absl/crc/internal/cpu_detect.cc'],
     deps: [
@@ -1708,7 +2160,10 @@ local options_doc = {
 
   non_temporal_memcpy: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_non_temporal_memcpy'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/crc/internal/non_temporal_memcpy.h'],
     deps: [
       'non_temporal_arm_intrinsics',
@@ -1719,7 +2174,10 @@ local options_doc = {
 
   non_temporal_arm_intrinsics: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_non_temporal_arm_intrinsics'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/crc/internal/non_temporal_arm_intrinsics.h'],
     deps: ['config'],
   },
@@ -1727,8 +2185,10 @@ local options_doc = {
   // ===== absl/debugging =====
   symbolize_unexported: {
     type: @'rules//CC:library',
-    arguments_config: ['TOOLCHAIN_CONFIG', 'ARCH', 'TARGET_ARCH'],
+    arguments_config: ['TOOLCHAIN_CONFIG', 'ARCH', 'TARGET_ARCH', 'ABSL_BUILD_SHARED'],
     name: ['absl_symbolize'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/debugging/internal/symbolize.h',
       'absl/debugging/symbolize.h',
@@ -1761,7 +2221,10 @@ local options_doc = {
 
   examine_stack_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_examine_stack'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/debugging/internal/examine_stack.cc'],
     hdrs: ['absl/debugging/internal/examine_stack.h'],
     deps: [
@@ -1775,7 +2238,10 @@ local options_doc = {
 
   stacktrace_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_stacktrace'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/debugging/stacktrace.h',
       'absl/debugging/internal/stacktrace_x86-inl.inc',
@@ -1797,15 +2263,20 @@ local options_doc = {
       'config',
       'core_headers',
       'dynamic_annotations',
+      'malloc_internal',
       'raw_logging_internal',
     ],
   },
 
   debugging_internal: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_debugging_internal'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/debugging/internal/address_is_readable.h',
+      'absl/debugging/internal/addresses.h',
       'absl/debugging/internal/elf_mem_image.h',
       'absl/debugging/internal/vdso_support.h',
     ],
@@ -1823,9 +2294,26 @@ local options_doc = {
     ],
   },
 
+  leak_check_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_leak_check'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/debugging/leak_check.h'],
+    srcs: ['absl/debugging/leak_check.cc'],
+    deps: [
+      'config',
+      'core_headers',
+    ],
+  },
+
   demangle_internal_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_demangle_internal'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/debugging/internal/demangle.h'],
     srcs: ['absl/debugging/internal/demangle.cc'],
     deps: [
@@ -1840,7 +2328,10 @@ local options_doc = {
 
   bounded_utf8_length_sequence_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_bounded_utf8_length_sequence'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/debugging/internal/bounded_utf8_length_sequence.h'],
     deps: [
       'config',
@@ -1850,7 +2341,10 @@ local options_doc = {
 
   decode_rust_punycode_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_decode_rust_punycode'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/debugging/internal/decode_rust_punycode.h'],
     srcs: ['absl/debugging/internal/decode_rust_punycode.cc'],
     deps: [
@@ -1863,7 +2357,10 @@ local options_doc = {
 
   demangle_rust_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_demangle_rust'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/debugging/internal/demangle_rust.h'],
     srcs: ['absl/debugging/internal/demangle_rust.cc'],
     deps: [
@@ -1875,7 +2372,10 @@ local options_doc = {
 
   utf8_for_code_point_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_utf8_for_code_point'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/debugging/internal/utf8_for_code_point.h'],
     srcs: ['absl/debugging/internal/utf8_for_code_point.cc'],
     deps: ['config'],
@@ -1884,7 +2384,10 @@ local options_doc = {
   // ===== absl/flags =====
   path_util: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_path_util'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/flags/internal/path_util.h'],
     deps: [
       'config',
@@ -1901,6 +2404,7 @@ local options_doc = {
       'path_util',
       'config',
       'core_headers',
+      'no_destructor',
       'strings',
       'synchronization',
     ],
@@ -1908,17 +2412,21 @@ local options_doc = {
 
   flags_config: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_flags_config'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/flags/usage_config.cc'],
     hdrs: [
       'absl/flags/config.h',
       'absl/flags/usage_config.h',
     ],
+    components: ['program_name'],
     deps: [
       'path_util',
-      'program_name',
       'config',
       'core_headers',
+      'no_destructor',
       'strings',
       'synchronization',
     ],
@@ -1926,7 +2434,10 @@ local options_doc = {
 
   flags_marshalling_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_flags_marshalling'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/flags/marshalling.cc'],
     hdrs: ['absl/flags/marshalling.h'],
     deps: [
@@ -1942,7 +2453,10 @@ local options_doc = {
 
   commandlineflag_internal: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_commandlineflag_internal'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/flags/internal/commandlineflag.cc'],
     hdrs: ['absl/flags/internal/commandlineflag.h'],
     deps: [
@@ -1953,13 +2467,17 @@ local options_doc = {
 
   commandlineflag: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_commandlineflag'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/flags/commandlineflag.cc'],
     hdrs: ['absl/flags/commandlineflag.h'],
     deps: [
       'commandlineflag_internal',
       'config',
       'fast_type_id',
+      'nullability',
       'strings',
       'optional',
     ],
@@ -1980,17 +2498,21 @@ local options_doc = {
 
   reflection: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_reflection'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/flags/reflection.cc'],
     hdrs: [
       'absl/flags/internal/registry.h',
       'absl/flags/reflection.h',
     ],
+    components: ['private_handle_accessor'],
     deps: [
       'commandlineflag',
       'commandlineflag_internal',
+      'fast_type_id',
       'flags_config',
-      'private_handle_accessor',
       'config',
       'core_headers',
       'no_destructor',
@@ -2011,6 +2533,7 @@ local options_doc = {
     deps: [
       'commandlineflag',
       'commandlineflag_internal',
+      'fast_type_id',
       'flags_config',
       'flags_marshalling',
       'reflection',
@@ -2019,6 +2542,7 @@ local options_doc = {
       'core_headers',
       'dynamic_annotations',
       'memory',
+      'no_destructor',
       'type_traits',
       'strings',
       'synchronization',
@@ -2028,18 +2552,22 @@ local options_doc = {
 
   flags_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_flags'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/flags/declare.h',
       'absl/flags/flag.h',
     ],
+    components: ['flag_internal'],
     deps: [
       'commandlineflag',
       'flags_config',
-      'flag_internal',
       'reflection',
       'config',
       'core_headers',
+      'nullability',
       'strings',
     ],
   },
@@ -2047,28 +2575,35 @@ local options_doc = {
   // ===== absl/functional =====
   function_ref_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_function_ref'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/functional/function_ref.h',
       'absl/functional/internal/function_ref.h',
     ],
     deps: [
       'any_invocable',
-      'base_internal',
+      'config',
       'core_headers',
-      'type_traits',
+      'meta',
+      'utility',
     ],
   },
 
   any_invocable_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_any_invocable'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/functional/any_invocable.h',
       'absl/functional/internal/any_invocable.h',
     ],
     deps: [
-      'base_internal',
+      'base',
       'config',
       'core_headers',
       'type_traits',
@@ -2078,15 +2613,34 @@ local options_doc = {
 
   bind_front_internal: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_bind_front'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/functional/bind_front.h',
       'absl/functional/internal/front_binder.h',
     ],
     deps: [
-      'base_internal',
       'compressed_tuple',
       'type_traits',
+      'utility',
+    ],
+  },
+
+  bind_back_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_bind_back'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: [
+      'absl/functional/bind_back.h',
+      'absl/functional/internal/back_binder.h',
+    ],
+    deps: [
+      'compressed_tuple',
+      'config',
       'utility',
     ],
   },
@@ -2094,59 +2648,65 @@ local options_doc = {
   // ===== absl/hash =====
   hash_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_hash'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/hash/hash.h',
       'absl/hash/internal/hash.h',
     ],
     srcs: ['absl/hash/internal/hash.cc'],
+    components: ['city'],
     deps: [
-      'city',
-      'low_level_hash',
       'config',
       'core_headers',
       'endian',
       'fixed_array',
       'function_ref',
-      'type_traits',
+      'meta',
       'bits',
       'int128',
       'strings',
       'optional',
       'variant',
       'utility',
+      'weakly_mixed_integer',
     ],
   },
 
+  // low_level_hash's implementation was merged into city upstream —
+  // city.h/.cc now absorb what used to be a separate compiled target.
   city: {
     type: @'rules//CC:library',
     name: ['absl_city'],
     hdrs: ['absl/hash/internal/city.h'],
     srcs: ['absl/hash/internal/city.cc'],
     deps: [
+      'bits',
       'config',
       'core_headers',
       'endian',
     ],
   },
 
-  low_level_hash: {
+  weakly_mixed_integer: {
     type: @'rules//CC:library',
-    name: ['absl_low_level_hash'],
-    hdrs: ['absl/hash/internal/low_level_hash.h'],
-    srcs: ['absl/hash/internal/low_level_hash.cc'],
-    deps: [
-      'config',
-      'endian',
-      'prefetch',
-      'int128',
-    ],
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_weakly_mixed_integer'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/hash/internal/weakly_mixed_integer.h'],
+    deps: ['config'],
   },
 
   // ===== absl/log =====
   absl_check_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_absl_check'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/absl_check.h'],
     deps: [
       'log_internal_check_impl',
@@ -2155,7 +2715,10 @@ local options_doc = {
 
   absl_log_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_absl_log'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/absl_log.h'],
     deps: [
       'log_internal_log_impl',
@@ -2164,7 +2727,10 @@ local options_doc = {
 
   check_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_check'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/check.h'],
     deps: [
       'log_internal_check_impl',
@@ -2177,20 +2743,28 @@ local options_doc = {
 
   die_if_null_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_die_if_null'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/die_if_null.cc'],
     hdrs: ['absl/log/die_if_null.h'],
     deps: [
       'log',
       'config',
       'core_headers',
+      'nullability',
+      'nullability_traits_internal',
       'strings',
     ],
   },
 
   log_globals_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_globals'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/globals.cc'],
     hdrs: ['absl/log/globals.h'],
     deps: [
@@ -2207,7 +2781,10 @@ local options_doc = {
 
   log_initialize_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_initialize'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/initialize.cc'],
     hdrs: ['absl/log/initialize.h'],
     deps: [
@@ -2220,7 +2797,10 @@ local options_doc = {
 
   log_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/log.h'],
     deps: [
       'vlog_is_on',
@@ -2230,7 +2810,10 @@ local options_doc = {
 
   log_entry_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_entry'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/log_entry.cc'],
     hdrs: ['absl/log/log_entry.h'],
     deps: [
@@ -2238,6 +2821,7 @@ local options_doc = {
       'core_headers',
       'log_severity',
       'log_internal_config',
+      'proto',
       'strings',
       'time',
       'span',
@@ -2246,7 +2830,10 @@ local options_doc = {
 
   log_sink_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_sink'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/log_sink.cc'],
     hdrs: ['absl/log/log_sink.h'],
     deps: [
@@ -2257,18 +2844,25 @@ local options_doc = {
 
   log_sink_registry_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_sink_registry'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/log_sink_registry.h'],
     deps: [
       'log_sink',
       'config',
       'log_sink_set',
+      'nullability',
     ],
   },
 
   absl_vlog_is_on_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_absl_vlog_is_on'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/absl_vlog_is_on.h'],
     deps: [
       'config',
@@ -2280,7 +2874,10 @@ local options_doc = {
 
   vlog_is_on: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_vlog_is_on'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/vlog_is_on.h'],
     deps: ['absl_vlog_is_on'],
   },
@@ -2288,12 +2885,14 @@ local options_doc = {
   // ===== absl/log/internal =====
   log_internal_check_impl_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_internal_check_impl'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/internal/check_impl.h'],
     deps: [
       'log_internal_check_op',
       'log_internal_conditions',
-      'log_internal_message',
       'log_internal_strip',
       'core_headers',
     ],
@@ -2301,22 +2900,32 @@ local options_doc = {
 
   log_internal_check_op_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_internal_check_op'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/internal/check_op.cc'],
     hdrs: ['absl/log/internal/check_op.h'],
     deps: [
       'log_internal_nullguard',
       'log_internal_nullstream',
       'log_internal_strip',
+      'base',
       'config',
       'core_headers',
+      'has_ostream_operator',
+      'leak_check',
+      'nullability',
       'strings',
     ],
   },
 
   log_internal_conditions_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_internal_conditions'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/internal/conditions.cc'],
     hdrs: ['absl/log/internal/conditions.h'],
     deps: [
@@ -2329,7 +2938,10 @@ local options_doc = {
 
   log_internal_config_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_internal_config'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/internal/config.h'],
     deps: [
       'config',
@@ -2339,7 +2951,10 @@ local options_doc = {
 
   format: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_format'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/internal/log_format.cc'],
     hdrs: ['absl/log/internal/log_format.h'],
     deps: [
@@ -2358,7 +2973,10 @@ local options_doc = {
 
   log_internal_globals_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_internal_globals'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/internal/globals.cc'],
     hdrs: ['absl/log/internal/globals.h'],
     deps: [
@@ -2373,7 +2991,10 @@ local options_doc = {
 
   log_internal_log_impl_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_internal_log_impl'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/internal/log_impl.h'],
     deps: [
       'log_internal_conditions',
@@ -2385,7 +3006,10 @@ local options_doc = {
 
   log_internal_message_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_internal_message'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/internal/log_message.cc'],
     hdrs: ['absl/log/internal/log_message.h'],
     deps: [
@@ -2395,12 +3019,15 @@ local options_doc = {
       'log_sink_set',
       'log_internal_nullguard',
       'proto',
+      'structured_proto',
       'base',
       'config',
       'core_headers',
       'errno_saver',
       'log_severity',
+      'nullability',
       'raw_logging_internal',
+      'source_location',
       'strerror',
       'inlined_vector',
       'examine_stack',
@@ -2410,6 +3037,7 @@ local options_doc = {
       'log_sink_registry',
       'memory',
       'strings',
+      'strings_internal',
       'time',
       'span',
     ],
@@ -2417,18 +3045,25 @@ local options_doc = {
 
   append_truncated: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_append_truncated'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/internal/append_truncated.h'],
     deps: [
       'config',
       'strings',
+      'strings_internal',
       'span',
     ],
   },
 
   log_sink_set: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_sink_set'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/internal/log_sink_set.cc'],
     hdrs: ['absl/log/internal/log_sink_set.h'],
     deps: [
@@ -2452,7 +3087,10 @@ local options_doc = {
 
   log_internal_nullguard_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_internal_nullguard'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/internal/nullguard.cc'],
     hdrs: ['absl/log/internal/nullguard.h'],
     deps: [
@@ -2463,7 +3101,10 @@ local options_doc = {
 
   log_internal_nullstream_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_internal_nullstream'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/internal/nullstream.h'],
     deps: [
       'config',
@@ -2475,7 +3116,10 @@ local options_doc = {
 
   log_internal_strip_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_internal_strip'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/internal/strip.h'],
     deps: [
       'log_internal_message',
@@ -2487,14 +3131,23 @@ local options_doc = {
 
   log_internal_voidify_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_internal_voidify'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/internal/voidify.h'],
-    deps: ['config'],
+    deps: [
+      'config',
+      'core_headers',
+    ],
   },
 
   proto: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_proto'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: ['absl/log/internal/proto.cc'],
     hdrs: ['absl/log/internal/proto.h'],
     deps: [
@@ -2506,9 +3159,43 @@ local options_doc = {
     ],
   },
 
+  log_internal_container: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_log_internal_container'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/log/internal/container.h'],
+    deps: [
+      'config',
+      'requires_internal',
+      'strings',
+    ],
+  },
+
+  structured_proto: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_structured_proto'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/log/internal/structured_proto.h'],
+    srcs: ['absl/log/internal/structured_proto.cc'],
+    deps: [
+      'config',
+      'proto',
+      'span',
+      'strings',
+      'variant',
+    ],
+  },
+
   log_internal_fnmatch_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_log_internal_fnmatch'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/internal/fnmatch.h'],
     srcs: ['absl/log/internal/fnmatch.cc'],
     deps: [
@@ -2519,7 +3206,10 @@ local options_doc = {
 
   vlog_config_internal_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_vlog_config_internal'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/log/internal/vlog_config.h'],
     srcs: ['absl/log/internal/vlog_config.cc'],
     deps: [
@@ -2538,7 +3228,10 @@ local options_doc = {
   // ===== absl/memory =====
   memory_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_memory'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/memory/memory.h'],
     deps: [
       'core_headers',
@@ -2549,7 +3242,10 @@ local options_doc = {
   // ===== absl/meta =====
   type_traits_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_type_traits'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/meta/type_traits.h'],
     deps: [
       'config',
@@ -2557,10 +3253,44 @@ local options_doc = {
     ],
   },
 
+  constexpr_testing_internal: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_constexpr_testing_internal'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/meta/internal/constexpr_testing.h'],
+    deps: ['config'],
+  },
+
+  requires_internal: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_requires_internal'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/meta/internal/requires.h'],
+    deps: ['config'],
+  },
+
+  // Umbrella component target: no srcs/hdrs of its own upstream, just
+  // aggregates type_traits.
+  meta_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_meta'],
+    shared: is_shared,
+    soversion: soversion,
+    deps: ['type_traits'],
+  },
+
   // ===== absl/numeric =====
   int128_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_int128'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/numeric/int128.h',
       'absl/numeric/int128_have_intrinsic.inc',
@@ -2577,7 +3307,10 @@ local options_doc = {
 
   bits_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_bits'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/numeric/bits.h',
       'absl/numeric/internal/bits.h',
@@ -2585,12 +3318,16 @@ local options_doc = {
     deps: [
       'config',
       'core_headers',
+      'endian',
     ],
   },
 
   numeric_representation_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_numeric_representation'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/numeric/internal/representation.h'],
     deps: ['config'],
   },
@@ -2598,7 +3335,10 @@ local options_doc = {
   // ===== absl/profiling =====
   exponential_biased_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_exponential_biased'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/profiling/internal/exponential_biased.h'],
     srcs: ['absl/profiling/internal/exponential_biased.cc'],
     deps: [
@@ -2609,7 +3349,10 @@ local options_doc = {
 
   sample_recorder_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_sample_recorder'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/profiling/internal/sample_recorder.h'],
     deps: [
       'config',
@@ -2619,24 +3362,65 @@ local options_doc = {
     ],
   },
 
+  profile_builder: {
+    type: @'rules//CC:library',
+    name: ['absl_profile_builder'],
+    hdrs: ['absl/profiling/internal/profile_builder.h'],
+    srcs: ['absl/profiling/internal/profile_builder.cc'],
+    deps: [
+      'btree',
+      'config',
+      'core_headers',
+      'flat_hash_map',
+      'raw_logging_internal',
+      'span',
+      'str_format',
+      'strings',
+    ],
+  },
+
+  hashtable_profiler: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_hashtable_profiler'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/profiling/hashtable.h'],
+    srcs: ['absl/profiling/hashtable.cc'],
+    components: ['profile_builder'],
+    deps: [
+      'config',
+      'core_headers',
+      'hashtablez_sampler',
+      'span',
+      'strings',
+    ],
+  },
+
   // ===== absl/random =====
   random_random_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_random_random'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/random.h'],
+    components: ['seed_sequences'],
     deps: [
+      'config',
       'random_distributions',
       'internal_nonsecure_base',
       'internal_pcg_engine',
-      'internal_pool_urbg',
       'internal_randen_engine',
-      'seed_sequences',
     ],
   },
 
   random_distributions_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_random_distributions'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/random/bernoulli_distribution.h',
       'absl/random/beta_distribution.h',
@@ -2674,37 +3458,45 @@ local options_doc = {
 
   random_bit_gen_ref_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_random_bit_gen_ref'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/bit_gen_ref.h'],
     deps: [
-      'internal_pool_urbg',
-      'random_internal_salted_seed_seq',
-      'random_internal_seed_material',
-      'random_random',
+      'config',
       'core_headers',
       'fast_type_id',
-      'span',
+      'random_internal_fast_uniform_bits',
+      'random_internal_traits',
+      'random_mocking_access',
+      'type_traits',
     ],
   },
 
   internal_nonsecure_base: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_internal_nonsecure_base'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/nonsecure_base.h'],
     deps: [
-      'internal_pool_urbg',
+      'config',
+      'internal_entropy_pool',
       'random_internal_salted_seed_seq',
       'random_internal_seed_material',
-      'core_headers',
       'inlined_vector',
       'type_traits',
-      'span',
     ],
   },
 
   internal_pcg_engine: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_internal_pcg_engine'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/pcg_engine.h'],
     deps: [
       'internal_fastmath',
@@ -2715,32 +3507,38 @@ local options_doc = {
     ],
   },
 
-  internal_pool_urbg_unexported: {
+  // Replaces the old pool_urbg implementation upstream.
+  internal_entropy_pool_unexported: {
     type: @'rules//CC:library',
-    name: ['absl_internal_pool_urbg'],
-    hdrs: ['absl/random/internal/pool_urbg.h'],
-    srcs: ['absl/random/internal/pool_urbg.cc'],
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_internal_entropy_pool'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/random/internal/entropy_pool.h'],
+    srcs: ['absl/random/internal/entropy_pool.cc'],
     'private-ldflags': [
       '-pthread',
       '-Wl,--whole-archive,-lpthread,--no-whole-archive',
     ],
     deps: [
+      'internal_platform',
       'internal_randen',
       'random_internal_seed_material',
-      'random_internal_traits',
       'seed_gen_exception',
       'base',
       'config',
       'core_headers',
-      'endian',
-      'raw_logging_internal',
       'span',
+      'synchronization',
     ],
   },
 
   internal_randen_engine: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_internal_randen_engine'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/randen_engine.h'],
     deps: [
       'internal_iostream_state_saver',
@@ -2756,7 +3554,7 @@ local options_doc = {
     hdrs: ['absl/random/seed_sequences.h'],
     srcs: ['absl/random/seed_sequences.cc'],
     deps: [
-      'internal_pool_urbg',
+      'internal_entropy_pool',
       'random_internal_salted_seed_seq',
       'random_internal_seed_material',
       'seed_gen_exception',
@@ -2769,7 +3567,10 @@ local options_doc = {
 
   internal_generate_real: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_internal_generate_real'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/generate_real.h'],
     deps: [
       'internal_fastmath',
@@ -2781,18 +3582,26 @@ local options_doc = {
 
   internal_distribution_caller: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_internal_distribution_caller'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/distribution_caller.h'],
     deps: [
       'config',
       'fast_type_id',
+      'random_mocking_access',
+      'type_traits',
       'utility',
     ],
   },
 
   random_internal_fast_uniform_bits_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_random_internal_fast_uniform_bits'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/fast_uniform_bits.h'],
     deps: [
       'random_internal_traits',
@@ -2803,16 +3612,23 @@ local options_doc = {
 
   internal_fastmath: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_internal_fastmath'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/fastmath.h'],
     deps: ['bits'],
   },
 
   internal_iostream_state_saver: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_internal_iostream_state_saver'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/iostream_state_saver.h'],
     deps: [
+      'config',
       'type_traits',
       'int128',
     ],
@@ -2820,18 +3636,25 @@ local options_doc = {
 
   random_internal_traits_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_random_internal_traits'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/traits.h'],
     deps: [
       'config',
       'bits',
       'int128',
+      'type_traits',
     ],
   },
 
   internal_uniform_helper: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_internal_uniform_helper'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/uniform_helper.h'],
     deps: [
       'random_internal_traits',
@@ -2843,7 +3666,10 @@ local options_doc = {
 
   internal_wide_multiply: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_internal_wide_multiply'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/wide_multiply.h'],
     deps: [
       'random_internal_traits',
@@ -2855,7 +3681,10 @@ local options_doc = {
 
   random_internal_salted_seed_seq_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_random_internal_salted_seed_seq'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/salted_seed_seq.h'],
     deps: [
       'random_internal_seed_material',
@@ -2868,8 +3697,10 @@ local options_doc = {
 
   random_internal_seed_material_unexported: {
     type: @'rules//CC:library',
-    arguments_config: ['USE_SYSTEM_LIBS', 'OS'],
+    arguments_config: ['USE_SYSTEM_LIBS', 'OS', 'ABSL_BUILD_SHARED'],
     name: ['absl_random_internal_seed_material'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/seed_material.h'],
     srcs: ['absl/random/internal/seed_material.cc'],
     'private-ldflags':
@@ -2878,7 +3709,7 @@ local options_doc = {
     deps:
       [
         'random_internal_fast_uniform_bits',
-        'core_headers',
+        'config',
         'dynamic_annotations',
         'raw_logging_internal',
         'strings',
@@ -2891,30 +3722,71 @@ local options_doc = {
 
   internal_randen: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_internal_randen'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/internal/randen.h'],
     srcs: ['absl/random/internal/randen.cc'],
-    deps: [
-      'internal_platform',
+    components: [
       'internal_randen_hwaes',
       'internal_randen_slow',
+    ],
+    deps: [
+      'internal_platform',
       'raw_logging_internal',
     ],
   },
 
   seed_gen_exception: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_seed_gen_exception'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/random/seed_gen_exception.h'],
     srcs: ['absl/random/seed_gen_exception.cc'],
     deps: [
       'config',
+      'raw_logging_internal',
+    ],
+  },
+
+  random_mocking_access: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_random_mocking_access'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/random/mocking_access.h'],
+    deps: [
+      'config',
+      'fast_type_id',
+      'type_traits',
+    ],
+  },
+
+  random_internal_mock_helpers: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_random_internal_mock_helpers'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/random/internal/mock_helpers.h'],
+    deps: [
+      'config',
+      'fast_type_id',
+      'optional',
+      'random_mocking_access',
     ],
   },
 
   internal_platform: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_internal_platform'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/random/internal/randen_traits.h',
       'absl/random/internal/platform.h',
@@ -2937,9 +3809,9 @@ local options_doc = {
     srcs: [
       'absl/random/internal/randen_detect.cc',
     ],
+    components: ['internal_randen_hwaes_impl'],
     deps: [
       'internal_platform',
-      'internal_randen_hwaes_impl',
       'config',
     ],
   },
@@ -2983,7 +3855,10 @@ local options_doc = {
   // ===== absl/status =====
   status_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_status'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/status/status.h',
       'absl/status/status_payload_printer.h',
@@ -2998,9 +3873,12 @@ local options_doc = {
       'atomic_hook',
       'config',
       'core_headers',
+      'internal_optional_ref',
+      'leak_check',
       'no_destructor',
       'nullability',
       'raw_logging_internal',
+      'source_location',
       'strerror',
       'inlined_vector',
       'stacktrace',
@@ -3008,6 +3886,13 @@ local options_doc = {
       'function_ref',
       'memory',
       'cord',
+      // Not in upstream's own DEPS: internal/status_internal.h includes
+      // absl/strings/cord.h directly, and its AbslHashValue friend
+      // template gets ODR-used from within this target's own status.cc
+      // translation unit — only surfaces as a real unresolved symbol
+      // under strict per-.so shared linking (see cord_unexported's own
+      // comment on the same root cause).
+      'hash',
       'str_format',
       'strings',
       'optional',
@@ -3017,7 +3902,10 @@ local options_doc = {
 
   statusor_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_statusor'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/status/statusor.h',
       'absl/status/internal/statusor_internal.h',
@@ -3030,6 +3918,7 @@ local options_doc = {
       'core_headers',
       'nullability',
       'raw_logging_internal',
+      'source_location',
       'type_traits',
       'has_ostream_operator',
       'str_format',
@@ -3039,24 +3928,66 @@ local options_doc = {
     ],
   },
 
+  status_builder_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_status_builder'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/status/status_builder.h'],
+    srcs: ['absl/status/status_builder.cc'],
+    deps: [
+      'config',
+      'cord',
+      'core_headers',
+      'nullability',
+      'optional',
+      'source_location',
+      'span',
+      'status',
+      'strings',
+      'stringify_stream',
+      'time',
+    ],
+  },
+
+  status_macros_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_status_macros'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/status/status_macros.h'],
+    deps: [
+      'core_headers',
+      'source_location',
+      'status',
+      'status_builder',
+      'statusor',
+    ],
+  },
+
   // ===== absl/strings =====
   string_view_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_string_view'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/strings/string_view.h'],
-    srcs: ['absl/strings/string_view.cc'],
     deps: [
-      'base',
       'config',
       'core_headers',
       'nullability',
-      'throw_delegate',
     ],
   },
 
   strings_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_strings'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/strings/ascii.h',
       'absl/strings/charconv.h',
@@ -3103,14 +4034,19 @@ local options_doc = {
       'charset',
       'strings_internal',
       'string_view',
+      'strings_append_and_overwrite',
+      'strings_resize_and_overwrite',
       'base',
       'config',
       'core_headers',
       'endian',
+      'hardening',
+      'iterator_traits_internal',
+      'memory',
       'nullability',
       'raw_logging_internal',
+      'source_location',
       'throw_delegate',
-      'memory',
       'type_traits',
       'bits',
       'int128',
@@ -3119,7 +4055,10 @@ local options_doc = {
 
   strings_internal_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_strings_internal'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/strings/internal/escaping.h',
       'absl/strings/internal/ostringstream.h',
@@ -3136,13 +4075,85 @@ local options_doc = {
       'core_headers',
       'endian',
       'raw_logging_internal',
+      'strings_resize_and_overwrite',
       'type_traits',
+    ],
+  },
+
+  // Header-only, despite upstream listing these under HDRS without SRCS
+  // (i.e. no compiled .cc); strings/strings_internal/cord all #include
+  // them directly, so they need to stay "hdrs" to propagate.
+  strings_append_and_overwrite: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_strings_append_and_overwrite'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/strings/internal/append_and_overwrite.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'hardening',
+      'strings_resize_and_overwrite',
+      'throw_delegate',
+    ],
+  },
+
+  strings_resize_and_overwrite: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_strings_resize_and_overwrite'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/strings/resize_and_overwrite.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'dynamic_annotations',
+      'hardening',
+      'throw_delegate',
+    ],
+  },
+
+  stringify_stream: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_stringify_stream'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/strings/internal/stringify_stream.h'],
+    deps: [
+      'config',
+      'string_view',
+    ],
+  },
+
+  generic_printer_internal: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_generic_printer_internal'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: [
+      'absl/strings/internal/generic_printer.h',
+      'absl/strings/internal/generic_printer_internal.h',
+    ],
+    srcs: ['absl/strings/internal/generic_printer.cc'],
+    deps: [
+      'config',
+      'log_internal_container',
+      'requires_internal',
+      'str_format',
+      'strings',
     ],
   },
 
   cord_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_cord'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/strings/cord.h',
       'absl/strings/cord_buffer.h',
@@ -3151,7 +4162,6 @@ local options_doc = {
     srcs: [
       'absl/strings/cord.cc',
       'absl/strings/cord_analysis.cc',
-      'absl/strings/cord_buffer.cc',
     ],
     deps: [
       'cord_internal',
@@ -3162,10 +4172,13 @@ local options_doc = {
       'cordz_update_tracker',
       'strings_internal',
       'strings',
+      'strings_append_and_overwrite',
+      'strings_resize_and_overwrite',
       'base',
       'config',
       'core_headers',
       'endian',
+      'hardening',
       'nullability',
       'raw_logging_internal',
       'inlined_vector',
@@ -3177,12 +4190,24 @@ local options_doc = {
       'compare',
       'optional',
       'span',
+      'weakly_mixed_integer',
+      // Not in upstream's own CMakeLists.txt DEPS for this target, but
+      // genuinely needed: cord.h's own AbslHashValue(H, const Cord&)
+      // (a friend template) references absl::hash_internal::
+      // MixingHashState::kSeed, which only jst's own strict per-target
+      // linking (as opposed to a loose shared CMake include path)
+      // actually surfaces as an unresolved symbol — found by testing a
+      // real shared-library consumer link, not by matching upstream.
+      'hash',
     ],
   },
 
   cord_internal: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_cord_internal'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/strings/internal/cord_data_edge.h',
       'absl/strings/internal/cord_internal.h',
@@ -3203,7 +4228,6 @@ local options_doc = {
     ],
     deps: [
       'strings',
-      'base_internal',
       'config',
       'core_headers',
       'endian',
@@ -3222,7 +4246,10 @@ local options_doc = {
 
   cordz_functions: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_cordz_functions'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/strings/internal/cordz_functions.h'],
     srcs: ['absl/strings/internal/cordz_functions.cc'],
     deps: [
@@ -3235,8 +4262,10 @@ local options_doc = {
 
   cordz_info: {
     type: @'rules//CC:library',
-    arguments_config: ['ARCH', 'TARGET_ARCH'],
+    arguments_config: ['ARCH', 'TARGET_ARCH', 'ABSL_BUILD_SHARED'],
     name: ['absl_cordz_info'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/strings/internal/cordz_info.h'],
     srcs: ['absl/strings/internal/cordz_info.cc'],
     'private-ldflags':
@@ -3251,6 +4280,7 @@ local options_doc = {
       'base',
       'config',
       'core_headers',
+      'no_destructor',
       'raw_logging_internal',
       'inlined_vector',
       'stacktrace',
@@ -3262,7 +4292,10 @@ local options_doc = {
 
   cordz_update_scope: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_cordz_update_scope'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/strings/internal/cordz_update_scope.h'],
     deps: [
       'cord_internal',
@@ -3275,7 +4308,10 @@ local options_doc = {
 
   cordz_update_tracker: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_cordz_update_tracker'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/strings/internal/cordz_update_tracker.h'],
     deps: [
       'config',
@@ -3284,7 +4320,10 @@ local options_doc = {
 
   cordz_handle: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_cordz_handle'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/strings/internal/cordz_handle.h'],
     srcs: ['absl/strings/internal/cordz_handle.cc'],
     deps: [
@@ -3297,7 +4336,10 @@ local options_doc = {
 
   cordz_statistics: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_cordz_statistics'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/strings/internal/cordz_statistics.h'],
     deps: [
       'cordz_update_tracker',
@@ -3307,10 +4349,13 @@ local options_doc = {
 
   str_format_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_str_format'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/strings/str_format.h'],
+    components: ['str_format_internal'],
     deps: [
-      'str_format_internal',
       'string_view',
       'config',
       'core_headers',
@@ -3342,6 +4387,7 @@ local options_doc = {
     ],
     deps: [
       'strings',
+      'strings_internal',
       'config',
       'core_headers',
       'fixed_array',
@@ -3359,26 +4405,34 @@ local options_doc = {
 
   has_ostream_operator_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_has_ostream_operator'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/strings/has_ostream_operator.h'],
     deps: ['config'],
   },
 
   charset_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_charset'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/strings/charset.h'],
     deps: [
       'string_view',
-      'core_headers',
+      'config',
     ],
   },
 
   // ===== absl/synchronization =====
   synchronization_unexported: {
     type: @'rules//CC:library',
-    arguments_config: ['ARCH', 'TARGET_ARCH'],
+    arguments_config: ['ARCH', 'TARGET_ARCH', 'ABSL_BUILD_SHARED'],
     name: ['absl_synchronization'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/synchronization/barrier.h',
       'absl/synchronization/blocking_counter.h',
@@ -3416,9 +4470,12 @@ local options_doc = {
       ]
       + (if target_arch == 'arm' || target_arch == 'unknown' then
            ['-latomic']),
-    deps: [
+    components: [
       'graphcycles_internal',
       'kernel_timeout_internal',
+      'tracing_internal',
+    ],
+    deps: [
       'atomic_hook',
       'base',
       'base_internal',
@@ -3426,6 +4483,8 @@ local options_doc = {
       'core_headers',
       'dynamic_annotations',
       'malloc_internal',
+      'meta',
+      'nullability',
       'raw_logging_internal',
       'stacktrace',
       'symbolize',
@@ -3465,7 +4524,10 @@ local options_doc = {
   // ===== absl/time =====
   time_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_time'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/time/civil_time.h',
       'absl/time/clock.h',
@@ -3482,9 +4544,9 @@ local options_doc = {
       'absl/time/internal/get_current_time_chrono.inc',
       'absl/time/internal/get_current_time_posix.inc',
     ],
+    components: ['time_zone'],
     deps: [
       'civil_time',
-      'time_zone',
       'base',
       'config',
       'core_headers',
@@ -3495,9 +4557,31 @@ local options_doc = {
     ],
   },
 
+  clock_interface: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_clock_interface'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/time/clock_interface.h'],
+    srcs: ['absl/time/clock_interface.cc'],
+    deps: [
+      'config',
+      'core_headers',
+      'no_destructor',
+      'nullability',
+      'raw_logging_internal',
+      'synchronization',
+      'time',
+    ],
+  },
+
   civil_time: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_civil_time'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/time/internal/cctz/include/cctz/civil_time.h',
       'absl/time/internal/cctz/include/cctz/civil_time_detail.h',
@@ -3544,83 +4628,156 @@ local options_doc = {
   },
 
   // ===== absl/types =====
-  optional_unexported: {
+  // any/optional/variant are now unconditionally aliases for their std::
+  // counterparts (Abseil requires C++17), so these are single-header
+  // forwarding libraries with no srcs of their own.
+  any_unexported: {
     type: @'rules//CC:library',
-    name: ['absl_optional'],
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_any'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/types/any.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'utility',
+    ],
+  },
+
+  any_span_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_any_span'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
-      'absl/types/optional.h',
-      'absl/types/internal/optional.h',
+      'absl/types/any_span.h',
+      'absl/types/internal/any_span.h',
     ],
     deps: [
-      'bad_optional_access',
-      'base_internal',
+      'config',
+      'core_headers',
+      'hardening',
+      'nullability',
+      'raw_logging_internal',
+      'throw_delegate',
+      'type_traits',
+    ],
+  },
+
+  source_location_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_source_location'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/types/source_location.h'],
+    srcs: ['absl/types/source_location.cc'],
+    deps: [
       'config',
       'core_headers',
       'nullability',
-      'memory',
-      'type_traits',
+    ],
+  },
+
+  internal_optional_ref_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_internal_optional_ref'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/types/optional_ref.h'],
+    deps: [
+      'config',
+      'core_headers',
+      'hardening',
+    ],
+  },
+
+  // Deprecated empty libraries upstream (any/optional/variant no longer
+  // have their own carrier exception types) — kept so existing consumer
+  // code depending on these names by convention still resolves.
+  bad_any_cast: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_bad_any_cast'],
+    shared: is_shared,
+    soversion: soversion,
+  },
+
+  optional_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
+    name: ['absl_optional'],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/types/optional.h'],
+    deps: [
+      'config',
+      'core_headers',
       'utility',
     ],
   },
 
   bad_optional_access: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_bad_optional_access'],
-    hdrs: ['absl/types/bad_optional_access.h'],
-    srcs: ['absl/types/bad_optional_access.cc'],
-    deps: [
-      'config',
-      'raw_logging_internal',
-    ],
+    shared: is_shared,
+    soversion: soversion,
   },
 
   variant_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_variant'],
-    hdrs: [
-      'absl/types/variant.h',
-      'absl/types/internal/variant.h',
-    ],
+    shared: is_shared,
+    soversion: soversion,
+    hdrs: ['absl/types/variant.h'],
     deps: [
-      'bad_variant_access',
-      'base_internal',
       'config',
       'core_headers',
-      'type_traits',
       'utility',
     ],
   },
 
   bad_variant_access: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_bad_variant_access'],
-    hdrs: ['absl/types/bad_variant_access.h'],
-    srcs: ['absl/types/bad_variant_access.cc'],
-    deps: [
-      'config',
-      'raw_logging_internal',
-    ],
+    shared: is_shared,
+    soversion: soversion,
   },
 
   span_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_span'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: [
       'absl/types/span.h',
       'absl/types/internal/span.h',
     ],
     deps: [
       'algorithm',
+      'config',
       'core_headers',
+      'hardening',
       'nullability',
       'throw_delegate',
       'type_traits',
+      'weakly_mixed_integer',
     ],
   },
 
   compare_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_compare'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/types/compare.h'],
     deps: [
       'config',
@@ -3632,19 +4789,15 @@ local options_doc = {
   // ===== absl/utility =====
   utility_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['ABSL_BUILD_SHARED'],
     name: ['absl_utility'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['absl/utility/utility.h'],
     deps: [
-      'base_internal',
       'config',
+      'core_headers',
       'type_traits',
     ],
-  },
-
-  if_constexpr_unexported: {
-    type: @'rules//CC:library',
-    name: ['absl_if_constexpr'],
-    hdrs: ['absl/utility/internal/if_constexpr.h'],
-    deps: ['config'],
   },
 }

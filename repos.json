@@ -30,14 +30,11 @@
     "absl": {
       "repository": {
         "type": "archive",
-        "content": "b5cc395c49afa2a2dec1d9c4072500494b126974",
-        "fetch": "https://github.com/abseil/abseil-cpp/releases/download/20240722.0/abseil-cpp-20240722.0.tar.gz",
-        "sha256": "f50e5ac311a81382da7fa75b97310e4b9006474f9560ac46f54a9967f07d4ae3",
-        "sha512": "bd2cca8f007f2eee66f51c95a979371622b850ceb2ce3608d00ba826f7c494a1da0fba3c1427728f2c173fe50d59b701da35c2c9fdad2752a5a49746b1c8ef31",
-        "subdir": "abseil-cpp-20240722.0",
-        "mirrors": [
-          "https://storage.googleapis.com/grpc-bazel-mirror/github.com/abseil/abseil-cpp/archive/20240722.0.tar.gz"
-        ]
+        "content": "5c4625ab1a6b191964f90bb5d4efd3c35cf891ae",
+        "fetch": "https://github.com/abseil/abseil-cpp/releases/download/20260526.0/abseil-cpp-20260526.0.tar.gz",
+        "sha256": "6e1aee535473414164bf83e4ebc40240dec71a4701f8a642d906e95bea1aea0c",
+        "sha512": "fe85ebdd451b126117df1c3a312a1d5b29fc3557d07bb248854639b2a0180e91003fd2331a0d938f4ffeae8966f1df67a488fa3bdab072e840bbfdc6e8a4f01b",
+        "subdir": "abseil-cpp-20260526.0"
       },
       "target_root": "targets",
       "bindings": {
