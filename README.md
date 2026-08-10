@@ -1,8 +1,9 @@
 # Library `re2` for the `jst` build system
 
 Target definitions for building `re2` from source. By default, this
-library is built with the system toolchain. To use a different toolchain
-see [Repository Remapping](#repository-remapping) below.
+library is built with the system toolchain and system dependency `absl`.
+To use different ones see [Repository Remapping](#repository-remapping)
+below.
 
 To obtain a local installation, run:
 ```
@@ -19,7 +20,7 @@ repository lock-file
 "imports": [
   {
     "source": "git",
-    "branch": "re2/v2022-04-01",
+    "branch": "re2/v2025-11-05",
     "url": "https://github.com/jst-build/imports-cc",
     "repos": [{"alias": "re2"}]
   },
@@ -56,27 +57,44 @@ Available targets are:
 | `CXX` | The C++ compiler to use. |
 | `CXXFLAGS` | The C++ compiler flags to use. |
 | `ADD_CXXFLAGS` | Additional C++ compiler flags. |
+| `BUILD_POSITION_INDEPENDENT` | Build as position independent code. |
 | `AR` | The archiver to use. |
 | `ENV` | Map from strings to strings. The build environment to be used for build actions. Typically used to include an unusual value of `PATH`. |
 | `LOCALBASE` | Use this localbase for building against system libs (e.g., `"/usr"`). |
 | `PKG_CONFIG_ARGS` | Additional `pkg-config` arguments (e.g. `"--define-prefix"` or `"--static"`) |
+| `RE2_BUILD_SHARED` | Boolean. Build shared (`*.so`) libraries instead of static (`*.a`) ones. Default `false`. |
 
 > This list is generated — run `jst describe` for the always-current,
 > authoritative version.
 
+> **Example:** Build as shared libraries instead of the static default:
+> ```sh
+> jst install -D'{"RE2_BUILD_SHARED": true}' -o .local
+> ```
+
 ## Repository Remapping
 
-The toolchain for building this library can be changed by remapping the
-`toolchain` repository during the import.
+This repository can be imported with its dependencies remapped:
 
-**Example:** Import with different toolchain:
+- `toolchain`: The toolchain used to build re2. (default: [system
+  toolchain](https://github.com/jst-build/toolchains-cc/blob/system/README.md))
+- `absl`: The Abseil dependency.
+
+> [!IMPORTANT]
+> Note that if you remap the dependencies with libraries built from source, it
+> is recommended to build them with the same toolchain (see [bundled.in.json](./bundled.in.json)).
+
+**Example:** Import with a different toolchain and Abseil dependency:
 
 ```jsonc
 "imports": [
   { // ...
     "repos": [{
       "alias": "re2",
-      "map": {"toolchain": "my-custom-toolchain"}
+      "map": {
+        "toolchain": "my-custom-toolchain",
+        "absl": "my-abseil-built-with-my-custom-toolchain"
+      }
     }]
   }
   // ...

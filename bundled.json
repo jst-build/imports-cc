@@ -1,0 +1,119 @@
+{
+  "main": "re2",
+  "repositories": {
+    "": {
+      "repository": {
+        "type": "file",
+        "path": "."
+      }
+    },
+    "toolchain": {
+      "repository": "toolchain/rules",
+      "target_root": "toolchain/targets",
+      "rule_root": "toolchain/rules"
+    },
+    "toolchain/rules": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/rules-cc",
+        "branch": "master",
+        "commit": "c18d9413f8759f8c261a3af06edf0861ee9e2492",
+        "subdir": "rules"
+      }
+    },
+    "toolchain/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/toolchains-cc.git",
+        "branch": "system",
+        "commit": "5505965c61432dea016055d0f12f483df40eb9ff",
+        "subdir": "targets"
+      }
+    },
+    "absl": {
+      "repository": {
+        "type": "archive",
+        "content": "5c4625ab1a6b191964f90bb5d4efd3c35cf891ae",
+        "fetch": "https://github.com/abseil/abseil-cpp/releases/download/20260526.0/abseil-cpp-20260526.0.tar.gz",
+        "sha256": "6e1aee535473414164bf83e4ebc40240dec71a4701f8a642d906e95bea1aea0c",
+        "sha512": "fe85ebdd451b126117df1c3a312a1d5b29fc3557d07bb248854639b2a0180e91003fd2331a0d938f4ffeae8966f1df67a488fa3bdab072e840bbfdc6e8a4f01b",
+        "subdir": "abseil-cpp-20260526.0"
+      },
+      "target_root": "absl/targets",
+      "bindings": {
+        "rules": "absl/rules",
+        "patches": "absl/patches"
+      }
+    },
+    "absl/patches": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "absl/v20260526.0",
+        "commit": "42f657f6033904bc436cb160a98941a0536ccb61",
+        "subdir": "patches"
+      }
+    },
+    "absl/rules": {
+      "repository": "toolchain",
+      "target_root": "absl/config",
+      "rule_root": "toolchain",
+      "bindings": {
+        "base": "toolchain"
+      }
+    },
+    "absl/config": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "absl/v20260526.0",
+        "commit": "42f657f6033904bc436cb160a98941a0536ccb61",
+        "subdir": "config"
+      }
+    },
+    "absl/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "absl/v20260526.0",
+        "commit": "42f657f6033904bc436cb160a98941a0536ccb61",
+        "subdir": "targets"
+      }
+    },
+    "re2": {
+      "repository": {
+        "type": "archive",
+        "content": "9c3718ad9b7d8d04b9063995e9395836f3a0d087",
+        "fetch": "https://github.com/google/re2/archive/refs/tags/2025-11-05.tar.gz",
+        "sha256": "87f6029d2f6de8aa023654240a03ada90e876ce9a4676e258dd01ea4c26ffd67",
+        "sha512": "d47f2507500ca7e004db49e30318f8713164cc3b8f28b0bdf5cdd6028985e7da4c9d0133c19fcd8f800bc666b86feb80a5c56e11fa962db72d561fb627272670",
+        "subdir": "re2-2025-11-05"
+      },
+      "target_root": "re2/targets",
+      "bindings": {
+        "rules": "re2/rules",
+        "absl": "absl"
+      }
+    },
+    "re2/rules": {
+      "repository": "toolchain",
+      "target_root": "re2/config",
+      "rule_root": "toolchain",
+      "bindings": {
+        "base": "toolchain"
+      }
+    },
+    "re2/config": {
+      "repository": {
+        "type": "file",
+        "path": "./config"
+      }
+    },
+    "re2/targets": {
+      "repository": {
+        "type": "file",
+        "path": "./targets"
+      }
+    }
+  }
+}

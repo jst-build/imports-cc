@@ -39,7 +39,17 @@ local options_doc = {
   PKG_CONFIG_ARGS: [|||
     Additional "pkg-config" arguments (e.g. "--define-prefix" or "--static").
   |||],
+  RE2_BUILD_SHARED: [|||
+    Boolean. Build shared ("*.so") libraries instead of static ("*.a") ones.
+    Default "false".
+  |||],
 };
+
+// Shared/static selection and shared-object soversion. Mirrors upstream's
+// own "SONAME" ("11", i.e. "11.0.0" via CMake's SOVERSION/VERSION
+// properties) in this release's own CMakeLists.txt.
+local is_shared = if $'RE2_BUILD_SHARED' then ['yes'];
+local soversion = ['11', '0', '0'];
 
 {
   // Default target: installs the library and its public headers into a
@@ -70,8 +80,12 @@ local options_doc = {
 
   re2_unexported: {
     type: @'rules//CC:library',
+    arguments_config: ['RE2_BUILD_SHARED'],
     name: ['re2'],
+    shared: is_shared,
+    soversion: soversion,
     srcs: [
+      're2/bitmap256.cc',
       're2/bitstate.cc',
       're2/compile.cc',
       're2/dfa.cc',
@@ -88,7 +102,6 @@ local options_doc = {
       're2/regexp.cc',
       're2/set.cc',
       're2/simplify.cc',
-      're2/stringpiece.cc',
       're2/tostring.cc',
       're2/unicode_casefold.cc',
       're2/unicode_groups.cc',
@@ -107,18 +120,34 @@ local options_doc = {
       're2/unicode_casefold.h',
       're2/unicode_groups.h',
       're2/walker-inl.h',
-      'util/logging.h',
-      'util/mix.h',
-      'util/mutex.h',
       'util/strutil.h',
       'util/utf.h',
-      'util/util.h',
     ],
     hdrs: [
       're2/filtered_re2.h',
       're2/re2.h',
       're2/set.h',
       're2/stringpiece.h',
+    ],
+    // Real, mandatory dependency since upstream migrated its own
+    // StringPiece/logging/mutex/hash-mixing internals onto Abseil directly
+    // (matches upstream's own CMakeLists.txt "ABSL_DEPS" list).
+    deps: [
+      @'absl//:absl_check',
+      @'absl//:absl_log',
+      @'absl//:base',
+      @'absl//:core_headers',
+      @'absl//:fixed_array',
+      @'absl//:flags',
+      @'absl//:flat_hash_map',
+      @'absl//:flat_hash_set',
+      @'absl//:hash',
+      @'absl//:inlined_vector',
+      @'absl//:optional',
+      @'absl//:span',
+      @'absl//:str_format',
+      @'absl//:strings',
+      @'absl//:synchronization',
     ],
     'private-ldflags': [
       '-pthread',

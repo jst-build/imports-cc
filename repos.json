@@ -24,18 +24,16 @@
     "re2": {
       "repository": {
         "type": "archive",
-        "content": "8eebd70d7ebd33ac5d736090cecd7cfe1831b9e3",
-        "fetch": "https://github.com/google/re2/archive/refs/tags/2022-04-01.tar.gz",
-        "sha256": "1ae8ccfdb1066a731bba6ee0881baad5efd2cd661acd9569b689f2586e1a50e9",
-        "sha512": "fc3d7cc1ee6bd771719845566d83ffc8c4e19d838748e842a1e19c7564473c9a0a061bebb3966ffa82de6515346f9bbddc2d94ceb3de89233f58826774bd7ce7",
-        "subdir": "re2-2022-04-01",
-        "mirrors": [
-          "https://storage.googleapis.com/grpc-bazel-mirror/github.com/google/re2/archive/2022-04-01.tar.gz"
-        ]
+        "content": "9c3718ad9b7d8d04b9063995e9395836f3a0d087",
+        "fetch": "https://github.com/google/re2/archive/refs/tags/2025-11-05.tar.gz",
+        "sha256": "87f6029d2f6de8aa023654240a03ada90e876ce9a4676e258dd01ea4c26ffd67",
+        "sha512": "d47f2507500ca7e004db49e30318f8713164cc3b8f28b0bdf5cdd6028985e7da4c9d0133c19fcd8f800bc666b86feb80a5c56e11fa962db72d561fb627272670",
+        "subdir": "re2-2025-11-05"
       },
       "target_root": "targets",
       "bindings": {
-        "rules": "rules"
+        "rules": "rules",
+        "absl": "absl"
       }
     },
     "toolchain": {
@@ -58,6 +56,21 @@
         "repository": "https://github.com/jst-build/toolchains-cc.git",
         "branch": "system",
         "commit": "5505965c61432dea016055d0f12f483df40eb9ff",
+        "subdir": "targets"
+      }
+    },
+    "absl": {
+      "repository": "absl/targets",
+      "bindings": {
+        "rules": "toolchain"
+      }
+    },
+    "absl/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "absl/system",
+        "commit": "2a5207ee39509e6d844479828e915f7f4bb5c114",
         "subdir": "targets"
       }
     }
