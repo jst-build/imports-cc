@@ -1,34 +1,4 @@
 {
-  ares_build_h: {
-    type: 'install',
-    files: {
-      'ares_build.h': 'cares/ares_build.h',
-    },
-  },
-
-  ares_config_h: {
-    type: 'install',
-    arguments_config: ['OS', 'ARCH', 'TARGET_ARCH'],
-    files: {
-      'ares_config.h':
-        local os = jst.env('OS', default='linux');
-        if os == 'ios' then
-          'cares/config_darwin/ares_config.h'
-        else if os == 'tvos' then
-          'cares/config_darwin/ares_config.h'
-        else if os == 'watchos' then
-          'cares/config_darwin/ares_config.h'
-        else if os == 'darwin' then
-          'cares/config_darwin/ares_config.h'
-        else if os == 'windows' then
-          'cares/config_windows/ares_config.h'
-        else if os == 'android' then
-          'cares/config_android/ares_config.h'
-        else
-          'cares/config_linux/ares_config.h',
-    },
-  },
-
   address_sorting_headers: {
     type: @'rules//data:staged',
     srcs: ['address_sorting/address_sorting_internal.h'],

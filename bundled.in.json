@@ -52,6 +52,12 @@
       "repos": [{"alias": "re2", "map": {"toolchain": "toolchain"}}]
     },
     {
+      "source": "git",
+      "branch": "cares/v1.19.1",
+      "url": "https://github.com/jst-build/imports-cc.git",
+      "repos": [{"alias": "cares", "map": {"toolchain": "toolchain"}}]
+    },
+    {
       "source": "file",
       "path": ".",
       "repos": [{
@@ -62,7 +68,8 @@
           "zlib": "zlib",
           "protobuf": "protobuf",
           "ssl": "ssl",
-          "re2": "re2"
+          "re2": "re2",
+          "cares": "cares"
         }
       }]
     }

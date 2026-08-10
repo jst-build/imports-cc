@@ -41,23 +41,7 @@
         "absl": "absl",
         "zlib": "zlib",
         "re2": "re2",
-        "cares": "grpc-cares"
-      }
-    },
-    "grpc-cares": {
-      "repository": {
-        "type": "archive",
-        "content": "4237a53f7a5dc1cfb4d04a6b6374f8674c32e271",
-        "fetch": "https://github.com/c-ares/c-ares/releases/download/cares-1_19_1/c-ares-1.19.1.tar.gz",
-        "sha256": "321700399b72ed0e037d0074c629e7741f6b2ec2dda92956abe3e9671d3e268e",
-        "sha512": "466a94efda626e815a6ef7a890637056339f883d549ea6055e289fd8cd2391130e5682c905c0fb3bd7e955af7f6deb793562c170eb0ee066a4a62085a82ba470",
-        "subdir": "c-ares-1.19.1"
-      },
-      "target_root": "targets",
-      "target_file_name": "cares.TARGETS",
-      "bindings": {
-        "rules": "proto_toolchain",
-        "grpc": "grpc"
+        "cares": "cares"
       }
     },
     "toolchain": {
@@ -94,7 +78,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "absl/system",
-        "commit": "ef567c00d61cd28cb01088ca62d350eddb32fa2b",
+        "commit": "2a5207ee39509e6d844479828e915f7f4bb5c114",
         "subdir": "targets"
       }
     },
@@ -142,7 +126,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "protobuf/v29.0",
-        "commit": "2a866d810865b201cce86cab9f36c9a4a85d5b42",
+        "commit": "c20cdebbafc86bd60400bed476e3a39c9f8ade34",
         "subdir": "config"
       }
     },
@@ -151,7 +135,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "protobuf/v29.0",
-        "commit": "2a866d810865b201cce86cab9f36c9a4a85d5b42",
+        "commit": "c20cdebbafc86bd60400bed476e3a39c9f8ade34",
         "subdir": "targets"
       }
     },
@@ -200,6 +184,21 @@
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "re2/system",
         "commit": "4ebf1dee9dbb95c7e01b646828838db3917986cb",
+        "subdir": "targets"
+      }
+    },
+    "cares": {
+      "repository": "cares/targets",
+      "bindings": {
+        "rules": "toolchain"
+      }
+    },
+    "cares/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "cares/system",
+        "commit": "eec804c7d24f9e1834223723b4e9dff2eeb63676",
         "subdir": "targets"
       }
     }
