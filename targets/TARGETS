@@ -26,6 +26,7 @@ local options_doc = {
   CXX: ['The C++ compiler to use.'],
   CXXFLAGS: ['The C++ compiler flags to use.'],
   ADD_CXXFLAGS: ['Additional C++ compiler flags.'],
+  BUILD_POSITION_INDEPENDENT: ['Build as position independent code.'],
   AR: ['The archiver to use.'],
   ENV: [|||
     Map from strings to strings. The build environment to be used for
@@ -37,12 +38,16 @@ local options_doc = {
   PKG_CONFIG_ARGS: [|||
     Additional "pkg-config" arguments (e.g. "--define-prefix" or "--static").
   |||],
+  PROTOBUF_BUILD_SHARED: [|||
+    Boolean. Build shared ("*.so") libraries instead of static ("*.a") ones.
+    Default "false".
+  |||],
 };
 
 {
   // Default target: installs the protoc compiler, its libraries, and their
   // public headers into a LOCALBASE-shaped tree (bin/protoc,
-  // include/google/protobuf/*.h, lib/libprotobuf.a, lib/libprotoc.a, ...).
+  // include/google/protobuf/*.h, lib/libprotobuf.*, lib/libprotoc.*, ...).
   ALL: {
     type: 'export',
     target: 'INSTALL',
@@ -73,7 +78,7 @@ local options_doc = {
 
   libprotobuf: {
     type: 'export',
-    doc: ['The protobuf runtime library (libprotobuf.a).'],
+    doc: ['The protobuf runtime library (libprotobuf).'],
     target: @'//src/google/protobuf:libprotobuf',
     config_doc: options_doc,
     flexible_config: jst.keys(options_doc),
@@ -81,7 +86,7 @@ local options_doc = {
 
   libprotobuf_lite: {
     type: 'export',
-    doc: ['The lite (reduced-footprint) protobuf runtime library (libprotobuf-lite.a).'],
+    doc: ['The lite (reduced-footprint) protobuf runtime library (libprotobuf-lite).'],
     target: @'//src/google/protobuf:libprotobuf_lite',
     config_doc: options_doc,
     flexible_config: jst.keys(options_doc),
@@ -90,7 +95,7 @@ local options_doc = {
   // Internal library needed by gRPC (not part of INSTALL)
   libprotoc: {
     type: 'export',
-    doc: ['The protobuf compiler support library (libprotoc.a).'],
+    doc: ['The protobuf compiler support library (libprotoc).'],
     target: @'//src/google/protobuf:libprotoc',
     config_doc: options_doc,
     flexible_config: jst.keys(options_doc),
@@ -101,6 +106,15 @@ local options_doc = {
     type: 'export',
     doc: ['UTF-8 validation and range routines (C), vendored from protobuf\'s third_party/utf8_range.'],
     target: @'//third_party/utf8_range:utf8_range',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  // Internal library needed by gRPC (not part of INSTALL)
+  utf8_validity: {
+    type: 'export',
+    doc: ['Header-only UTF-8 structural validation wrapper (C++) around utf8_range.'],
+    target: @'//third_party/utf8_range:utf8_validity',
     config_doc: options_doc,
     flexible_config: jst.keys(options_doc),
   },

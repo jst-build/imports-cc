@@ -1,17 +1,32 @@
+// Shared/static selection and shared-object soversion. Mirrors upstream's
+// own "protobuf_VERSION" ("35.1.0"), used verbatim as the CMake VERSION
+// property on both "utf8_range" and "utf8_validity" in this same tree's
+// own CMakeLists.txt.
+local is_shared = if $'PROTOBUF_BUILD_SHARED' then ['yes'];
+local soversion = ['35', '1', '0'];
+
 {
   utf8_range: {
     type: @'rules//CC:library',
+    arguments_config: ['PROTOBUF_BUILD_SHARED'],
     name: ['protobuf_utf8_range'],
+    shared: is_shared,
+    soversion: soversion,
     hdrs: ['utf8_range.h'],
     srcs: ['utf8_range.c'],
+    'private-hdrs': [
+      'utf8_range_sse.inc',
+      'utf8_range_neon.inc',
+    ],
     'pure C': ['YES'],
   },
 
+  // Header-only since v35.1: IsStructurallyValid/SpanStructurallyValid are
+  // now inline wrappers around utf8_range_IsValid/utf8_range_ValidPrefix.
   utf8_validity: {
     type: @'rules//CC:library',
     name: ['protobuf_utf8_validity'],
     hdrs: ['utf8_validity.h'],
-    srcs: ['utf8_validity.cc'],
     deps: [
       @'//:utf8_range',
       @'absl//:strings',

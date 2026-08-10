@@ -32,11 +32,11 @@
     "protobuf": {
       "repository": {
         "type": "archive",
-        "content": "e8787a2f6d661aaaec426743c4e9667be7c8ba2f",
-        "fetch": "https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz",
-        "sha256": "10a0d58f39a1a909e95e00e8ba0b5b1dc64d02997f741151953a2b3659f6e78c",
-        "sha512": "c5637486a533557ea909d1f880b0f0064fff0c4665612e023170941310c45bf8e7373d2c67de621824b056530e98792c00799d71ec4ff7b6af9142cdc4cb8dee",
-        "subdir": "protobuf-29.0"
+        "content": "1ebc7df7dfb7f82542975c620baada42c5121efa",
+        "fetch": "https://github.com/protocolbuffers/protobuf/releases/download/v35.1/protobuf-35.1.tar.gz",
+        "sha256": "f0b6838e7522a8da96126d487068c959bc624926368f3024ac8fd03abd0a1ac4",
+        "sha512": "3cf3bd6cf7789fe65b57f3062ca3eebcf1660fbabe2c8c8504382052cb47f3a2b9ea146579a0fde58edacb53fa8c6f9eee3efee4250c9facc872e6cb0755568e",
+        "subdir": "protobuf-35.1"
       },
       "target_root": "targets",
       "bindings": {"rules": "rules", "zlib": "zlib", "absl": "absl"}

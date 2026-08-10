@@ -26,7 +26,6 @@ local compiler_family = jst.get('FAMILY', jst.env('TOOLCHAIN_CONFIG', default={}
            ]
          else
            [
-             '-Wall',
              '-Woverloaded-virtual',
              '-Wno-sign-compare',
              '-Wno-sign-conversion',
@@ -35,10 +34,8 @@ local compiler_family = jst.get('FAMILY', jst.env('TOOLCHAIN_CONFIG', default={}
              '-Wno-nonnull',
            ]
            + (if compiler_family == 'gnu' then
-                ['-Wno-attributes']
+                ['-Wno-attributes', '-Wno-deprecated-enum-enum-conversion']
               else if compiler_family == 'clang' then
-                ['-Wno-atomic-alignment', '-Wno-return-stack-address']
-              else
-                ['-Wno-deprecated-enum-enum-conversion'])),
+                ['-Wno-atomic-alignment', '-Wno-return-stack-address'])),
   },
 }

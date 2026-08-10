@@ -9,7 +9,7 @@
     },
     {
       "source": "git",
-      "branch": "absl/v20240722.0",
+      "branch": "absl/v20260526.0",
       "url": "https://github.com/jst-build/imports-cc.git",
       "repos": [{"alias": "absl", "map": {"toolchain": "toolchain"}}]
     },

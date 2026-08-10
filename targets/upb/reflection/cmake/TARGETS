@@ -1,0 +1,20 @@
+{
+  // Bootstrap descriptor.proto's minitable/reflection, checked into the
+  // release tarball to avoid a codegen chicken-and-egg problem. This
+  // module's own directory position ("upb/reflection/cmake/") strips down
+  // to exactly "google/protobuf/..." with no "stage" needed, matching
+  // upstream's own cmake/libupb.cmake "bootstrap_cmake_dir" include-path
+  // trick (an extra include root pointing straight at this directory).
+  bootstrap_hdrs: {
+    type: @'rules//data:staged',
+    srcs: [
+      'google/protobuf/descriptor.upb.h',
+      'google/protobuf/descriptor.upb_minitable.h',
+    ],
+  },
+
+  bootstrap_srcs: {
+    type: @'rules//data:staged',
+    srcs: ['google/protobuf/descriptor.upb_minitable.c'],
+  },
+}

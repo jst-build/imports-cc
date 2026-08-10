@@ -2,9 +2,12 @@
   names_srcs: {
     type: @'rules//data:staged',
     srcs: [
+      'common.cc',
       'common/names.cc',
+      'file_layout.cc',
       'minitable/names.cc',
       'minitable/names_internal.cc',
+      'plugin.cc',
     ],
     stage: ['upb_generator'],
   },
@@ -12,9 +15,13 @@
   names_hdrs: {
     type: @'rules//data:staged',
     srcs: [
+      'common.h',
       'common/names.h',
+      'file_layout.h',
       'minitable/names.h',
       'minitable/names_internal.h',
+      'plugin.h',
+      'plugin_bootstrap.h',
     ],
     stage: ['upb_generator'],
   },
