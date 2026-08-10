@@ -127,6 +127,7 @@ local options_doc = {
       'raw_hash_map',
       'raw_hash_set',
       'flat_hash_set',
+      'node_hash_map',
       'btree',
       'crc_cord_state',
       'crc32c',
@@ -143,6 +144,7 @@ local options_doc = {
       'function_ref',
       'any_invocable',
       'bind_front',
+      'overload',
       'hash',
       'absl_check',
       'absl_log',
@@ -463,6 +465,14 @@ local options_doc = {
     config_doc: options_doc,
   },
 
+  node_hash_map: {
+    type: 'export',
+    doc: ['Abseil container: absl::node_hash_map, a node-based hash map.'],
+    target: 'node_hash_map_unexported',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
   btree: {
     type: 'export',
     doc: ['Abseil container: absl::btree_map/btree_set B-tree ordered containers.'],
@@ -590,6 +600,14 @@ local options_doc = {
     type: 'export',
     doc: ['Abseil functional: absl::bind_front partial application helper.'],
     target: 'bind_front_internal',
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  overload: {
+    type: 'export',
+    doc: ['Abseil functional: absl::Overload, a visitor-pattern overload-set helper.'],
+    target: 'overload_unexported',
     flexible_config: jst.keys(options_doc),
     config_doc: options_doc,
   },
@@ -1657,6 +1675,32 @@ local options_doc = {
     ],
   },
 
+  // Object library: node_hash_map's own object files are folded directly
+  // into "node_hash_map_unexported" itself, not linked as a separate
+  // library (upstream's own comment: "Internal-only target, do not depend
+  // on directly.").
+  node_slot_policy: {
+    type: @'rules//CC:library',
+    hdrs: ['absl/container/internal/node_slot_policy.h'],
+    deps: ['config'],
+  },
+
+  node_hash_map_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_node_hash_map'],
+    hdrs: ['absl/container/node_hash_map.h'],
+    components: ['node_slot_policy'],
+    deps: [
+      'container_memory',
+      'core_headers',
+      'hash_container_defaults',
+      'raw_hash_map',
+      'algorithm_container',
+      'memory',
+      'type_traits',
+    ],
+  },
+
   btree_unexported: {
     type: @'rules//CC:library',
     name: ['absl_btree'],
@@ -2144,6 +2188,13 @@ local options_doc = {
       'type_traits',
       'utility',
     ],
+  },
+
+  overload_unexported: {
+    type: @'rules//CC:library',
+    name: ['absl_overload'],
+    hdrs: ['absl/functional/overload.h'],
+    deps: ['type_traits'],
   },
 
   // ===== absl/hash =====
