@@ -1,0 +1,12 @@
+{
+  // "address_sorting"'s own public header, included by grpc's own code via
+  // the bare "address_sorting/address_sorting.h" path (upstream's CMake
+  // exposes "third_party/address_sorting/include" as a blanket private
+  // include directory to "grpc"/"grpc_unsecure"; this module's own
+  // directory position already matches that root, so no "stage" override
+  // is needed).
+  hdrs: {
+    type: @'rules//data:staged',
+    srcs: ['address_sorting/address_sorting.h'],
+  },
+}

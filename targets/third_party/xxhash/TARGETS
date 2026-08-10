@@ -1,8 +1,11 @@
 {
-  xxhash: {
-    type: @'rules//CC:library',
-    name: ['xxhash'],
-    'pure C': ['YES'],
-    hdrs: ['xxhash.h'],
+  // grpc's own vendored xxhash.h, included via the bare "xxhash.h" path
+  // (upstream's CMake exposes "third_party/xxhash" as a blanket private
+  // include directory to "grpc"/"grpc_unsecure"; this module's own
+  // directory position already matches that root, so no "stage" override
+  // is needed).
+  hdrs: {
+    type: @'rules//data:staged',
+    srcs: ['xxhash.h'],
   },
 }

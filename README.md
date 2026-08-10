@@ -73,6 +73,9 @@ Available targets are:
 | `CXX` | The C++ compiler to use. |
 | `CXXFLAGS` | The C++ compiler flags to use. |
 | `ADD_CXXFLAGS` | Additional C++ compiler flags. |
+| `BUILD_POSITION_INDEPENDENT` | Build as position independent code. |
+| `GRPC_BUILD_SHARED` | Boolean. Build shared (`*.so`) grpc libraries instead of static (`*.a`) ones. Default `false`. |
+| `PROTOBUF_BUILD_SHARED` | Boolean. Build shared (`*.so`) protobuf libraries instead of static (`*.a`) ones. Default `false`. |
 | `AR` | The archiver to use. |
 | `ENV` | Map from strings to strings. The build environment to be used for build actions. Typically used to include an unusual value of `PATH`. |
 | `LOCALBASE` | Use this localbase for building against system libs (e.g., `"/usr"`). |

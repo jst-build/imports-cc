@@ -1,8 +1,0 @@
-{
-  rpc_status_grpc_internal_default_proto: {
-    type: @'rules//proto:library',
-    name: ['rpc_status_grpc_internal_default_proto'],
-    stage: ['google', 'rpc'],
-    srcs: ['status.proto'],
-  },
-}

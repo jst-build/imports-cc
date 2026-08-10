@@ -1,0 +1,49 @@
+{
+  // Checked-in upb-generated code for protobuf's well-known types (bootstrap
+  // for "descriptor.proto", plus any/duration/empty/struct/timestamp/wrappers,
+  // included into the release tarball to avoid a codegen chicken-and-egg
+  // problem — analogous to protobuf's own upb/reflection/cmake bootstrap).
+  //
+  // Upstream's CMake exposes "src/core/ext/upb-gen" as a blanket private
+  // include directory to "grpc" (see "_gRPC_UPB_GRPC_GENERATED_DIR" in
+  // cmake/upb.cmake), so grpc's own code includes these via the bare
+  // "google/protobuf/....h" path; "stage" reproduces that path here since
+  // this module's own directory position only fixes the FETCH location; the
+  // STAGE location is always the given relative path unless overridden. A
+  // real "CC:library" (not "data:staged") so both "grpc"/"grpc_unsecure"
+  // and upb's own "upb_reflection_lib" can pull it in via "deps" — which,
+  // unlike referencing it through a "hdrs"/"srcs" field, does not get
+  // re-staged under the consuming target's own "stage" prefix.
+  wkt_bootstrap: {
+    type: @'rules//CC:library',
+    'pure C': ['yes'],
+    name: ['upb_wkt_bootstrap'],
+    stage: ['google', 'protobuf'],
+    hdrs: [
+      'any.upb.h',
+      'any.upb_minitable.h',
+      'descriptor.upb.h',
+      'descriptor.upb_minitable.h',
+      'duration.upb.h',
+      'duration.upb_minitable.h',
+      'empty.upb.h',
+      'empty.upb_minitable.h',
+      'struct.upb.h',
+      'struct.upb_minitable.h',
+      'timestamp.upb.h',
+      'timestamp.upb_minitable.h',
+      'wrappers.upb.h',
+      'wrappers.upb_minitable.h',
+    ],
+    srcs: [
+      'any.upb_minitable.c',
+      'descriptor.upb_minitable.c',
+      'duration.upb_minitable.c',
+      'empty.upb_minitable.c',
+      'struct.upb_minitable.c',
+      'timestamp.upb_minitable.c',
+      'wrappers.upb_minitable.c',
+    ],
+    deps: [@'//third_party/upb/upb:generated_code_support_hdr'],
+  },
+}

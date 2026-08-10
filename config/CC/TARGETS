@@ -13,8 +13,6 @@ local compiler_family = jst.get('FAMILY', toolchain_config, default='unknown');
       ['-std=c11']
       + (if compiler_family != 'msvc' then
            [
-             '-Wall',
-             '-Wextra',
              '-Wno-unused-parameter',
              '-Wno-sign-compare',
              '-Wno-implicit-fallthrough',
@@ -42,8 +40,6 @@ local compiler_family = jst.get('FAMILY', toolchain_config, default='unknown');
       ['-std=c++17']
       + (if compiler_family != 'msvc' then
            [
-             '-Wall',
-             '-Wextra',
              '-Wno-unused-parameter',
              '-Wno-uninitialized',
              '-Wno-missing-field-initializers',
@@ -52,11 +48,6 @@ local compiler_family = jst.get('FAMILY', toolchain_config, default='unknown');
              '-Wno-comment',
              '-Wno-attributes',
              '-Wno-unused-function',
-             '-Wno-unknown-warning-option',
-             '-Wno-implicit-const-int-float-conversion',
-             '-Wno-stringop-overflow',
-             '-Wno-stringop-truncation',
-             '-Wno-class-memaccess',
            ])
       + (if jst.env('DEBUG') then
            ['-D_DEBUG', '-DDEBUG']
@@ -68,6 +59,21 @@ local compiler_family = jst.get('FAMILY', toolchain_config, default='unknown');
              '-Wno-unused-variable',
              '-Wno-dangling-pointer',
              '-Wno-type-limits',
+             // GCC-only warning names; unconditionally listing them under
+             // Clang produces "unrecognized command-line option" noise.
+             '-Wno-stringop-overflow',
+             '-Wno-stringop-truncation',
+             '-Wno-class-memaccess',
+           ]
+         else if compiler_family == 'clang' then
+           [
+             // Clang-only warning names; unconditionally listing them
+             // under GCC produces "unrecognized command-line option" noise
+             // (these came from grpc's own bazel/copts.bzl, which only
+             // enables them under its opt-in "use_strict_warning" variant
+             // — kept here as a general Clang suppression regardless).
+             '-Wno-unknown-warning-option',
+             '-Wno-implicit-const-int-float-conversion',
            ])
       + (if os == 'windows' then
            [
