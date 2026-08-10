@@ -237,6 +237,13 @@ local options_doc = {
     flexible_config: jst.keys(options_doc),
   },
 
+  node_hash_map: {
+    type: 'export',
+    target: 'node_hash_map_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
   btree: {
     type: 'export',
     target: 'btree_unexported',
@@ -345,6 +352,13 @@ local options_doc = {
   bind_front: {
     type: 'export',
     target: 'bind_front_unexported',
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  overload: {
+    type: 'export',
+    target: 'overload_unexported',
     config_doc: options_doc,
     flexible_config: jst.keys(options_doc),
   },
@@ -908,6 +922,11 @@ local options_doc = {
     name: ['absl_flat_hash_set'],
   },
 
+  node_hash_map_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_node_hash_map'],
+  },
+
   btree_unexported: {
     type: @'rules//CC/pkgconfig:system_library',
     name: ['absl_btree'],
@@ -986,6 +1005,11 @@ local options_doc = {
   bind_front_unexported: {
     type: @'rules//CC/pkgconfig:system_library',
     name: ['absl_bind_front'],
+  },
+
+  overload_unexported: {
+    type: @'rules//CC/pkgconfig:system_library',
+    name: ['absl_overload'],
   },
 
   hash_unexported: {
