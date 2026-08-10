@@ -32,6 +32,10 @@ local options_doc = {
   CFLAGS: ['The C compiler flags to use.'],
   ADD_CFLAGS: ['Additional C compiler flags.'],
   BUILD_POSITION_INDEPENDENT: ['Build as position independent code.'],
+  CARES_BUILD_SHARED: [|||
+    Boolean. Build a shared ("*.so") library instead of a static ("*.a")
+    one. Default "false".
+  |||],
   AR: ['The archiver to use.'],
   ENV: [|||
     Map from strings to strings. The build environment to be used for
@@ -47,7 +51,7 @@ local options_doc = {
 
 {
   // Default target: installs the library and its public headers into a
-  // LOCALBASE-shaped tree (include/ares*.h, lib/liblibcares.a).
+  // LOCALBASE-shaped tree (include/ares*.h, lib/libcares.a).
   ALL: {
     type: 'export',
     target: 'INSTALL',

@@ -1,24 +1,38 @@
 {
   "main": "cares",
   "repositories": {
+    "config": {
+      "repository": {
+        "type": "file",
+        "path": "config"
+      }
+    },
     "targets": {
       "repository": {
         "type": "file",
         "path": "targets"
       }
     },
+    "rules": {
+      "repository": "toolchain",
+      "target_root": "config",
+      "rule_root": "toolchain",
+      "bindings": {
+        "base": "toolchain"
+      }
+    },
     "cares": {
       "repository": {
         "type": "archive",
-        "content": "4237a53f7a5dc1cfb4d04a6b6374f8674c32e271",
-        "fetch": "https://github.com/c-ares/c-ares/releases/download/cares-1_19_1/c-ares-1.19.1.tar.gz",
-        "sha256": "321700399b72ed0e037d0074c629e7741f6b2ec2dda92956abe3e9671d3e268e",
-        "sha512": "466a94efda626e815a6ef7a890637056339f883d549ea6055e289fd8cd2391130e5682c905c0fb3bd7e955af7f6deb793562c170eb0ee066a4a62085a82ba470",
-        "subdir": "c-ares-1.19.1"
+        "content": "3f41ac733a9ef484e6851a06fa66b31a4563bb1b",
+        "fetch": "https://github.com/c-ares/c-ares/releases/download/v1.34.8/c-ares-1.34.8.tar.gz",
+        "sha256": "c222b6d681096f9444d2c4863d2c1174019e27cacca0a4a5c114d36dd7d7bf78",
+        "sha512": "d5997a57fda9b3a3385b1685e6b2f9292c3a1d39bd27579acaabf3d2d33aa5e91bfec5d41c5e51ca6b50dbc1f4346d75e9bfbccf44a494fbd4bc7613b167143c",
+        "subdir": "c-ares-1.34.8"
       },
       "target_root": "targets",
       "bindings": {
-        "rules": "toolchain"
+        "rules": "rules"
       }
     },
     "toolchain": {

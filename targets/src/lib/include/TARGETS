@@ -1,0 +1,24 @@
+{
+  // Upstream's own src/lib/CMakeLists.txt adds "src/lib/include" as a
+  // separate blanket include directory (alongside "src/lib" itself), so
+  // these headers are "#include"d bare (e.g. "ares_mem.h", not
+  // "include/ares_mem.h"). This module's own directory position already
+  // matches that root, so no "stage" override is needed — the given
+  // relative paths ARE the desired staged locations.
+  hdrs: {
+    type: @'rules//data:staged',
+    srcs: [
+      'ares_array.h',
+      'ares_buf.h',
+      'ares_htable_asvp.h',
+      'ares_htable_dict.h',
+      'ares_htable_strvp.h',
+      'ares_htable_szvp.h',
+      'ares_htable_vpstr.h',
+      'ares_htable_vpvp.h',
+      'ares_llist.h',
+      'ares_mem.h',
+      'ares_str.h',
+    ],
+  },
+}

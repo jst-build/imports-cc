@@ -2,11 +2,11 @@
   ares_include_headers: {
     type: @'rules//data:staged',
     srcs: [
-      'ares_build.h',
       'ares.h',
+      'ares_build.h',
       'ares_dns.h',
+      'ares_dns_record.h',
       'ares_nameser.h',
-      'ares_rules.h',
       'ares_version.h',
     ],
   },

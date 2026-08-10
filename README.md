@@ -19,7 +19,7 @@ final repository lock-file
 "imports": [
   {
     "source": "git",
-    "branch": "cares/v1.19.1",
+    "branch": "cares/v1.34.8",
     "url": "https://github.com/jst-build/imports-cc",
     "repos": [{"alias": "cares"}]
   },
@@ -52,6 +52,8 @@ Available targets are:
 | `CC` | The C compiler to use. |
 | `CFLAGS` | The C compiler flags to use. |
 | `ADD_CFLAGS` | Additional C compiler flags. |
+| `BUILD_POSITION_INDEPENDENT` | Build as position independent code. |
+| `CARES_BUILD_SHARED` | Boolean. Build a shared (`*.so`) library instead of a static (`*.a`) one. Default `false`. |
 | `AR` | The archiver to use. |
 | `ENV` | Map from strings to strings. The build environment to be used for build actions. Typically used to include an unusual value of `PATH`. |
 | `LOCALBASE` | Use this localbase for building against system libs (e.g., `"/usr"`). |

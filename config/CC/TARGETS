@@ -1,0 +1,13 @@
+local compiler_family = jst.get('FAMILY', jst.env('TOOLCHAIN_CONFIG', default={}), default='unknown');
+
+{
+  defaults: {
+    type: @'//CC:defaults',
+    arguments_config: ['TOOLCHAIN_CONFIG'],
+    base: [@'base//CC:defaults'],
+    // Matches upstream's own cmake/EnableWarnings.cmake baseline.
+    ADD_CFLAGS:
+      if compiler_family != 'msvc' then
+        ['-Wall', '-Wextra'],
+  },
+}
