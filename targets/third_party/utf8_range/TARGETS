@@ -9,7 +9,7 @@ local soversion = ['35', '1', '0'];
   utf8_range: {
     type: @'rules//CC:library',
     arguments_config: ['PROTOBUF_BUILD_SHARED'],
-    name: ['protobuf_utf8_range'],
+    name: ['utf8_range'],
     shared: is_shared,
     soversion: soversion,
     hdrs: ['utf8_range.h'],

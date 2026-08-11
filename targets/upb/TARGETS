@@ -220,6 +220,6 @@
       'wire/internal/decoder.c',
       'wire/reader.c',
     ],
-    deps: [@'//third_party/utf8_range:utf8_range'],
+    deps: [@'//:utf8_range'],
   },
 }
