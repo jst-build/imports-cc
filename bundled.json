@@ -17,7 +17,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/rules-cc",
         "branch": "master",
-        "commit": "c18d9413f8759f8c261a3af06edf0861ee9e2492",
+        "commit": "62c4b9f3524b456049e1cdf3601b7e07d0c9e4d0",
         "subdir": "rules"
       }
     },
@@ -26,7 +26,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/toolchains-cc.git",
         "branch": "system",
-        "commit": "5505965c61432dea016055d0f12f483df40eb9ff",
+        "commit": "93ba90ae5752d72041eb9849ad53e66c82826e20",
         "subdir": "targets"
       }
     },
@@ -49,7 +49,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "zlib/v1.3.1",
-        "commit": "8631d63e55cbb5b7adc32bba61b158df7076d42f",
+        "commit": "944d9ed967c4b8c37dd3b52947a071a14704c92b",
         "subdir": "targets"
       }
     },
@@ -83,7 +83,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "boringssl/dec0d8f6",
-        "commit": "967af575ceaae6cfc497c6b4b9af49d2eaf5ad64",
+        "commit": "2b338d105a6c1c19a6b673ee5e9f927929ab3e8f",
         "subdir": "config"
       }
     },
@@ -92,7 +92,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "boringssl/dec0d8f6",
-        "commit": "967af575ceaae6cfc497c6b4b9af49d2eaf5ad64",
+        "commit": "2b338d105a6c1c19a6b673ee5e9f927929ab3e8f",
         "subdir": "targets"
       }
     },
@@ -115,7 +115,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "cares/v1.19.1",
-        "commit": "929eee3fff0eae0981e66aff8a948eafa3390337",
+        "commit": "86a537176064de338b028104d91585eeb9095eb5",
         "subdir": "targets"
       }
     },

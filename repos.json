@@ -48,7 +48,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/rules-cc",
         "branch": "master",
-        "commit": "c18d9413f8759f8c261a3af06edf0861ee9e2492",
+        "commit": "62c4b9f3524b456049e1cdf3601b7e07d0c9e4d0",
         "subdir": "rules"
       }
     },
@@ -57,7 +57,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/toolchains-cc.git",
         "branch": "system",
-        "commit": "5505965c61432dea016055d0f12f483df40eb9ff",
+        "commit": "93ba90ae5752d72041eb9849ad53e66c82826e20",
         "subdir": "targets"
       }
     },
@@ -72,7 +72,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "zlib/system",
-        "commit": "f429a1b6826cbe76f76515ea36e8b43d2d28b6a9",
+        "commit": "0637f32833f54a2e97f22b68d28bb22204488a84",
         "subdir": "targets"
       }
     },
@@ -87,7 +87,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "ssl/system",
-        "commit": "6bd87d6fd3bf4cf724ebf879856c56b5b0639727",
+        "commit": "0dede21151f4ed565b920039cea695e5e8321706",
         "subdir": "targets"
       }
     },
@@ -102,7 +102,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "cares/system",
-        "commit": "eec804c7d24f9e1834223723b4e9dff2eeb63676",
+        "commit": "d1350f2d2bf25ddb3e9457e343314519bd7d8bbd",
         "subdir": "targets"
       }
     }
