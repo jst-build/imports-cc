@@ -1696,6 +1696,7 @@ local options_doc = {
     hdrs: ['absl/container/inlined_vector.h'],
     deps: [
       'inlined_vector_internal',
+      'iterator_traits_internal',
       'algorithm',
       'config',
       'core_headers',
@@ -1845,6 +1846,7 @@ local options_doc = {
     hdrs: ['absl/container/internal/hash_function_defaults.h'],
     deps: [
       'config',
+      'container_common',
       'hash',
       'cord',
       'strings',
@@ -1902,6 +1904,7 @@ local options_doc = {
       'hashtable_debug_hooks',
       'hashtablez_sampler',
       'iterator_traits_internal',
+      'raw_hash_set_resize_impl',
       'config',
       'core_headers',
       'dynamic_annotations',
@@ -2718,6 +2721,7 @@ local options_doc = {
     deps: [
       'config',
       'core_headers',
+      'prefetch',
       'endian',
       'fixed_array',
       'function_ref',
@@ -3450,6 +3454,7 @@ local options_doc = {
       'core_headers',
       'hashtablez_sampler',
       'span',
+      'statusor',
       'strings',
     ],
   },
