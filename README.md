@@ -2,7 +2,7 @@
 
 Target definitions for building `grpc` from source. By default, this
 library is built with the system toolchain and system dependencies
-`ssl`, `re2`, `absl`, and `zlib`. To use different ones
+`ssl`, `re2`, `absl`, `zlib`, and `cares`. To use different ones
 see [Repository Remapping](#repository-remapping) below.
 
 > [!NOTE]
@@ -93,6 +93,7 @@ This repository can be imported with its dependencies remapped:
 - `absl`: The Abseil dependency.
 - `zlib`: The zlib dependency.
 - `re2`: The RE2 dependency.
+- `cares`: The c-ares dependency.
 
 > [!IMPORTANT]
 > Note that if you remap the dependencies with libraries built from source, it
