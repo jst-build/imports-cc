@@ -55,6 +55,7 @@ Available targets are:
 | `CXX` | The C++ compiler to use. |
 | `CXXFLAGS` | The C++ compiler flags to use. |
 | `ADD_CXXFLAGS` | Additional C++ compiler flags. |
+| `ADD_LDFLAGS` | Additional linker flags. |
 | `AR` | The archiver to use. |
 | `ENV` | Map from strings to strings. The build environment to be used for build actions. Typically used to include an unusual value of `PATH`. |
 | `LOCALBASE` | Use this localbase for building against system libs (e.g., `"/usr"`). |
