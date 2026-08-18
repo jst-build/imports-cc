@@ -52,6 +52,7 @@ Available targets are:
 | `CC` | The C compiler to use. |
 | `CFLAGS` | The C compiler flags to use. |
 | `ADD_CFLAGS` | Additional C compiler flags. |
+| `ADD_LDFLAGS` | Additional linker flags. |
 | `BUILD_POSITION_INDEPENDENT` | Build as position independent code. |
 | `CARES_BUILD_SHARED` | Boolean. Build a shared (`*.so`) library instead of a static (`*.a`) one. Default `false`. |
 | `AR` | The archiver to use. |
