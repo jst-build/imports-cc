@@ -50,7 +50,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "absl/v20260526.0",
-        "commit": "17d25ee4f83e3674a44fff7b705c5d43655c795e",
+        "commit": "888e36ce264b04acf5590b9c0fa4dc7b78962853",
         "subdir": "patches"
       }
     },
@@ -67,7 +67,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "absl/v20260526.0",
-        "commit": "17d25ee4f83e3674a44fff7b705c5d43655c795e",
+        "commit": "888e36ce264b04acf5590b9c0fa4dc7b78962853",
         "subdir": "config"
       }
     },
@@ -76,7 +76,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "absl/v20260526.0",
-        "commit": "17d25ee4f83e3674a44fff7b705c5d43655c795e",
+        "commit": "888e36ce264b04acf5590b9c0fa4dc7b78962853",
         "subdir": "targets"
       }
     },
@@ -99,7 +99,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "zlib/v1.3.1",
-        "commit": "944d9ed967c4b8c37dd3b52947a071a14704c92b",
+        "commit": "d3d20ff53686ae310a2b222ad4522c41e9615cb6",
         "subdir": "targets"
       }
     },
