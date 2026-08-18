@@ -62,6 +62,7 @@ Available targets are:
 | `CXX` | The C++ compiler to use. |
 | `CXXFLAGS` | The C++ compiler flags to use. |
 | `ADD_CXXFLAGS` | Additional C++ compiler flags. |
+| `ADD_LDFLAGS` | Additional linker flags. |
 | `AR` | The archiver to use. |
 | `DWP` | The DWARF format packaging tool to use. Required by debug builds that enable debug fission. |
 | `ENV` | Map from strings to strings. The build environment to be used for build actions. Typically used to include an unusual value of `PATH`. |

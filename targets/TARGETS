@@ -32,6 +32,7 @@ local options_doc = {
   CXX: ['The C++ compiler to use.'],
   CXXFLAGS: ['The C++ compiler flags to use.'],
   ADD_CXXFLAGS: ['Additional C++ compiler flags.'],
+  ADD_LDFLAGS: ['Additional linker flags.'],
   BUILD_POSITION_INDEPENDENT: ['Build as position independent code.'],
   AR: ['The archiver to use.'],
   DWP: ['The DWARF format packaging tool to use. Required by debug builds that enable debug fission.'],
