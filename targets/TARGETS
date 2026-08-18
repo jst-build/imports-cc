@@ -71,6 +71,7 @@ local options_doc = {
   CXXFLAGS: ['The C++ compiler flags to use.'],
   ADD_CFLAGS: ['Additional C compiler flags.'],
   ADD_CXXFLAGS: ['Additional C++ compiler flags.'],
+  ADD_LDFLAGS: ['Additional linker flags.'],
   BUILD_POSITION_INDEPENDENT: ['Build as position independent code.'],
   USE_SYSTEM_LIBS: [|||
     If set, prefer system libraries. This project reads it in the random seed
