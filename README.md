@@ -68,6 +68,7 @@ the most commonly consumed ones:
 | `CXX` | The C++ compiler to use. |
 | `CXXFLAGS` | The C++ compiler flags to use. |
 | `ADD_CXXFLAGS` | Additional C++ compiler flags. |
+| `ADD_LDFLAGS` | Additional linker flags. |
 | `AR` | The archiver to use. |
 | `DWP` | The DWARF format packaging tool to use. Required by debug builds that enable debug fission. |
 | `PATCH` | The patch tool used to apply the bundled `options.h` patch. |
