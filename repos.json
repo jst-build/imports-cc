@@ -126,7 +126,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "protobuf/v35.1",
-        "commit": "4ac7e0dd9a92b752140357cfeaabc9066e8d22a0",
+        "commit": "d2c2af9b99d5e9d3071f3a7e711e33682727d61b",
         "subdir": "config"
       }
     },
@@ -135,7 +135,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "protobuf/v35.1",
-        "commit": "4ac7e0dd9a92b752140357cfeaabc9066e8d22a0",
+        "commit": "d2c2af9b99d5e9d3071f3a7e711e33682727d61b",
         "subdir": "targets"
       }
     },

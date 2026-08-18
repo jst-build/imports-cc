@@ -73,6 +73,7 @@ Available targets are:
 | `CXX` | The C++ compiler to use. |
 | `CXXFLAGS` | The C++ compiler flags to use. |
 | `ADD_CXXFLAGS` | Additional C++ compiler flags. |
+| `ADD_LDFLAGS` | Additional linker flags. |
 | `BUILD_POSITION_INDEPENDENT` | Build as position independent code. |
 | `GRPC_BUILD_SHARED` | Boolean. Build shared (`*.so`) grpc libraries instead of static (`*.a`) ones. Default `false`. |
 | `PROTOBUF_BUILD_SHARED` | Boolean. Build shared (`*.so`) protobuf libraries instead of static (`*.a`) ones. Default `false`. |
