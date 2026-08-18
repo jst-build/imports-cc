@@ -49,7 +49,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "zlib/v1.3.1",
-        "commit": "944d9ed967c4b8c37dd3b52947a071a14704c92b",
+        "commit": "d3d20ff53686ae310a2b222ad4522c41e9615cb6",
         "subdir": "targets"
       }
     },
@@ -83,7 +83,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "boringssl/dec0d8f6",
-        "commit": "2b338d105a6c1c19a6b673ee5e9f927929ab3e8f",
+        "commit": "5bbd9e256eb2a5347d0015623df2507f1a0cd537",
         "subdir": "config"
       }
     },
@@ -92,7 +92,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "boringssl/dec0d8f6",
-        "commit": "2b338d105a6c1c19a6b673ee5e9f927929ab3e8f",
+        "commit": "5bbd9e256eb2a5347d0015623df2507f1a0cd537",
         "subdir": "targets"
       }
     },
@@ -123,7 +123,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "bzip2/v1.0.8",
-        "commit": "1909df452e9e5a0a656643fa583f43d2c54d947d",
+        "commit": "e3d07a223e9c9edae7be45c3300ef08375bcb94b",
         "subdir": "config"
       }
     },
@@ -132,7 +132,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "bzip2/v1.0.8",
-        "commit": "1909df452e9e5a0a656643fa583f43d2c54d947d",
+        "commit": "e3d07a223e9c9edae7be45c3300ef08375bcb94b",
         "subdir": "targets"
       }
     },
@@ -163,7 +163,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "lzma/v5.6.3",
-        "commit": "8f2d8fc0c04ebddd8e4acfbff687c795ccb47c8d",
+        "commit": "087ee698c3223db7a6dca6c4b127f2027023cae6",
         "subdir": "config"
       }
     },
@@ -172,7 +172,7 @@
         "type": "git",
         "repository": "https://github.com/jst-build/imports-cc.git",
         "branch": "lzma/v5.6.3",
-        "commit": "8f2d8fc0c04ebddd8e4acfbff687c795ccb47c8d",
+        "commit": "087ee698c3223db7a6dca6c4b127f2027023cae6",
         "subdir": "targets"
       }
     },
