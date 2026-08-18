@@ -1,0 +1,7 @@
+{
+  files: {
+    type: @'rules//data:staged',
+    stage: ['golden-decompression-errors'],
+    srcs: [jst.glob('*')],
+  },
+}

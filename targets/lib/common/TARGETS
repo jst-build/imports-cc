@@ -1,0 +1,26 @@
+{
+  headers: {
+    type: @'rules//data:staged',
+    stage: ['lib', 'common'],
+    srcs: [
+      'allocations.h',
+      'bits.h',
+      'bitstream.h',
+      'compiler.h',
+      'cpu.h',
+      'debug.h',
+      'error_private.h',
+      'fse.h',
+      'huf.h',
+      'mem.h',
+      'pool.h',
+      'portability_macros.h',
+      'threading.h',
+      'xxhash.h',
+      'zstd_deps.h',
+      'zstd_internal.h',
+      'zstd_trace.h',
+    ],
+    deps: [@'//lib:public_headers_staged'],
+  },
+}

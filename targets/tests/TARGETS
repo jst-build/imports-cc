@@ -1,0 +1,224 @@
+{
+  // Known-good frames (golden-decompression) must decode without error.
+  // Mirrors upstream's tests/playTests.sh line ~1289.
+  golden_decompression_test: {
+    type: @'rules//shell/test:script',
+    name: ['golden_decompression_test'],
+    test: ['golden_decompression_test_script'],
+    deps: [@'//:zstd_cli', @'./golden-decompression:files'],
+  },
+
+  golden_decompression_test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      ./zstd -t -r golden-decompression
+      echo "golden_decompression_test passed"
+    |||,
+  },
+
+  // Known-bad frames (golden-decompression-errors) must each be rejected.
+  // Mirrors upstream's tests/playTests.sh line ~534.
+  golden_decompression_errors_test: {
+    type: @'rules//shell/test:script',
+    name: ['golden_decompression_errors_test'],
+    test: ['golden_decompression_errors_test_script'],
+    deps: [@'//:zstd_cli', @'./golden-decompression-errors:files'],
+  },
+
+  golden_decompression_errors_test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      for f in golden-decompression-errors/*; do
+        if ./zstd -t "$f" > /dev/null 2>&1; then
+          echo "expected decode failure for $f" >&2
+          exit 1
+        fi
+      done
+      echo "golden_decompression_errors_test passed"
+    |||,
+  },
+
+  // Compressing golden-compression's files must itself produce valid,
+  // decodable zstd frames. Mirrors upstream's tests/playTests.sh line ~1290.
+  golden_compression_test: {
+    type: @'rules//shell/test:script',
+    name: ['golden_compression_test'],
+    test: ['golden_compression_test_script'],
+    deps: [@'//:zstd_cli', @'./golden-compression:files'],
+  },
+
+  golden_compression_test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      ./zstd -c -r golden-compression | ./zstd -t
+      echo "golden_compression_test passed"
+    |||,
+  },
+
+  // Compressing then decompressing each golden-compression file must
+  // round-trip byte-for-byte.
+  golden_roundtrip_test: {
+    type: @'rules//shell/test:script',
+    name: ['golden_roundtrip_test'],
+    test: ['golden_roundtrip_test_script'],
+    deps: [@'//:zstd_cli', @'./golden-compression:files'],
+  },
+
+  golden_roundtrip_test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      for f in golden-compression/*; do
+        ./zstd -q -f -c "$f" | ./zstd -q -d -c > out.tmp
+        cmp "$f" out.tmp
+      done
+      echo "golden_roundtrip_test passed"
+    |||,
+  },
+
+  // The "-V"/"--version" banner must report the CLI as Zstandard and the
+  // version this branch actually built. Behavior-equivalent to upstream's
+  // tests/cli-tests/basic/version.sh (that test's exact stdout-glob
+  // comparison isn't ported - see tests/cli-tests/run.py for the harness
+  // this would otherwise need).
+  cli_version_test: {
+    type: @'rules//shell/test:script',
+    name: ['cli_version_test'],
+    test: ['cli_version_test_script'],
+    deps: [@'//:zstd_cli'],
+  },
+
+  cli_version_test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      for flag in -V --version; do
+        out="$(./zstd "$flag")"
+        case "$out" in
+          "Zstandard CLI"*|"*** Zstandard CLI"*) ;;
+          *) echo "unexpected $flag output: $out" >&2; exit 1 ;;
+        esac
+      done
+      echo "cli_version_test passed"
+    |||,
+  },
+
+  // "-h"/"-H"/"--help" must all succeed and print real usage text.
+  // Behavior-equivalent to upstream's tests/cli-tests/basic/help.sh.
+  cli_help_test: {
+    type: @'rules//shell/test:script',
+    name: ['cli_help_test'],
+    test: ['cli_help_test_script'],
+    deps: [@'//:zstd_cli'],
+  },
+
+  cli_help_test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      for flag in -h -H --help; do
+        out="$(./zstd "$flag")"
+        case "$out" in
+          *Usage:\ zstd*) ;;
+          *) echo "$flag did not print usage text" >&2; exit 1 ;;
+        esac
+      done
+      echo "cli_help_test passed"
+    |||,
+  },
+
+  // Unrecognized/malformed options must be rejected with a non-zero exit
+  // and an "Incorrect parameter" message, not silently ignored. Behavior-
+  // equivalent to upstream's tests/cli-tests/basic/args.sh.
+  cli_args_test: {
+    type: @'rules//shell/test:script',
+    name: ['cli_args_test'],
+    test: ['cli_args_test_script'],
+    deps: [@'//:zstd_cli'],
+  },
+
+  cli_args_test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      echo data > file.txt
+      for args in --blah -xz "--adapt=min=1,maxx=2 file.txt"; do
+        if err="$(./zstd $args 2>&1)"; then
+          echo "expected failure for: zstd $args" >&2
+          exit 1
+        fi
+        case "$err" in
+          "Incorrect parameter"*) ;;
+          *) echo "unexpected error for: zstd $args: $err" >&2; exit 1 ;;
+        esac
+      done
+      echo "cli_args_test passed"
+    |||,
+  },
+
+  // "--memory=" must reject bogus size suffixes and accept valid ones.
+  // Behavior-equivalent to upstream's tests/cli-tests/basic/memlimit.sh.
+  cli_memlimit_test: {
+    type: @'rules//shell/test:script',
+    name: ['cli_memlimit_test'],
+    test: ['cli_memlimit_test_script'],
+    deps: [@'//:zstd_cli'],
+  },
+
+  cli_memlimit_test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      echo some data > file
+      for bogus in 32LB 32LiB 32A 32r82347dn83 32asbdf hello; do
+        if ./zstd -f --memory="$bogus" file > /dev/null 2>&1; then
+          echo "expected failure for --memory=$bogus" >&2
+          exit 1
+        fi
+      done
+      ./zstd -q -f --memory=1 file
+      ./zstd -q -f --memory=1K file
+      rm -f file file.zst
+      echo "cli_memlimit_test passed"
+    |||,
+  },
+
+  // "--output-dir-mirror"/"--output-dir-flat" must reject an empty
+  // directory argument rather than silently writing to "." or "/". Behavior-
+  // equivalent to upstream's tests/cli-tests/basic/output_dir.sh.
+  cli_output_dir_test: {
+    type: @'rules//shell/test:script',
+    name: ['cli_output_dir_test'],
+    test: ['cli_output_dir_test_script'],
+    deps: [@'//:zstd_cli'],
+  },
+
+  cli_output_dir_test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      echo data > a.txt
+      if ./zstd -r a.txt --output-dir-mirror="" > /dev/null 2>&1; then
+        echo "expected failure for empty --output-dir-mirror" >&2
+        exit 1
+      fi
+      if ./zstd -r a.txt --output-dir-flat="" > /dev/null 2>&1; then
+        echo "expected failure for empty --output-dir-flat" >&2
+        exit 1
+      fi
+      echo "cli_output_dir_test passed"
+    |||,
+  },
+}

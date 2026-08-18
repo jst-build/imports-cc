@@ -1,0 +1,17 @@
+{
+  public_headers: {
+    type: @'rules//data:staged',
+    srcs: [
+      'zdict.h',
+      'zstd.h',
+      'zstd_errors.h',
+    ],
+  },
+
+  // public headers staged to 'lib' for consumption by private headers
+  public_headers_staged: {
+    type: @'rules//data:staged',
+    stage: ['lib'],
+    srcs: ['public_headers'],
+  },
+}

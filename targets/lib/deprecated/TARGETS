@@ -1,0 +1,8 @@
+{
+  headers: {
+    type: @'rules//data:staged',
+    stage: ['lib', 'deprecated'],
+    srcs: ['zbuff.h'],
+    deps: [@'//lib:public_headers_staged'],
+  },
+}

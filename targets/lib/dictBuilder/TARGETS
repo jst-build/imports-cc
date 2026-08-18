@@ -1,0 +1,14 @@
+{
+  headers: {
+    type: @'rules//data:staged',
+    stage: ['lib', 'dictBuilder'],
+    srcs: [
+      'cover.h',
+      'divsufsort.h',
+    ],
+    deps: [
+      @'//lib:public_headers_staged',
+      @'//lib/common:headers',
+    ],
+  },
+}

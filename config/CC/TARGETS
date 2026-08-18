@@ -1,0 +1,16 @@
+local compiler_family = jst.get('FAMILY', jst.env('TOOLCHAIN_CONFIG', default={}), default='unknown');
+
+{
+  defaults: {
+    type: @'//CC:defaults',
+    arguments_config: ['TOOLCHAIN_CONFIG'],
+    base: [@'base//CC:defaults'],
+    // Matches upstream's own build/cmake/CMakeModules/AddZstdCompilationFlags.cmake.
+    ADD_CFLAGS:
+      if compiler_family != 'msvc' then
+        ['-Wall', '-Wextra', '-Wundef', '-Wshadow', '-Wcast-align', '-Wcast-qual', '-Wstrict-prototypes'],
+    ADD_LDFLAGS:
+      if compiler_family != 'msvc' then
+        ['-Wl,-z,noexecstack'],
+  },
+}

@@ -1,0 +1,17 @@
+{
+  headers: {
+    type: @'rules//data:staged',
+    stage: ['lib', 'legacy'],
+    srcs: [
+      'zstd_legacy.h',
+      'zstd_v01.h',
+      'zstd_v02.h',
+      'zstd_v03.h',
+      'zstd_v04.h',
+      'zstd_v05.h',
+      'zstd_v06.h',
+      'zstd_v07.h',
+    ],
+    deps: [@'//lib/common:headers'],
+  },
+}

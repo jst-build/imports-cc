@@ -1,0 +1,15 @@
+{
+  headers: {
+    type: @'rules//data:staged',
+    stage: ['lib', 'decompress'],
+    srcs: [
+      'zstd_ddict.h',
+      'zstd_decompress_block.h',
+      'zstd_decompress_internal.h',
+    ],
+    deps: [
+      @'//lib:public_headers_staged',
+      @'//lib/common:headers',
+    ],
+  },
+}
