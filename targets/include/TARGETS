@@ -1,0 +1,10 @@
+{
+  public_headers: {
+    type: @'rules//data:staged',
+    srcs: [
+      'libssh2.h',
+      'libssh2_publickey.h',
+      'libssh2_sftp.h',
+    ],
+  },
+}

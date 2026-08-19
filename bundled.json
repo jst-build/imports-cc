@@ -1,0 +1,133 @@
+{
+  "main": "libssh2",
+  "repositories": {
+    "": {
+      "repository": {
+        "type": "file",
+        "path": "."
+      }
+    },
+    "toolchain": {
+      "repository": "toolchain/rules",
+      "target_root": "toolchain/targets",
+      "rule_root": "toolchain/rules"
+    },
+    "toolchain/rules": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/rules-cc",
+        "branch": "master",
+        "commit": "9279f494cf11696d4ad28ad33480e1edfafb92c2",
+        "subdir": "rules"
+      }
+    },
+    "toolchain/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/toolchains-cc.git",
+        "branch": "system",
+        "commit": "c6ab89cb0f54ecf9dc7e7e37384466e81e9b09b4",
+        "subdir": "targets"
+      }
+    },
+    "zlib": {
+      "repository": {
+        "type": "archive",
+        "content": "53fa48bf97f0ee0f42c62743b018507a6583ec3e",
+        "fetch": "https://github.com/madler/zlib/releases/download/v1.3.1/zlib-1.3.1.tar.gz",
+        "sha256": "9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23",
+        "sha512": "580677aad97093829090d4b605ac81c50327e74a6c2de0b85dd2e8525553f3ddde17556ea46f8f007f89e435493c9a20bc997d1ef1c1c2c23274528e3c46b94f",
+        "subdir": "zlib-1.3.1"
+      },
+      "target_root": "zlib/targets",
+      "bindings": {
+        "rules": "toolchain"
+      }
+    },
+    "zlib/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "zlib/v1.3.1",
+        "commit": "bed9d827862863261b547d6ae45bfb4079102e4f",
+        "subdir": "targets"
+      }
+    },
+    "ssl": {
+      "repository": {
+        "type": "archive",
+        "content": "42beec27e36d954e240b7ae277527b5e4176f9b4",
+        "fetch": "https://github.com/google/boringssl/archive/188ce3c13adb70fc416e7e81c5b8052142e8eb8c.tar.gz",
+        "sha256": "5a23284cf0ab813fd655b9c76bcdc5b906d9be91851749864fb4955c4167d52b",
+        "sha512": "067b09619b74d1824641140600e1c8d91f5411b4a5f5c3892536650a941ef6055b53906ae92f2544ba39196ca3c46aec368c50c23409de317cc32dd2a652d2d6",
+        "subdir": "boringssl-188ce3c13adb70fc416e7e81c5b8052142e8eb8c"
+      },
+      "target_root": "ssl/targets",
+      "bindings": {
+        "rules": "ssl/rules"
+      }
+    },
+    "ssl/rules": {
+      "repository": "toolchain",
+      "target_root": "ssl/config",
+      "rule_root": "toolchain",
+      "bindings": {
+        "base": "toolchain"
+      }
+    },
+    "ssl/config": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "boringssl/v0.20260803.0",
+        "commit": "11cd6b9d74ca3e8fbf5a981380a7ad41e26285e5",
+        "subdir": "config"
+      }
+    },
+    "ssl/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "boringssl/v0.20260803.0",
+        "commit": "11cd6b9d74ca3e8fbf5a981380a7ad41e26285e5",
+        "subdir": "targets"
+      }
+    },
+    "libssh2": {
+      "repository": {
+        "type": "archive",
+        "content": "195bab2e61fcbd405597cb952177206ecefcde2e",
+        "fetch": "https://github.com/libssh2/libssh2/releases/download/libssh2-1.11.1/libssh2-1.11.1.tar.xz",
+        "sha256": "9954cb54c4f548198a7cbebad248bdc87dd64bd26185708a294b2b50771e3769",
+        "sha512": "8322b54a522b0cbbb07916d29ec045c08f8ed94bd8abb5e524038640e90a317667a25be46d95b62b101ed726ade0a51a90fb246cf34c045c38f927f4e439e431",
+        "subdir": "libssh2-1.11.1"
+      },
+      "target_root": "libssh2/targets",
+      "bindings": {
+        "rules": "libssh2/rules",
+        "zlib": "zlib",
+        "ssl": "ssl"
+      }
+    },
+    "libssh2/rules": {
+      "repository": "toolchain",
+      "target_root": "libssh2/config",
+      "rule_root": "toolchain",
+      "bindings": {
+        "base": "toolchain"
+      }
+    },
+    "libssh2/config": {
+      "repository": {
+        "type": "file",
+        "path": "./config"
+      }
+    },
+    "libssh2/targets": {
+      "repository": {
+        "type": "file",
+        "path": "./targets"
+      }
+    }
+  }
+}

@@ -1,0 +1,279 @@
+{
+  // Proves the library initializes, creates/frees a session, and reports
+  // its own version. Local-only (no network I/O): a real SSH2 handshake
+  // isn't reproducible inside a hermetic build sandbox.
+  smoke_test: {
+    type: @'rules//shell/test:script',
+    name: ['smoke_test'],
+    test: ['smoke_test_script'],
+    deps: [@'./:smoke_test_unexported'],
+  },
+
+  smoke_test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      ./libssh2_smoke_test
+    |||,
+  },
+
+  // Deliberately *not* "'pure C': ['YES']": against a bundled BoringSSL
+  // build, "crypto" is implemented in C++ and a pure-C final binary
+  // fails to link (undefined vtable/typeinfo references). Compiling this
+  // test as C++ pulls in the C++ runtime automatically. Harmless against
+  // the default system OpenSSL build.
+  smoke_test_unexported: {
+    type: @'rules//CC:binary',
+    name: ['libssh2_smoke_test'],
+    srcs: [@'./:smoke_test_c'],
+    'private-deps': [@'//:libssh2'],
+  },
+
+  smoke_test_c: {
+    type: 'file_gen',
+    name: 'smoke_test.c',
+    data: |||
+      #include <libssh2.h>
+      #include <stdio.h>
+      #include <string.h>
+
+      int main(void) {
+          if (libssh2_init(0) != 0) {
+              fprintf(stderr, "libssh2_init failed\n");
+              return 1;
+          }
+
+          LIBSSH2_SESSION *session = libssh2_session_init();
+          if (!session) {
+              fprintf(stderr, "libssh2_session_init failed\n");
+              return 1;
+          }
+
+          const char *ver = libssh2_version(0);
+          printf("libssh2 version: %s\n", ver);
+          if (!ver || strncmp(ver, "1.11.1", 6) != 0) {
+              fprintf(stderr, "unexpected version (expected 1.11.1)\n");
+              return 1;
+          }
+
+          libssh2_session_free(session);
+          libssh2_exit();
+
+          printf("OK: libssh2 initializes, creates/frees a session, and reports the correct version\n");
+          return 0;
+      }
+    |||,
+  },
+
+  // Confirms the supported-algorithm lists match expectations: "ssh-dss"
+  // absent by default, a real RSA hostkey algorithm and "aes256-ctr"
+  // present.
+  algorithms_test: {
+    type: @'rules//shell/test:script',
+    name: ['algorithms_test'],
+    test: ['algorithms_test_script'],
+    deps: [@'./:algorithms_test_unexported'],
+  },
+
+  algorithms_test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      ./libssh2_algorithms_test
+    |||,
+  },
+
+  // See "smoke_test_unexported" above for why this is deliberately not
+  // "'pure C': ['YES']".
+  algorithms_test_unexported: {
+    type: @'rules//CC:binary',
+    name: ['libssh2_algorithms_test'],
+    srcs: [@'./:algorithms_test_c'],
+    'private-deps': [@'//:libssh2'],
+  },
+
+  algorithms_test_c: {
+    type: 'file_gen',
+    name: 'algorithms_test.c',
+    data: |||
+      #include <libssh2.h>
+      #include <stdio.h>
+      #include <string.h>
+
+      static int contains(const char **algs, int n, const char *needle) {
+          int i;
+          for (i = 0; i < n; i++) {
+              if (strcmp(algs[i], needle) == 0) {
+                  return 1;
+              }
+          }
+          return 0;
+      }
+
+      int main(void) {
+          if (libssh2_init(0) != 0) {
+              fprintf(stderr, "libssh2_init failed\n");
+              return 1;
+          }
+
+          LIBSSH2_SESSION *session = libssh2_session_init();
+          if (!session) {
+              fprintf(stderr, "libssh2_session_init failed\n");
+              return 1;
+          }
+
+          const char **algs = NULL;
+          int n = libssh2_session_supported_algs(session, LIBSSH2_METHOD_HOSTKEY, &algs);
+          if (n < 0) {
+              fprintf(stderr, "libssh2_session_supported_algs(HOSTKEY) failed: %d\n", n);
+              return 1;
+          }
+          printf("hostkey algorithms (%d):", n);
+          {
+              int i;
+              for (i = 0; i < n; i++) {
+                  printf(" %s", algs[i]);
+              }
+          }
+          printf("\n");
+
+          if (contains(algs, n, "ssh-dss")) {
+              fprintf(stderr, "ssh-dss (DSA) present despite LIBSSH2_DSA_ENABLE defaulting to false\n");
+              return 1;
+          }
+          if (!contains(algs, n, "ssh-rsa") && !contains(algs, n, "rsa-sha2-256")) {
+              fprintf(stderr, "no RSA hostkey algorithm found\n");
+              return 1;
+          }
+          libssh2_free(session, algs);
+
+          algs = NULL;
+          n = libssh2_session_supported_algs(session, LIBSSH2_METHOD_CRYPT_CS, &algs);
+          if (n < 0) {
+              fprintf(stderr, "libssh2_session_supported_algs(CRYPT_CS) failed: %d\n", n);
+              return 1;
+          }
+          printf("crypt algorithms (%d):", n);
+          {
+              int i;
+              for (i = 0; i < n; i++) {
+                  printf(" %s", algs[i]);
+              }
+          }
+          printf("\n");
+          if (!contains(algs, n, "aes256-ctr")) {
+              fprintf(stderr, "aes256-ctr not found among supported ciphers\n");
+              return 1;
+          }
+          libssh2_free(session, algs);
+
+          libssh2_session_free(session);
+          libssh2_exit();
+
+          printf("OK: hostkey/cipher algorithm lists match expectations (ssh-dss absent by default, RSA + aes256-ctr present)\n");
+          return 0;
+      }
+    |||,
+  },
+
+  // Exercises the local known_hosts API: parse an OpenSSH-format line,
+  // look it up, write it back out.
+  knownhost_test: {
+    type: @'rules//shell/test:script',
+    name: ['knownhost_test'],
+    test: ['knownhost_test_script'],
+    deps: [@'./:knownhost_test_unexported'],
+  },
+
+  knownhost_test_script: {
+    type: 'file_gen',
+    name: 'test.sh',
+    data: |||
+      set -e
+      ./libssh2_knownhost_test
+    |||,
+  },
+
+  // See "smoke_test_unexported" above for why this is deliberately not
+  // "'pure C': ['YES']".
+  knownhost_test_unexported: {
+    type: @'rules//CC:binary',
+    name: ['libssh2_knownhost_test'],
+    srcs: [@'./:knownhost_test_c'],
+    'private-deps': [@'//:libssh2'],
+  },
+
+  knownhost_test_c: {
+    type: 'file_gen',
+    name: 'knownhost_test.c',
+    data: |||
+      #include <libssh2.h>
+      #include <stdio.h>
+      #include <string.h>
+
+      int main(void) {
+          if (libssh2_init(0) != 0) {
+              fprintf(stderr, "libssh2_init failed\n");
+              return 1;
+          }
+
+          LIBSSH2_SESSION *session = libssh2_session_init();
+          if (!session) {
+              fprintf(stderr, "libssh2_session_init failed\n");
+              return 1;
+          }
+
+          LIBSSH2_KNOWNHOSTS *hosts = libssh2_knownhost_init(session);
+          if (!hosts) {
+              fprintf(stderr, "libssh2_knownhost_init failed\n");
+              return 1;
+          }
+
+          /* A syntactically valid (deterministic dummy key bytes, not a
+           * real host's key) OpenSSH known_hosts line. */
+          const char *line =
+              "localhost ssh-ed25519 "
+              "AAAAC3NzaC1lZDI1NTE5AAAAIAABAgMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4f\n";
+          int rc = libssh2_knownhost_readline(hosts, line, strlen(line),
+                                              LIBSSH2_KNOWNHOST_FILE_OPENSSH);
+          if (rc != 0) {
+              fprintf(stderr, "libssh2_knownhost_readline failed: %d\n", rc);
+              return 1;
+          }
+
+          struct libssh2_knownhost *entry = NULL;
+          rc = libssh2_knownhost_get(hosts, &entry, NULL);
+          if (rc != 0) {
+              fprintf(stderr, "libssh2_knownhost_get found no entry: %d\n", rc);
+              return 1;
+          }
+          printf("stored known_hosts entry: name=%s\n", entry->name ? entry->name : "(hashed)");
+
+          char outline[256];
+          size_t outlen = 0;
+          rc = libssh2_knownhost_writeline(hosts, entry, outline, sizeof(outline),
+                                           &outlen, LIBSSH2_KNOWNHOST_FILE_OPENSSH);
+          if (rc != 0) {
+              fprintf(stderr, "libssh2_knownhost_writeline failed: %d\n", rc);
+              return 1;
+          }
+          outline[outlen] = '\0';
+          printf("round-tripped line: %s", outline);
+
+          if (!strstr(outline, "localhost") || !strstr(outline, "ssh-ed25519")) {
+              fprintf(stderr, "round-tripped line missing expected content\n");
+              return 1;
+          }
+
+          libssh2_knownhost_free(hosts);
+          libssh2_session_free(session);
+          libssh2_exit();
+
+          printf("OK: known_hosts entry parsed, stored, and round-tripped correctly\n");
+          return 0;
+      }
+    |||,
+  },
+}

@@ -1,0 +1,144 @@
+// Options supported by this project
+local options_doc = {
+  OS: ['Operating system to build for.'],
+  ARCH: [|||
+    The underlying architecture. Is taken as a default for "TARGET_ARCH" if
+    that is not set.
+
+    Typical values are "x86", "x86_64", "arm", "arm64", but the actual set
+    of supported values depends on the toolchain in use.
+  |||],
+  TARGET_ARCH: ['The architecture for which to build the binary.'],
+  TOOLCHAIN_CONFIG: [|||
+    The toolchain configuration.
+
+    Use field "FAMILY" to specify the compiler family. Typical values are
+    "clang" and "gnu", but the actual set of supported values depends on
+    the toolchain in use.
+  |||],
+  DEBUG: [|||
+    Map enabling and configuring the debug version. Specify a map that is
+    logically true (e.g., non-null, non-empty map) to enable debug mode.
+  |||],
+  CC: ['The C compiler to use.'],
+  CFLAGS: ['The C compiler flags to use.'],
+  ADD_CFLAGS: ['Additional C compiler flags.'],
+  LDFLAGS: ['The linker flags to use.'],
+  ADD_LDFLAGS: ['Additional linker flags.'],
+  BUILD_POSITION_INDEPENDENT: ['Build as position independent code.'],
+  AR: ['The archiver to use.'],
+  ENV: [|||
+    Map from strings to strings. The build environment to be used for
+    build actions. Typically used to include an unusual value of PATH.
+  |||],
+  LOCALBASE: [|||
+    Use this localbase for building against system libs (e.g. "/usr").
+  |||],
+  PKG_CONFIG_ARGS: [|||
+    Additional "pkg-config" arguments (e.g. "--define-prefix" or "--static").
+  |||],
+  LIBSSH2_BUILD_SHARED: [|||
+    Boolean. Build a shared ("*.so") library instead of a static ("*.a")
+    one. Default "false".
+  |||],
+  LIBSSH2_ZLIB_COMPRESSION: [|||
+    Boolean. Default "true". Compile in "zlib" SSH compression support.
+    Diverges from upstream's own default (OFF), which favors a minimal
+    dependency footprint over out-of-the-box capability.
+  |||],
+  LIBSSH2_DSA_ENABLE: [|||
+    Boolean. Default "false". Enable the deprecated "ssh-dss" (DSA)
+    host/user key type. Matches upstream's own default.
+  |||],
+  LIBSSH2_NO_DEPRECATED: [|||
+    Boolean. Default "false". Build without deprecated APIs.
+  |||],
+  LIBSSH2_CLEAR_MEMORY: [|||
+    Boolean. Default "true". Clear sensitive memory (private keys,
+    session secrets) before it is freed.
+  |||],
+  LIBSSH2_DEBUG_LOGGING: [|||
+    Boolean. Default "false". Log execution with debug trace
+    (LIBSSH2_SESSION's "libssh2_trace()" becomes functional).
+  |||],
+};
+
+{
+  // Default target: installs the library and its public headers into a
+  // LOCALBASE-shaped tree (include/libssh2*.h, lib/libssh2.a).
+  ALL: {
+    type: 'export',
+    target: 'INSTALL',
+    doc: ['Installs the libssh2 library into a LOCALBASE-style tree.'],
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  // Predefined target combining all libs and public headers of this
+  // project into a single LOCALBASE-shaped tree.
+  INSTALL: {
+    type: @'rules//CC:install-with-deps',
+    targets: ['libssh2'],
+  },
+
+  // Runs all test targets of this project.
+  TESTS: {
+    type: @'rules//test:suite',
+    deps: [
+      @'./tests:smoke_test',
+      @'./tests:algorithms_test',
+      @'./tests:knownhost_test',
+    ],
+  },
+
+  // libssh2 (https://libssh2.org/), a client-side C library implementing
+  // the SSH2 protocol.
+  libssh2: {
+    type: 'export',
+    target: 'libssh2_unexported',
+    doc: ['A client-side C library implementing the SSH2 protocol.'],
+    config_doc: options_doc,
+    flexible_config: jst.keys(options_doc),
+  },
+
+  libssh2_unexported: {
+    type: @'rules//CC:library',
+    arguments_config: [
+      'LIBSSH2_BUILD_SHARED',
+      'LIBSSH2_ZLIB_COMPRESSION',
+      'LIBSSH2_DSA_ENABLE',
+      'LIBSSH2_NO_DEPRECATED',
+      'LIBSSH2_CLEAR_MEMORY',
+      'LIBSSH2_DEBUG_LOGGING',
+    ],
+    name: ['ssh2'],
+    'pkg-name': ['libssh2'],
+    'pure C': ['YES'],
+    shared: if $'LIBSSH2_BUILD_SHARED' then ['yes'],
+    // libssh2's own ABI version - distinct from the 1.11.1 release version.
+    soversion: ['1', '0', '1'],
+    hdrs: [@'./include:public_headers'],
+    // These headers include each other via same-directory quotes (e.g.
+    // "openssl.h" from "crypto.h"), so they need to land flat in the
+    // work tree, not in a separate -isystem include tree.
+    'private-hdrs': [@'./src:headers', @'./src:libssh2_config_h'],
+    srcs: [@'./src:sources'],
+    // Only "crypto" (libcrypto) is needed - libssh2 uses OpenSSL/BoringSSL
+    // only for crypto primitives, never their TLS protocol code (libssl).
+    'private-deps':
+      [@'ssl//:crypto']
+      + (if jst.env('LIBSSH2_ZLIB_COMPRESSION', default=true) then [@'zlib//:zlib']),
+    'private-defines':
+      [
+        // Enables the platform-capability detection in "libssh2_setup.h".
+        'HAVE_CONFIG_H',
+        // Selects the OpenSSL-API-shaped crypto backend, which covers
+        // both real OpenSSL and BoringSSL.
+        'LIBSSH2_OPENSSL',
+      ]
+      + (if jst.env('LIBSSH2_DSA_ENABLE', default=false) then ['LIBSSH2_DSA_ENABLE'])
+      + (if jst.env('LIBSSH2_NO_DEPRECATED', default=false) then ['LIBSSH2_NO_DEPRECATED'])
+      + (if jst.env('LIBSSH2_DEBUG_LOGGING', default=false) then ['LIBSSH2DEBUG'])
+      + (if !jst.env('LIBSSH2_CLEAR_MEMORY', default=true) then ['LIBSSH2_NO_CLEAR_MEMORY']),
+  },
+}

@@ -1,0 +1,107 @@
+{
+  sources: {
+    type: @'rules//data:staged',
+    srcs: [
+      'agent.c',
+      'bcrypt_pbkdf.c',
+      'channel.c',
+      'comp.c',
+      'chacha.c',
+      'cipher-chachapoly.c',
+      'crypt.c',
+      'crypto.c',
+      'global.c',
+      'hostkey.c',
+      'keepalive.c',
+      'kex.c',
+      'knownhost.c',
+      'mac.c',
+      'misc.c',
+      'packet.c',
+      'pem.c',
+      'poly1305.c',
+      'publickey.c',
+      'scp.c',
+      'session.c',
+      'sftp.c',
+      'transport.c',
+      'userauth.c',
+      'userauth_kbd_packet.c',
+      'version.c',
+    ],
+  },
+
+  // Private headers this branch needs, minus the ones for crypto backends
+  // it doesn't wire up (libgcrypt.h, mbedtls.h, os400qc3.h, wincng.h).
+  // Also includes 3 ".c" files that are #include-d (not separately
+  // compiled) by the sources above: "openssl.c" (the crypto backend, from
+  // crypto.c), "blowfish.c" (a fallback Blowfish implementation, from
+  // bcrypt_pbkdf.c), and "agent_win.c" (unconditionally #include-d by
+  // agent.c, internally guarded on "_WIN32", a no-op here).
+  headers: {
+    type: @'rules//data:staged',
+    srcs: [
+      'chacha.h',
+      'channel.h',
+      'cipher-chachapoly.h',
+      'comp.h',
+      'crypto.h',
+      'crypto_config.h',
+      'libssh2_priv.h',
+      'libssh2_setup.h',
+      'mac.h',
+      'misc.h',
+      'openssl.h',
+      'packet.h',
+      'poly1305.h',
+      'session.h',
+      'sftp.h',
+      'transport.h',
+      'userauth.h',
+      'userauth_kbd_packet.h',
+      'openssl.c',
+      'blowfish.c',
+      'agent_win.c',
+    ],
+  },
+
+  // "libssh2_setup.h" only auto-detects platform capabilities when
+  // "HAVE_CONFIG_H" is defined and a real "libssh2_config.h" exists.
+  // Generated via real compile-time probes ("CC/auto:config"), not
+  // hardcoded assumptions. Mirrors upstream's own macro list; skips the
+  // Windows/BSD-only ones and HAVE_EXPLICIT_MEMSET/HAVE_MEMSET_S (both
+  // have a fallback chain, so probing HAVE_EXPLICIT_BZERO is enough).
+  libssh2_config_h: {
+    type: 'configure',
+    target: 'libssh2_config_h_gen',
+    config: {
+      have_cfile: [
+        ['HAVE_UNISTD_H', 'unistd.h'],
+        ['HAVE_INTTYPES_H', 'inttypes.h'],
+        ['HAVE_SYS_SELECT_H', 'sys/select.h'],
+        ['HAVE_SYS_UIO_H', 'sys/uio.h'],
+        ['HAVE_SYS_SOCKET_H', 'sys/socket.h'],
+        ['HAVE_SYS_IOCTL_H', 'sys/ioctl.h'],
+        ['HAVE_SYS_TIME_H', 'sys/time.h'],
+        ['HAVE_SYS_UN_H', 'sys/un.h'],
+        ['HAVE_ARPA_INET_H', 'arpa/inet.h'],
+        ['HAVE_NETINET_IN_H', 'netinet/in.h'],
+      ],
+      have_csymbol: [
+        ['HAVE_GETTIMEOFDAY', ['gettimeofday', ['sys/time.h']]],
+        ['HAVE_STRTOLL', ['strtoll', ['stdlib.h']]],
+        ['HAVE_SNPRINTF', ['snprintf', ['stdio.h']]],
+        ['HAVE_EXPLICIT_BZERO', ['explicit_bzero', ['string.h']]],
+        ['HAVE_POLL', ['poll', ['poll.h']]],
+        ['HAVE_SELECT', ['select', ['sys/select.h']]],
+        ['HAVE_O_NONBLOCK', ['O_NONBLOCK', ['fcntl.h']]],
+      ],
+    },
+  },
+
+  libssh2_config_h_gen: {
+    type: @'rules//CC/auto:config',
+    name: ['libssh2_config.h'],
+    guard: ['LIBSSH2_CONFIG_H'],
+  },
+}

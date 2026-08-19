@@ -1,0 +1,94 @@
+{
+  "main": "libssh2",
+  "repositories": {
+    "config": {
+      "repository": {
+        "type": "file",
+        "path": "config"
+      }
+    },
+    "targets": {
+      "repository": {
+        "type": "file",
+        "path": "targets"
+      }
+    },
+    "rules": {
+      "repository": "toolchain",
+      "target_root": "config",
+      "rule_root": "toolchain",
+      "bindings": {
+        "base": "toolchain"
+      }
+    },
+    "libssh2": {
+      "repository": {
+        "type": "archive",
+        "content": "195bab2e61fcbd405597cb952177206ecefcde2e",
+        "fetch": "https://github.com/libssh2/libssh2/releases/download/libssh2-1.11.1/libssh2-1.11.1.tar.xz",
+        "sha256": "9954cb54c4f548198a7cbebad248bdc87dd64bd26185708a294b2b50771e3769",
+        "sha512": "8322b54a522b0cbbb07916d29ec045c08f8ed94bd8abb5e524038640e90a317667a25be46d95b62b101ed726ade0a51a90fb246cf34c045c38f927f4e439e431",
+        "subdir": "libssh2-1.11.1"
+      },
+      "target_root": "targets",
+      "bindings": {
+        "rules": "rules",
+        "zlib": "zlib",
+        "ssl": "ssl"
+      }
+    },
+    "toolchain": {
+      "repository": "toolchain/rules",
+      "target_root": "toolchain/targets",
+      "rule_root": "toolchain/rules"
+    },
+    "toolchain/rules": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/rules-cc",
+        "branch": "master",
+        "commit": "9279f494cf11696d4ad28ad33480e1edfafb92c2",
+        "subdir": "rules"
+      }
+    },
+    "toolchain/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/toolchains-cc.git",
+        "branch": "system",
+        "commit": "c6ab89cb0f54ecf9dc7e7e37384466e81e9b09b4",
+        "subdir": "targets"
+      }
+    },
+    "zlib": {
+      "repository": "zlib/targets",
+      "bindings": {
+        "rules": "toolchain"
+      }
+    },
+    "zlib/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "zlib/system",
+        "commit": "6f69a312bea0e0b57a118b4e770a2931dae996e3",
+        "subdir": "targets"
+      }
+    },
+    "ssl": {
+      "repository": "ssl/targets",
+      "bindings": {
+        "rules": "toolchain"
+      }
+    },
+    "ssl/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/imports-cc.git",
+        "branch": "ssl/system",
+        "commit": "62b2f750ef62aa84ff92b810ff72e4b8488e28a8",
+        "subdir": "targets"
+      }
+    }
+  }
+}
