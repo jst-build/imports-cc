@@ -1,0 +1,40 @@
+{
+  "main": "libssh2",
+  "repositories": {
+    "targets": {
+      "repository": {
+        "type": "file",
+        "path": "targets"
+      }
+    },
+    "libssh2": {
+      "repository": "targets",
+      "bindings": {
+        "rules": "toolchain"
+      }
+    },
+    "toolchain": {
+      "repository": "toolchain/rules",
+      "target_root": "toolchain/targets",
+      "rule_root": "toolchain/rules"
+    },
+    "toolchain/rules": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/rules-cc",
+        "branch": "master",
+        "commit": "9279f494cf11696d4ad28ad33480e1edfafb92c2",
+        "subdir": "rules"
+      }
+    },
+    "toolchain/targets": {
+      "repository": {
+        "type": "git",
+        "repository": "https://github.com/jst-build/toolchains-cc.git",
+        "branch": "system",
+        "commit": "c6ab89cb0f54ecf9dc7e7e37384466e81e9b09b4",
+        "subdir": "targets"
+      }
+    }
+  }
+}
