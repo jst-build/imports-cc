@@ -1,0 +1,119 @@
+local compiler_family = jst.get('FAMILY', jst.env('TOOLCHAIN_CONFIG', default={}), default='unknown');
+
+{
+  // Mirrors libgit2's own deps/pcre2/CMakeLists.txt "Static configuration"
+  // + "Dynamic configuration" sections.
+  config_h: {
+    type: 'configure',
+    config: {
+      defines: [
+        ['LINK_SIZE', '2'],
+        ['HEAP_LIMIT', '20000000'],
+        ['MATCH_LIMIT', '10000000'],
+        ['MATCH_LIMIT_DEPTH', 'MATCH_LIMIT'],
+        ['MAX_VARLOOKBEHIND', '255'],
+        ['NEWLINE_DEFAULT', '2'],
+        ['PARENS_NEST_LIMIT', '250'],
+        ['PCRE2GREP_BUFSIZE', jst.env('PCRE2GREP_BUFSIZE', default='')],
+        ['PCRE2GREP_MAX_BUFSIZE', jst.env('PCRE2GREP_MAX_BUFSIZE', default='')],
+        ['MAX_NAME_SIZE', '128'],
+        ['MAX_NAME_COUNT', '10000'],
+      ],
+      defines1: [
+        ['SUPPORT_PCRE2_8', 1],
+        ['SUPPORT_UNICODE', 1],
+        // Real compiler-builtin probes (upstream: check_c_source_compiles) -
+        // gated on compiler family instead, true for any GCC/Clang in this
+        // repo's supported toolchain range.
+        ['HAVE_BUILTIN_MUL_OVERFLOW', compiler_family == 'gnu' || compiler_family == 'clang'],
+        ['HAVE_BUILTIN_UNREACHABLE', compiler_family == 'gnu' || compiler_family == 'clang'],
+        ['HAVE_ATTRIBUTE_UNINITIALIZED', compiler_family == 'gnu' || compiler_family == 'clang'],
+        ['HAVE_BUILTIN_ASSUME', compiler_family == 'clang'],
+      ],
+      have_cfile: [
+        ['HAVE_ASSERT_H', 'assert.h'],
+        ['HAVE_DIRENT_H', 'dirent.h'],
+        ['HAVE_SYS_STAT_H', 'sys/stat.h'],
+        ['HAVE_SYS_TYPES_H', 'sys/types.h'],
+        ['HAVE_UNISTD_H', 'unistd.h'],
+        ['HAVE_WINDOWS_H', 'windows.h'],
+      ],
+      have_csymbol: [
+        ['HAVE_MEMFD_CREATE', ['memfd_create', ['sys/mman.h']]],
+        ['HAVE_SECURE_GETENV', ['secure_getenv', ['stdlib.h']]],
+      ],
+    },
+    target: 'config_h_gen',
+  },
+
+  config_h_gen: {
+    type: @'rules//CC/auto:config',
+    name: ['config.h'],
+    guard: ['PCRE2_CONFIG_H'],
+  },
+
+  headers: {
+    type: @'rules//data:staged',
+    srcs: [
+      'pcre2_compile.h',
+      'pcre2_internal.h',
+      'pcre2_intmodedep.h',
+      'pcre2_printint_inc.h',
+      'pcre2_ucp.h',
+      'pcre2_ucptables_inc.h',
+      'pcre2_util.h',
+    ],
+  },
+
+  git2_pcre2: {
+    type: @'rules//CC:library',
+    name: ['git2_pcre2'],
+    'pure C': ['yes'],
+    'private-defines': [
+      'HAVE_CONFIG_H',
+      'PCRE2_CODE_UNIT_WIDTH=8',
+      // Matches this branch's own "REGEX_BACKEND=='builtin'" defines in
+      // cmake/SelectRegex.cmake (used regardless of upstream's own CMake
+      // build, since this branch links the object files directly rather
+      // than via that CMakeLists.txt).
+      'PCRE2_STATIC',
+      'PCRE2_EXPORT=',
+      'PCRE2_EXP_DECL=',
+      'PCRE2_EXP_DEFN=',
+    ],
+    srcs: [
+      'pcre2_auto_possess.c',
+      'pcre2_chartables.c',
+      'pcre2_chkdint.c',
+      'pcre2_compile.c',
+      'pcre2_compile_cgroup.c',
+      'pcre2_compile_class.c',
+      'pcre2_config.c',
+      'pcre2_context.c',
+      'pcre2_convert.c',
+      'pcre2_dfa_match.c',
+      'pcre2_error.c',
+      'pcre2_extuni.c',
+      'pcre2_find_bracket.c',
+      'pcre2_maketables.c',
+      'pcre2_match.c',
+      'pcre2_match_data.c',
+      'pcre2_match_next.c',
+      'pcre2_newline.c',
+      'pcre2_ord2utf.c',
+      'pcre2_pattern_info.c',
+      'pcre2_script_run.c',
+      'pcre2_serialize.c',
+      'pcre2_string_utils.c',
+      'pcre2_study.c',
+      'pcre2_substitute.c',
+      'pcre2_substring.c',
+      'pcre2_tables.c',
+      'pcre2_ucd.c',
+      'pcre2_valid_utf.c',
+      'pcre2_xclass.c',
+    ],
+    hdrs: ['pcre2.h'],
+    'private-hdrs': ['headers', 'config_h'],
+  },
+}

@@ -1,0 +1,126 @@
+// Mirrors libgit2's own deps/ntlmclient/CMakeLists.txt: a fixed base
+// (ntlm.c/util.c), a unicode backend selected by USE_ICONV, and a crypto
+// backend selected by USE_HTTPS's resolved backend (ntlmclient has no
+// crypto implementation of its own - it needs a real one to hash
+// passwords/challenges).
+{
+  // The public header, carried by its own header-only library so it stays
+  // reachable at its bare path ("ntlmclient.h", no "stage") for consumers
+  // like "src/libgit2/transports/auth_ntlmclient.c".
+  public_hdrs: {
+    type: @'rules//CC:library',
+    hdrs: ['ntlmclient.h'],
+  },
+
+  // Patch needed to support BoringSSL as a replacement for OpenSSL.
+  // BoringSSL never actually defines "const_DES_cblock"; the added typedef
+  // only takes effect when BoringSSL really is the backend, and is inert
+  // against a real OpenSSL/LibreSSL, which brings its own "const_DES_cblock".
+  'crypt_openssl.h.diff': {
+    type: 'file_gen',
+    name: 'crypt_openssl.h.diff',
+    data:
+      |||
+        --- crypt_openssl.h.orig
+        +++ crypt_openssl.h
+        @@ -14,6 +14,12 @@
+         # include <openssl/hmac.h>
+         #endif
+         
+        +/* BoringSSL reports an OpenSSL 1.1-style OPENSSL_VERSION_NUMBER, but
+        + * has no "const_DES_cblock" of its own, so nothing below defines it. */
+        +#if defined(OPENSSL_IS_BORINGSSL)
+        +typedef unsigned char const_DES_cblock[8];
+        +#endif
+        +
+         /* OpenSSL 1.1.0 uses opaque structs, we'll reuse these. */
+         #if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER < 0x10100000L
+         # define HMAC_CTX struct hmac_ctx_st
+      |||,
+  },
+
+  // Patch needed to support BoringSSL as a replacement for OpenSSL.
+  // "crypt_openssl.c" provides its own static "HMAC_CTX_cleanup" stub for every
+  // OpenSSL >= 1.1 that isn't LibreSSL, but BoringSSL exports a real
+  // "HMAC_CTX_cleanup" of its own, so exclude BoringSSL from that guard.
+  'crypt_openssl.c.diff': {
+    type: 'file_gen',
+    name: 'crypt_openssl.c.diff',
+    data:
+      |||
+        --- crypt_openssl.c.orig
+        +++ crypt_openssl.c
+        @@ -45,3 +45,3 @@
+         #endif
+         
+        -#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)) || \
+        +#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER) && !defined(OPENSSL_IS_BORINGSSL)) || \
+      |||,
+  },
+
+  // Patched "crypt_openssl.h"
+  'crypt_openssl.h': {
+    type: @'rules//patch:file',
+    src: [jst.file('crypt_openssl.h')],
+    patch: ['crypt_openssl.h.diff'],
+  },
+
+  // Patched "crypt_openssl.c"
+  'crypt_openssl.c': {
+    type: @'rules//patch:file',
+    src: [jst.file('crypt_openssl.c')],
+    patch: ['crypt_openssl.c.diff'],
+  },
+
+  git2_ntlmclient: {
+    type: @'rules//CC:library',
+    arguments_config: ['USE_ICONV', 'USE_HTTPS'],
+    name: ['git2_ntlmclient'],
+    'pure C': ['yes'],
+    'private-cflags': ['-Wno-implicit-fallthrough'],
+    'private-defines':
+      ['NTLM_STATIC=1']
+      + (if jst.env('USE_ICONV') then ['UNICODE_ICONV=1'] else ['UNICODE_BUILTIN=1'])
+      + (if jst.env('USE_HTTPS') == 'SecureTransport' then ['CRYPT_COMMONCRYPTO']
+         else if jst.env('USE_HTTPS') == 'OpenSSL' then ['CRYPT_OPENSSL', 'OPENSSL_API_COMPAT=0x10100000L']
+         else if jst.env('USE_HTTPS') == 'mbedTLS' then ['CRYPT_MBEDTLS']
+         else jst.fail('USE_NTLMCLIENT needs USE_HTTPS to resolve to a crypto-capable backend (OpenSSL/mbedTLS/SecureTransport).')),
+    srcs:
+      ['ntlm.c', 'util.c']
+      + (if jst.env('USE_ICONV') then ['unicode_iconv.c'] else ['unicode_builtin.c'])
+      + (if jst.env('USE_HTTPS') == 'SecureTransport' then ['crypt_commoncrypto.c']
+         else if jst.env('USE_HTTPS') == 'OpenSSL' then ['crypt_openssl.c']
+         else if jst.env('USE_HTTPS') == 'mbedTLS' then ['crypt_mbedtls.c', 'crypt_builtin_md4.c']),
+    'private-hdrs': [
+      'compat.h',
+      'crypt.h',
+      'ntlm.h',
+      'unicode.h',
+      'unicode_builtin.h',
+      'unicode_iconv.h',
+      'utf8.h',
+      'util.h',
+      'crypt_commoncrypto.h',
+      'crypt_mbedtls.h',
+      'crypt_openssl.h',
+    ],
+    deps:
+      // "unicode_iconv.c" itself "#include"s the public "ntlmclient.h", so
+      // "public_hdrs" needs to be a real dep of this compile too, not just
+      // something forwarded to consumers.
+      ['public_hdrs']
+      + (if jst.env('USE_HTTPS') == 'OpenSSL' then
+           [@'ssl//:crypto']
+         else if jst.env('USE_HTTPS') == 'mbedTLS' then
+           [@'mbedtls//:crypto']),
+    // This library and "//src/util/:util_ntlmclient" ultimately get merged via
+    // "components" into one archive further up the tree, and produce a
+    // bare-basename object-file collision ("Staging conflict between own
+    // objects and objects of components" / duplicate key "util.o"). Staging
+    // this whole library under "deps/ntlmclient" gives every object file a
+    // genuinely unique path instead, at the cost of moving its own public
+    // headers out of reach of a bare "#include" too - hence "public_hdrs"
+    // above, carrying the headers that need to stay bare-reachable.
+    stage: ['deps', 'ntlmclient'],
+  },
+}

@@ -1,0 +1,771 @@
+local clar = import 'clar.jst';
+
+{
+  // Aggregates every per-suite test target. Configured once, from the
+  // top, by "//:TESTS".
+  TESTS_unconfigured: {
+    type: @'rules//test:suite',
+    deps: [
+      'tests_apply',
+      'tests_attr',
+      'tests_blame',
+      'tests_checkout',
+      'tests_cherrypick',
+      'tests_clone',
+      'tests_commit',
+      'tests_config',
+      'tests_core',
+      'tests_date',
+      'tests_delta',
+      'tests_describe',
+      'tests_diff',
+      'tests_email',
+      'tests_fetch',
+      'tests_fetchhead',
+      'tests_filter',
+      'tests_grafts',
+      'tests_graph',
+      'tests_ignore',
+      'tests_index',
+      'tests_iterator',
+      'tests_mailmap',
+      'tests_merge',
+      'tests_merge_trees',
+      'tests_merge_workdir',
+      'tests_message',
+      'tests_network',
+      'tests_network_remote',
+      'tests_notes',
+      'tests_object',
+      'tests_object_blob',
+      'tests_object_commit',
+      'tests_object_raw',
+      'tests_object_tag',
+      'tests_object_tree',
+      'tests_odb',
+      'tests_odb_backend',
+      'tests_pack',
+      'tests_patch',
+      'tests_path',
+      'tests_rebase',
+      'tests_refs',
+      'tests_refs_branches',
+      'tests_refs_reflog',
+      'tests_refs_tags',
+      'tests_remote',
+      'tests_repo',
+      'tests_reset',
+      'tests_revert',
+      'tests_revwalk',
+      'tests_stash',
+      'tests_status',
+      'tests_stream',
+      'tests_submodule',
+      'tests_threads',
+      'tests_trace',
+      'tests_transport',
+      'tests_transports',
+      'tests_transports_smart',
+      'tests_worktree',
+    ],
+  },
+
+  tests_apply: {
+    type: @'rules//shell/test:script',
+    name: ['tests_apply'],
+    test: ['clar_launcher_apply'],
+    deps: [
+      @'./resources:apply',
+      @'./libgit2/apply:clar_tests',
+    ],
+  },
+
+  clar_launcher_apply: clar.launcher_script('tests_apply'),
+
+  tests_attr: {
+    type: @'rules//shell/test:script',
+    name: ['tests_attr'],
+    test: ['clar_launcher_attr'],
+    deps: [
+      @'./resources:attr',
+      @'./libgit2/attr:clar_tests',
+    ],
+  },
+
+  clar_launcher_attr: clar.launcher_script('tests_attr'),
+
+  tests_blame: {
+    type: @'rules//shell/test:script',
+    name: ['tests_blame'],
+    test: ['clar_launcher_blame'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/blame:clar_tests',
+    ],
+  },
+
+  clar_launcher_blame: clar.launcher_script('tests_blame'),
+
+  tests_checkout: {
+    type: @'rules//shell/test:script',
+    name: ['tests_checkout'],
+    test: ['clar_launcher_checkout'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/checkout:clar_tests',
+    ],
+  },
+
+  clar_launcher_checkout: clar.launcher_script('tests_checkout'),
+
+  tests_cherrypick: {
+    type: @'rules//shell/test:script',
+    name: ['tests_cherrypick'],
+    test: ['clar_launcher_cherrypick'],
+    deps: [
+      @'./resources:cherrypick',
+      @'./libgit2/cherrypick:clar_tests',
+    ],
+  },
+
+  clar_launcher_cherrypick: clar.launcher_script('tests_cherrypick'),
+
+  tests_clone: {
+    type: @'rules//shell/test:script',
+    name: ['tests_clone'],
+    test: ['clar_launcher_clone'],
+    deps: [
+      @'./resources:clone',
+      @'./libgit2/clone:clar_tests',
+    ],
+  },
+
+  clar_launcher_clone: clar.launcher_script('tests_clone'),
+
+  tests_commit: {
+    type: @'rules//shell/test:script',
+    name: ['tests_commit'],
+    test: ['clar_launcher_commit'],
+    deps: [
+      @'./resources:commit',
+      @'./libgit2/commit:clar_tests',
+    ],
+  },
+
+  clar_launcher_commit: clar.launcher_script('tests_commit'),
+
+  tests_config: {
+    type: @'rules//shell/test:script',
+    name: ['tests_config'],
+    test: ['clar_launcher_config'],
+    deps: [
+      @'./resources:config',
+      @'./libgit2/config:clar_tests',
+    ],
+  },
+
+  clar_launcher_config: clar.launcher_script('tests_config'),
+
+  tests_core: {
+    type: @'rules//shell/test:script',
+    name: ['tests_core'],
+    test: ['clar_launcher_core'],
+    deps: [@'./libgit2/core:clar_tests'],
+  },
+
+  clar_launcher_core: clar.launcher_script('tests_core'),
+
+  tests_date: {
+    type: @'rules//shell/test:script',
+    name: ['tests_date'],
+    test: ['clar_launcher_date'],
+    deps: [@'./libgit2/date:clar_tests'],
+  },
+
+  clar_launcher_date: clar.launcher_script('tests_date'),
+
+  tests_delta: {
+    type: @'rules//shell/test:script',
+    name: ['tests_delta'],
+    test: ['clar_launcher_delta'],
+    deps: [@'./libgit2/delta:clar_tests'],
+  },
+
+  clar_launcher_delta: clar.launcher_script('tests_delta'),
+
+  tests_describe: {
+    type: @'rules//shell/test:script',
+    name: ['tests_describe'],
+    test: ['clar_launcher_describe'],
+    deps: [
+      @'./resources:describe',
+      @'./libgit2/describe:clar_tests',
+    ],
+  },
+
+  clar_launcher_describe: clar.launcher_script('tests_describe'),
+
+  tests_diff: {
+    type: @'rules//shell/test:script',
+    name: ['tests_diff'],
+    test: ['clar_launcher_diff'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/diff:clar_tests',
+    ],
+  },
+
+  clar_launcher_diff: clar.launcher_script('tests_diff'),
+
+  tests_email: {
+    type: @'rules//shell/test:script',
+    name: ['tests_email'],
+    test: ['clar_launcher_email'],
+    deps: [
+      @'./resources:email',
+      @'./libgit2/email:clar_tests',
+    ],
+  },
+
+  clar_launcher_email: clar.launcher_script('tests_email'),
+
+  tests_fetch: {
+    type: @'rules//shell/test:script',
+    name: ['tests_fetch'],
+    test: ['clar_launcher_fetch'],
+    deps: [
+      @'./resources:common',
+      @'./libgit2/fetch:clar_tests',
+    ],
+  },
+
+  clar_launcher_fetch: clar.launcher_script('tests_fetch'),
+
+  tests_fetchhead: {
+    type: @'rules//shell/test:script',
+    name: ['tests_fetchhead'],
+    test: ['clar_launcher_fetchhead'],
+    deps: [
+      @'./resources:fetchhead',
+      @'./libgit2/fetchhead:clar_tests',
+    ],
+  },
+
+  clar_launcher_fetchhead: clar.launcher_script('tests_fetchhead'),
+
+  tests_filter: {
+    type: @'rules//shell/test:script',
+    name: ['tests_filter'],
+    test: ['clar_launcher_filter'],
+    deps: [
+      @'./resources:filter',
+      @'./libgit2/filter:clar_tests',
+    ],
+  },
+
+  clar_launcher_filter: clar.launcher_script('tests_filter'),
+
+  tests_grafts: {
+    type: @'rules//shell/test:script',
+    name: ['tests_grafts'],
+    test: ['clar_launcher_grafts'],
+    deps: [
+      @'./resources:grafts',
+      @'./libgit2/grafts:clar_tests',
+    ],
+  },
+
+  clar_launcher_grafts: clar.launcher_script('tests_grafts'),
+
+  tests_graph: {
+    type: @'rules//shell/test:script',
+    name: ['tests_graph'],
+    test: ['clar_launcher_graph'],
+    deps: [
+      @'./resources:graph',
+      @'./libgit2/graph:clar_tests',
+    ],
+  },
+
+  clar_launcher_graph: clar.launcher_script('tests_graph'),
+
+  tests_ignore: {
+    type: @'rules//shell/test:script',
+    name: ['tests_ignore'],
+    test: ['clar_launcher_ignore'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/ignore:clar_tests',
+    ],
+  },
+
+  clar_launcher_ignore: clar.launcher_script('tests_ignore'),
+
+  tests_index: {
+    type: @'rules//shell/test:script',
+    name: ['tests_index'],
+    test: ['clar_launcher_index'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/index:clar_tests',
+    ],
+  },
+
+  clar_launcher_index: clar.launcher_script('tests_index'),
+
+  tests_iterator: {
+    type: @'rules//shell/test:script',
+    name: ['tests_iterator'],
+    test: ['clar_launcher_iterator'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/iterator:clar_tests',
+    ],
+  },
+
+  clar_launcher_iterator: clar.launcher_script('tests_iterator'),
+
+  tests_mailmap: {
+    type: @'rules//shell/test:script',
+    name: ['tests_mailmap'],
+    test: ['clar_launcher_mailmap'],
+    deps: [
+      @'./resources:mailmap',
+      @'./libgit2/mailmap:clar_tests',
+    ],
+  },
+
+  clar_launcher_mailmap: clar.launcher_script('tests_mailmap'),
+
+  tests_merge: {
+    type: @'rules//shell/test:script',
+    name: ['tests_merge'],
+    test: ['clar_launcher_merge'],
+    deps: [
+      @'./resources:merge',
+      @'./libgit2/merge:clar_tests',
+    ],
+  },
+
+  clar_launcher_merge: clar.launcher_script('tests_merge'),
+
+  tests_merge_trees: {
+    type: @'rules//shell/test:script',
+    name: ['tests_merge_trees'],
+    test: ['clar_launcher_merge_trees'],
+    deps: [
+      @'./resources:merge_trees',
+      @'./libgit2/merge/trees:clar_tests',
+    ],
+  },
+
+  clar_launcher_merge_trees: clar.launcher_script('tests_merge_trees'),
+
+  tests_merge_workdir: {
+    type: @'rules//shell/test:script',
+    name: ['tests_merge_workdir'],
+    test: ['clar_launcher_merge_workdir'],
+    deps: [
+      @'./resources:merge_workdir',
+      @'./libgit2/merge/workdir:clar_tests',
+    ],
+  },
+
+  clar_launcher_merge_workdir: clar.launcher_script('tests_merge_workdir'),
+
+  tests_message: {
+    type: @'rules//shell/test:script',
+    name: ['tests_message'],
+    test: ['clar_launcher_message'],
+    deps: [@'./libgit2/message:clar_tests'],
+  },
+
+  clar_launcher_message: clar.launcher_script('tests_message'),
+
+  tests_network: {
+    type: @'rules//shell/test:script',
+    name: ['tests_network'],
+    test: ['clar_launcher_network'],
+    deps: [
+      @'./resources:network',
+      @'./libgit2/network:clar_tests',
+    ],
+  },
+
+  clar_launcher_network: clar.launcher_script('tests_network'),
+
+  tests_network_remote: {
+    type: @'rules//shell/test:script',
+    name: ['tests_network_remote'],
+    test: ['clar_launcher_network_remote'],
+    deps: [
+      @'./resources:network_remote',
+      @'./libgit2/network/remote:clar_tests',
+    ],
+  },
+
+  clar_launcher_network_remote: clar.launcher_script('tests_network_remote'),
+
+  tests_notes: {
+    type: @'rules//shell/test:script',
+    name: ['tests_notes'],
+    test: ['clar_launcher_notes'],
+    deps: [
+      @'./resources:common',
+      @'./libgit2/notes:clar_tests',
+    ],
+  },
+
+  clar_launcher_notes: clar.launcher_script('tests_notes'),
+
+  tests_object: {
+    type: @'rules//shell/test:script',
+    name: ['tests_object'],
+    test: ['clar_launcher_object'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/object:clar_tests',
+    ],
+  },
+
+  clar_launcher_object: clar.launcher_script('tests_object'),
+
+  tests_object_blob: {
+    type: @'rules//shell/test:script',
+    name: ['tests_object_blob'],
+    test: ['clar_launcher_object_blob'],
+    deps: [
+      @'./resources:object_blob',
+      @'./libgit2/object/blob:clar_tests',
+    ],
+  },
+
+  clar_launcher_object_blob: clar.launcher_script('tests_object_blob'),
+
+  tests_object_commit: {
+    type: @'rules//shell/test:script',
+    name: ['tests_object_commit'],
+    test: ['clar_launcher_object_commit'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/object/commit:clar_tests',
+    ],
+  },
+
+  clar_launcher_object_commit: clar.launcher_script('tests_object_commit'),
+
+  tests_object_raw: {
+    type: @'rules//shell/test:script',
+    name: ['tests_object_raw'],
+    test: ['clar_launcher_object_raw'],
+    deps: [@'./libgit2/object/raw:clar_tests'],
+  },
+
+  clar_launcher_object_raw: clar.launcher_script('tests_object_raw'),
+
+  tests_object_tag: {
+    type: @'rules//shell/test:script',
+    name: ['tests_object_tag'],
+    test: ['clar_launcher_object_tag'],
+    deps: [
+      @'./resources:object_tag',
+      @'./libgit2/object/tag:clar_tests',
+    ],
+  },
+
+  clar_launcher_object_tag: clar.launcher_script('tests_object_tag'),
+
+  tests_object_tree: {
+    type: @'rules//shell/test:script',
+    name: ['tests_object_tree'],
+    test: ['clar_launcher_object_tree'],
+    deps: [
+      @'./resources:object_tree',
+      @'./libgit2/object/tree:clar_tests',
+    ],
+  },
+
+  clar_launcher_object_tree: clar.launcher_script('tests_object_tree'),
+
+  tests_odb: {
+    type: @'rules//shell/test:script',
+    name: ['tests_odb'],
+    test: ['clar_launcher_odb'],
+    deps: [
+      @'./resources:odb',
+      @'./libgit2/odb:clar_tests',
+    ],
+  },
+
+  clar_launcher_odb: clar.launcher_script('tests_odb'),
+
+  tests_odb_backend: {
+    type: @'rules//shell/test:script',
+    name: ['tests_odb_backend'],
+    test: ['clar_launcher_odb_backend'],
+    deps: [
+      @'./resources:common',
+      @'./libgit2/odb/backend:clar_tests',
+    ],
+  },
+
+  clar_launcher_odb_backend: clar.launcher_script('tests_odb_backend'),
+
+  tests_pack: {
+    type: @'rules//shell/test:script',
+    name: ['tests_pack'],
+    test: ['clar_launcher_pack'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/pack:clar_tests',
+    ],
+  },
+
+  clar_launcher_pack: clar.launcher_script('tests_pack'),
+
+  tests_patch: {
+    type: @'rules//shell/test:script',
+    name: ['tests_patch'],
+    test: ['clar_launcher_patch'],
+    deps: [@'./libgit2/patch:clar_tests'],
+  },
+
+  clar_launcher_patch: clar.launcher_script('tests_patch'),
+
+  tests_path: {
+    type: @'rules//shell/test:script',
+    name: ['tests_path'],
+    test: ['clar_launcher_path'],
+    deps: [
+      @'./resources:path',
+      @'./libgit2/path:clar_tests',
+    ],
+  },
+
+  clar_launcher_path: clar.launcher_script('tests_path'),
+
+  tests_rebase: {
+    type: @'rules//shell/test:script',
+    name: ['tests_rebase'],
+    test: ['clar_launcher_rebase'],
+    deps: [
+      @'./resources:rebase',
+      @'./libgit2/rebase:clar_tests',
+    ],
+  },
+
+  clar_launcher_rebase: clar.launcher_script('tests_rebase'),
+
+  tests_refs: {
+    type: @'rules//shell/test:script',
+    name: ['tests_refs'],
+    test: ['clar_launcher_refs'],
+    deps: [
+      @'./resources:refs',
+      @'./libgit2/refs:clar_tests',
+    ],
+  },
+
+  clar_launcher_refs: clar.launcher_script('tests_refs'),
+
+  tests_refs_branches: {
+    type: @'rules//shell/test:script',
+    name: ['tests_refs_branches'],
+    test: ['clar_launcher_refs_branches'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/refs/branches:clar_tests',
+    ],
+  },
+
+  clar_launcher_refs_branches: clar.launcher_script('tests_refs_branches'),
+
+  tests_refs_reflog: {
+    type: @'rules//shell/test:script',
+    name: ['tests_refs_reflog'],
+    test: ['clar_launcher_refs_reflog'],
+    deps: [
+      @'./resources:refs_reflog',
+      @'./libgit2/refs/reflog:clar_tests',
+    ],
+  },
+
+  clar_launcher_refs_reflog: clar.launcher_script('tests_refs_reflog'),
+
+  tests_refs_tags: {
+    type: @'rules//shell/test:script',
+    name: ['tests_refs_tags'],
+    test: ['clar_launcher_refs_tags'],
+    deps: [@'./libgit2/refs/tags:clar_tests'],
+  },
+
+  clar_launcher_refs_tags: clar.launcher_script('tests_refs_tags'),
+
+  tests_remote: {
+    type: @'rules//shell/test:script',
+    name: ['tests_remote'],
+    test: ['clar_launcher_remote'],
+    deps: [
+      @'./resources:remote',
+      @'./libgit2/remote:clar_tests',
+    ],
+  },
+
+  clar_launcher_remote: clar.launcher_script('tests_remote'),
+
+  tests_repo: {
+    type: @'rules//shell/test:script',
+    name: ['tests_repo'],
+    test: ['clar_launcher_repo'],
+    deps: [
+      @'./resources:repo',
+      @'./libgit2/repo:clar_tests',
+    ],
+  },
+
+  clar_launcher_repo: clar.launcher_script('tests_repo'),
+
+  tests_reset: {
+    type: @'rules//shell/test:script',
+    name: ['tests_reset'],
+    test: ['clar_launcher_reset'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/reset:clar_tests',
+    ],
+  },
+
+  clar_launcher_reset: clar.launcher_script('tests_reset'),
+
+  tests_revert: {
+    type: @'rules//shell/test:script',
+    name: ['tests_revert'],
+    test: ['clar_launcher_revert'],
+    deps: [
+      @'./resources:revert',
+      @'./libgit2/revert:clar_tests',
+    ],
+  },
+
+  clar_launcher_revert: clar.launcher_script('tests_revert'),
+
+  tests_revwalk: {
+    type: @'rules//shell/test:script',
+    name: ['tests_revwalk'],
+    test: ['clar_launcher_revwalk'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/revwalk:clar_tests',
+    ],
+  },
+
+  clar_launcher_revwalk: clar.launcher_script('tests_revwalk'),
+
+  tests_stash: {
+    type: @'rules//shell/test:script',
+    name: ['tests_stash'],
+    test: ['clar_launcher_stash'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/stash:clar_tests',
+    ],
+  },
+
+  clar_launcher_stash: clar.launcher_script('tests_stash'),
+
+  tests_status: {
+    type: @'rules//shell/test:script',
+    name: ['tests_status'],
+    test: ['clar_launcher_status'],
+    deps: [
+      @'./resources:status',
+      @'./libgit2/status:clar_tests',
+    ],
+  },
+
+  clar_launcher_status: clar.launcher_script('tests_status'),
+
+  tests_stream: {
+    type: @'rules//shell/test:script',
+    name: ['tests_stream'],
+    test: ['clar_launcher_stream'],
+    deps: [@'./libgit2/stream:clar_tests'],
+  },
+
+  clar_launcher_stream: clar.launcher_script('tests_stream'),
+
+  tests_submodule: {
+    type: @'rules//shell/test:script',
+    name: ['tests_submodule'],
+    test: ['clar_launcher_submodule'],
+    deps: [
+      @'./resources:submodule',
+      @'./libgit2/submodule:clar_tests',
+    ],
+  },
+
+  clar_launcher_submodule: clar.launcher_script('tests_submodule'),
+
+  tests_threads: {
+    type: @'rules//shell/test:script',
+    name: ['tests_threads'],
+    test: ['clar_launcher_threads'],
+    deps: [
+      @'./resources:threads',
+      @'./libgit2/threads:clar_tests',
+    ],
+  },
+
+  clar_launcher_threads: clar.launcher_script('tests_threads'),
+
+  tests_trace: {
+    type: @'rules//shell/test:script',
+    name: ['tests_trace'],
+    test: ['clar_launcher_trace'],
+    deps: [@'./libgit2/trace:clar_tests'],
+  },
+
+  clar_launcher_trace: clar.launcher_script('tests_trace'),
+
+  tests_transport: {
+    type: @'rules//shell/test:script',
+    name: ['tests_transport'],
+    test: ['clar_launcher_transport'],
+    deps: [
+      @'./resources:common',
+      @'./libgit2/transport:clar_tests',
+    ],
+  },
+
+  clar_launcher_transport: clar.launcher_script('tests_transport'),
+
+  tests_transports: {
+    type: @'rules//shell/test:script',
+    name: ['tests_transports'],
+    test: ['clar_launcher_transports'],
+    deps: [@'./libgit2/transports:clar_tests'],
+  },
+
+  clar_launcher_transports: clar.launcher_script('tests_transports'),
+
+  tests_transports_smart: {
+    type: @'rules//shell/test:script',
+    name: ['tests_transports_smart'],
+    test: ['clar_launcher_transports_smart'],
+    deps: [@'./libgit2/transports/smart:clar_tests'],
+  },
+
+  clar_launcher_transports_smart: clar.launcher_script('tests_transports_smart'),
+
+  tests_worktree: {
+    type: @'rules//shell/test:script',
+    name: ['tests_worktree'],
+    test: ['clar_launcher_worktree'],
+    deps: [
+      @'./resources:all',
+      @'./libgit2/worktree:clar_tests',
+    ],
+  },
+
+  clar_launcher_worktree: clar.launcher_script('tests_worktree'),
+}

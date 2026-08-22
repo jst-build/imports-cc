@@ -5,7 +5,7 @@ local compiler_family = jst.get('FAMILY', toolchain_config, default='unknown');
 {
   defaults: {
     type: @'//CC:defaults',
-    arguments_config: ['TOOLCHAIN_CONFIG', 'OS'],
+    arguments_config: ['TOOLCHAIN_CONFIG', 'OS', 'DEPRECATE_HARD', 'ENABLE_WERROR'],
     base: [@'base//CC:defaults'],
     ADD_CFLAGS:
       if compiler_family == 'msvc' then
@@ -23,8 +23,11 @@ local compiler_family = jst.get('FAMILY', toolchain_config, default='unknown');
           '-D_GNU_SOURCE',
           '-Wall',
           '-Wextra',
-          '-DGIT_DEPRECATE_HARD',
         ]
+        + (if jst.env('DEPRECATE_HARD', default=true) then
+             ['-DGIT_DEPRECATE_HARD'])
+        + (if jst.env('ENABLE_WERROR', default=false) then
+             ['-Werror'])
         + (if os == 'sunos' then [
              '-D_POSIX_C_SOURCE=200112L',
              '-D__EXTENSIONS__',
@@ -64,5 +67,11 @@ local compiler_family = jst.get('FAMILY', toolchain_config, default='unknown');
           '-Wno-array-parameter',
           '-Wno-unknown-warning-option',
         ],
+    // Statically linking against BoringSSL (a C++ library) from a pure-C
+    // binary needs the C++ runtime at final link time - a harmless no-op
+    // when the "ssl" extern resolves to a real (C) OpenSSL instead.
+    ADD_LDFLAGS:
+      if compiler_family != 'msvc' then
+        ['-lstdc++'],
   },
 }

@@ -16,12 +16,6 @@ local options_doc = {
     "clang" and "gnu", but the actual set of supported values depends on
     the toolchain in use.
   |||],
-  USE_SYSTEM_LIBS: [|||
-    Boolean. Global switch consumed throughout this project's own targets:
-    if set, optional dependencies (zlib, ssl, ...) are looked up under
-    their system ("system") name rather than their bundled/vendored
-    ("open") name.
-  |||],
   DEBUG: [|||
     Map enabling and configuring the debug version. Specify a map that is
     logically true (e.g., non-null, non-empty map) to enable debug mode.
@@ -46,76 +40,178 @@ local options_doc = {
   PKG_CONFIG_ARGS: [|||
     Additional "pkg-config" arguments (e.g. "--define-prefix" or "--static").
   |||],
+  LIBGIT2_BUILD_SHARED: [|||
+    Boolean. Build a shared ("*.so") library instead of a static ("*.a")
+    one. Default "false".
+  |||],
+  EXPERIMENTAL_SHA256: [|||
+    Boolean. Enable experimental SHA256 repository support. Default "false".
+  |||],
+  BUILD_TESTS: [|||
+    Boolean. Build the "git2" test suite and add it to "INSTALL".
+    Default "true".
+  |||],
+  BUILD_CLI: [|||
+    Boolean. Build the "git2" command-line tool and add it to "INSTALL".
+    Default "true".
+  |||],
   USE_THREADS: [|||
     Use threads for parallel processing when possible.
     Set to true/false for using pthreads (Defaults to true).
   |||],
-  USE_SSH: [|||
-    Enables SSH support and optionally select provider.
-    Set to true/false for linking against libssh2 (Defaults to false, since
-    no "ssh2" extern is bundled/imported in this repo).
-  |||],
-  USE_HTTPS: [|||
-    true: use "WinHTTP" if ~WINHTTP~ and ~OS=="windows"~
-    "SecureTransport": link against Security framework (from system or open name)
-    "WinHTTP": link against Windows' libwinhttp (always from system)
-    "OpenSSL": link against OpenSSL (from system or open name)
-    "mbedTLS": link against mbedTLS (from system or open name)
-    false|null: Disable HTTPS
-  |||],
-  USE_SHA1: [|||
-    true: use "CollisionDetection"
-    "CollisionDetection": build with shipped SHA1DC implementation
-    "OpenSSL": link against OpenSSL compat library (from system or open name)
-    "mbedTLS": link against mbedTLS (from system or open name)
-    "Win32": link against Windows' SHA1 implementation (always from system)
-    "CommonCrypto": build with shipped common_crypto implementation
-    "HTTPS": inherit from ~USE_HTTPS~, or fall back to "CollisionDetection"
-    (default: must match ~USE_HTTPS~'s resolved backend, or the build fails
-    with symbol collisions between the shipped SHA1 headers and the linked
-    crypto library's own headers).
-  |||],
-  USE_SHA256: [|||
-    true: use "Builtin"
-    "Builtin": build with shipped RFC 6234 implementation
-    "OpenSSL": link against OpenSSL compat library (from system or open name)
-    "mbedTLS": link against mbedTLS (from system or open name)
-    "Win32": link against Windows' SHA1 implementation (always from system)
-    "CommonCrypto": build with shipped common_crypto implementation
-    "HTTPS": inherit from ~USE_HTTPS~, or fall back to "Builtin"
-    (default: must match ~USE_HTTPS~'s resolved backend, or the build fails
-    with symbol collisions between the shipped SHA256 headers and the linked
-    crypto library's own headers).
-  |||],
-  USE_HTTP_PARSER: [|||
-    "system": link against libhttp_parser (from system or open name)
-    <other>: compile and link bundled http_parser (./deps/http-parser)
-  |||],
-  USE_NTLMCLIENT: [|||
-    Enables NTLM authentication support. One of Builtin or win32.
-  |||],
-  USE_GSSAPI: [|||
-    true: use "GSS.framework" for ~OS=="darwin"~ or else "gssapi"
-    false: Disable GSS (default, since no "gssapi" extern is
-    bundled/imported in this repo)
-    "GSS.framework": Link against GSS framework (system or open name)
-    "gssapi": Link against libgssapi (system or open name)
-  |||],
-  REGEX_BACKEND: [|||
-    "regcomp_l": compile against regcomp_l (always from system)
-    "regcomp": compile against regcomp (always from system)
-    "pcre": link against libpcre (from system or open name)
-    "pcre2": link against libpcre2 (from system or open name)
-    "builtin"|null: compile and link bundled pcre (./deps/pcre)
-  |||],
   USE_NSEC: [|||
     Enable nanosecond precision timestamps. boolean. (Defaults to false).
   |||],
-  WINHTTP: ['boolean. Use "WinHTTP" if "USE_HTTPS" is true'],
+  USE_SSH: [|||
+    "libssh2": link against libssh2 (open binding "libssh2").
+    "exec": shell out to the system "ssh" binary at runtime.
+    false|null: Disable SSH support (default).
+  |||],
+  USE_HTTPS: [|||
+    true: use "WinHTTP" on Windows, or else "OpenSSL" (default)
+    "OpenSSL": link against OpenSSL (open binding "ssl")
+    "mbedTLS": link against mbedTLS (open binding "mbedtls")
+    "SecureTransport": link against the Security framework (open binding
+      "secure_transport")
+    "OpenSSL-FIPS"|"OpenSSL-Dynamic"|"Schannel": known, but unsupported
+    "WinHTTP": link against Windows' libwinhttp (from system)
+    false|null: Disable HTTPS
+  |||],
+  USE_SHA1: [|||
+    "CollisionDetection": build with the shipped SHA1DC implementation
+      (default)
+    "HTTPS": use whichever crypto provider the resolved "USE_HTTPS"
+      backend brings with it
+    <one of "USE_HTTPS"'s providers>: use that provider's SHA1
+      implementation directly
+  |||],
+  USE_SHA256: [|||
+    "Builtin": build with the shipped RFC 6234 implementation (the
+      default when "USE_HTTPS" is disabled)
+    "HTTPS": use whichever crypto provider the resolved "USE_HTTPS"
+      backend brings with it - the default when "USE_HTTPS" is enabled
+    <one of "USE_HTTPS"'s providers>: use that provider's SHA256
+      implementation directly
+  |||],
+  USE_GSSAPI: [|||
+    true: link against GSSAPI (open binding "gssapi"; auto-selects
+      "GSS.framework" on Darwin internally, "gssapi" elsewhere)
+    false|null: Disable GSS (default, since open binding "gssapi" isn't
+      bound by default in this repo)
+  |||],
+  USE_HTTP_PARSER: [|||
+    "http-parser": link against the http-parser library (open binding
+      "http_parser")
+    "llhttp": link against llhttp (open binding "llhttp")
+    "builtin"|null: compile and link the bundled llhttp (./deps/llhttp,
+      default)
+  |||],
+  REGEX_BACKEND: [|||
+    "regcomp_l": compile against regcomp_l (from system)
+    "regcomp": compile against regcomp (from system)
+    "pcre": link against libpcre (open binding "pcre")
+    "pcre2": link against libpcre2 (open binding "pcre2")
+    "builtin"|null: compile and link the bundled PCRE2 (./deps/pcre2,
+      default)
+  |||],
+  USE_BUNDLED_ZLIB: [|||
+    true|"Bundled": compile and link the bundled zlib (./deps/zlib)
+    false|null: link against zlib (open binding "zlib"), default
+    "Chromium": not supported (x86_64 SSE4.2/CLMUL-optimized fork)
+  |||],
   DEBUG_POOL: ['boolean. Enable debug pool allocator.'],
-  USE_ICONV: ['boolean. Use iconv for character conversion.'],
-  USE_BUNDLED_ZLIB: ['boolean. Link against bundled zlib compression library.'],
+  DEBUG_STRICT_ALLOC: ['boolean. Enable strict allocator behavior.'],
+  DEBUG_STRICT_OPEN: ['boolean. Enable strict path validation on open.'],
+  DEPRECATE_HARD: [|||
+    Boolean. Exclude deprecated functions from the build entirely (as
+    opposed to including but warning on them). Default "true".
+  |||],
+  ENABLE_WERROR: ['boolean. Treat compiler warnings as errors. Default "false".'],
+  USE_NTLMCLIENT: [|||
+    Enables NTLM authentication support. Compiles the bundled
+      "./deps/ntlmclient", using "USE_HTTPS"'s resolved backend for
+      crypto. Only available on non-Windows systems, and only when
+      "USE_HTTPS" is enabled. Defaults to "true" when both hold, "false"
+      otherwise.
+  |||],
+  USE_ICONV: [|||
+    boolean. Use iconv for character conversion. Links "-liconv" (only
+      takes effect on Darwin). (Defaults to false.)
+  |||],
 };
+
+// Shared option resolution, used both by "git2_configured" (the library)
+// and "git2_cli_configured" (the CLI) - they compile against the same
+// "git2_features.h", so both need the same resolved defaults.
+local resolved_options() =
+  local os = jst.env('OS', default='linux');
+  local use_gssapi = jst.env('USE_GSSAPI', default=false);
+  local use_https = jst.env('USE_HTTPS', default=true);
+  local use_https =
+    if use_https == true then
+      (if os == 'windows' then
+         'WinHTTP'
+       else
+         'OpenSSL')
+    else
+      use_https;
+  local use_sha1 = jst.env('USE_SHA1', default='CollisionDetection');
+  local use_sha256 = jst.env('USE_SHA256', default=(if use_https then 'HTTPS' else 'Builtin'));
+  {
+    DEBUG_POOL: jst.env('DEBUG_POOL'),
+    DEBUG_STRICT_ALLOC: jst.env('DEBUG_STRICT_ALLOC'),
+    DEBUG_STRICT_OPEN: jst.env('DEBUG_STRICT_OPEN'),
+    USE_THREADS: jst.env('USE_THREADS', default=true),
+    REGEX_BACKEND: jst.env('REGEX_BACKEND'),
+    USE_ICONV: jst.env('USE_ICONV'),
+    USE_NSEC: jst.env('USE_NSEC'),
+    USE_SSH: jst.env('USE_SSH', default=false),
+    USE_NTLMCLIENT: jst.env('USE_NTLMCLIENT', default=(os != 'windows' && use_https != false && use_https != null)),
+    USE_GSSAPI:
+      if use_gssapi == true then
+        (if os == 'darwin' then
+           'GSS.framework'
+         else
+           'gssapi')
+      else
+        use_gssapi,
+    USE_SHA1:
+      if use_sha1 == true then
+        'CollisionDetection'
+      else if use_sha1 == 'HTTPS' then
+        (if use_https == 'SecureTransport' then
+           'CommonCrypto'
+         else if use_https == 'WinHTTP' then
+           'Win32'
+         else if use_https == false then
+           'CollisionDetection'
+         else if use_https == null then
+           'CollisionDetection'
+         else
+           use_https)
+      else
+        use_sha1,
+    USE_SHA256:
+      if use_sha256 == true then
+        'Builtin'
+      else if use_sha256 == 'HTTPS' then
+        (if use_https == 'SecureTransport' then
+           'CommonCrypto'
+         else if use_https == 'WinHTTP' then
+           'Win32'
+         else if use_https == false then
+           'Builtin'
+         else if use_https == null then
+           'Builtin'
+         else
+           use_https)
+      else
+        use_sha256,
+    USE_HTTPS: use_https,
+    EXPERIMENTAL_SHA256: jst.env('EXPERIMENTAL_SHA256'),
+    USE_HTTP_PARSER: jst.env('USE_HTTP_PARSER'),
+    USE_BUNDLED_ZLIB: jst.env('USE_BUNDLED_ZLIB'),
+  };
 
 {
   // Default target: installs the library and its public headers into a
@@ -129,10 +225,34 @@ local options_doc = {
   },
 
   // Predefined target combining all libs, binaries, and public headers of
-  // this project into a single LOCALBASE-shaped tree.
+  // this project into a single LOCALBASE-shaped tree. Includes the "git2"
+  // CLI when "BUILD_CLI" is set (default) and the test binary when
+  // "BUILD_TESTS" is set (default).
   INSTALL: {
-    type: @'rules//CC:install-with-deps',
-    targets: ['git2'],
+    type: 'install',
+    arguments_config: ['BUILD_TESTS'],
+    dirs:
+      [['install_cc', '.']]
+      + (if jst.env('BUILD_TESTS', default=true) then [
+          ['libgit2_tests', 'bin'],
+          [@'//tests/resources:all', 'share'],
+        ]),
+  },
+
+  // Runs the real upstream Clar test suite, split per suite family so a
+  // source change only invalidates and reruns the suites it can
+  // actually affect (rather than one monolithic binary/test for the
+  // whole library). Excludes "online"/"gitdaemon"/"ssh"/"proxy" (need a
+  // live server, not reproducible inside a hermetic build sandbox) and
+  // "stress"/"perf" (not correctness tests) - matching real upstream's
+  // own default "offline" ctest target. Configured here, once, for the
+  // whole suite (rather than once per individual test binary).
+  TESTS: {
+    type: 'configure',
+    tainted: ['test'],
+    arguments_config: jst.keys(options_doc),
+    target: @'./tests:TESTS_unconfigured',
+    config: resolved_options(),
   },
 
   git2: {
@@ -143,80 +263,71 @@ local options_doc = {
     config_doc: options_doc,
   },
 
+  // The "git2" command-line tool.
+  git2_cli: {
+    type: 'export',
+    target: 'git2_cli_configured',
+    doc: ['The git2 command-line tool.'],
+    flexible_config: jst.keys(options_doc),
+    config_doc: options_doc,
+  },
+
+  // Predefined target combining all libs, binaries, and public headers of
+  // this project into a single LOCALBASE-shaped tree.
+  install_cc: {
+    type: @'rules//CC:install-with-deps',
+    arguments_config: ['BUILD_CLI', 'BUILD_TESTS'],
+    targets:
+      ['git2']
+      + (if jst.env('BUILD_CLI', default=true) then ['git2_cli'])
+      + (if jst.env('BUILD_TESTS', default=true) then ['libgit2_tests_real']),
+  },
+
   git2_configured: {
     type: 'configure',
     arguments_config: jst.keys(options_doc),
     target: @'./src:libgit2',
-    config:
-      local os = jst.env('OS', default='linux');
-      local use_gssapi = jst.env('USE_GSSAPI', default=false);
-      local use_sha1 = jst.env('USE_SHA1', default='HTTPS');
-      local use_sha256 = jst.env('USE_SHA256', default='HTTPS');
-      local use_https = jst.env('USE_HTTPS', default=true);
-      local winhttp = jst.env('WINHTTP', default=(os == 'windows'));
-      local use_https =
-        if use_https == true then
-          (if os == 'windows' then
-             (if winhttp then
-                'WinHTTP'
-              else
-                'OpenSSL')
-           else
-             'OpenSSL')
-        else
-          use_https;
-      {
-        USE_SYSTEM_LIBS: jst.env('USE_SYSTEM_LIBS'),
-        DEBUG_POOL: jst.env('DEBUG_POOL'),
-        USE_THREADS: jst.env('USE_THREADS', default=true),
-        REGEX_BACKEND: jst.env('REGEX_BACKEND'),
-        USE_ICONV: jst.env('USE_ICONV'),
-        USE_NSEC: jst.env('USE_NSEC'),
-        USE_SSH: jst.env('USE_SSH', default=false),
-        USE_NTLMCLIENT: jst.env('USE_NTLMCLIENT'),
-        USE_GSSAPI:
-          if use_gssapi == true then
-            (if os == 'darwin' then
-               'GSS.framework'
-             else
-               'gssapi')
-          else
-            use_gssapi,
-        USE_SHA1:
-          if use_sha1 == true then
-            'CollisionDetection'
-          else if use_sha1 == 'HTTPS' then
-            (if use_https == 'SecureTransport' then
-               'CommonCrypto'
-             else if use_https == 'WinHTTP' then
-               'Win32'
-             else if use_https == false then
-               'CollisionDetection'
-             else if use_https == null then
-               'CollisionDetection'
-             else
-               use_https)
-          else
-            use_sha1,
-        USE_SHA256:
-          if use_sha256 == true then
-            'Builtin'
-          else if use_sha256 == 'HTTPS' then
-            (if use_https == 'SecureTransport' then
-               'CommonCrypto'
-             else if use_https == 'WinHTTP' then
-               'Win32'
-             else if use_https == false then
-               'Builtin'
-             else if use_https == null then
-               'Builtin'
-             else
-               use_https)
-          else
-            use_sha256,
-        USE_HTTPS: use_https,
-        USE_HTTP_PARSER: jst.env('USE_HTTP_PARSER'),
-        USE_BUNDLED_ZLIB: jst.env('USE_BUNDLED_ZLIB'),
-      },
+    config: resolved_options(),
+  },
+
+  // The CLI needs the exact same option resolution as the library (it
+  // compiles against the same "git2_features.h", via its own direct
+  // reference to "//src/util:util_private_headers" - it doesn't descend
+  // from "git2_configured", so it needs its own "configure" step calling
+  // the same shared function).
+  git2_cli_configured: {
+    type: 'configure',
+    arguments_config: jst.keys(options_doc),
+    target: @'./src/cli:git2_cli_unexported',
+    config: resolved_options(),
+  },
+
+  // Generates a test launcher that calls 'libgit2_tests_real' (see below)
+  // with the correct absolute path to staged test resources.
+  libgit2_tests: {
+    type: 'generic',
+    cmds: [|||
+      cat > libgit2_tests << 'EOF'
+      #!/bin/sh
+
+      set -e
+
+      # clar test suite needs absolute path to test resources
+      BIN_DIR="$(dirname "$(realpath "$0")")"
+      export CLAR_FIXTURE_PATH="${BIN_DIR}/../share/resources"
+
+      "${BIN_DIR}/libgit2_tests.real" "$@"
+      EOF
+      chmod +x libgit2_tests
+    |||],
+    outs: ['libgit2_tests'],
+  },
+
+  // The Clar test binary that needs an absolute path to test resources.
+  libgit2_tests_real: {
+    type: 'configure',
+    arguments_config: jst.keys(options_doc),
+    target: @'./tests/libgit2:clar_tests_all',
+    config: resolved_options(),
   },
 }

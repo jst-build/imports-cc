@@ -15,7 +15,7 @@
     },
     {
       "source": "git",
-      "branch": "boringssl/dec0d8f6",
+      "branch": "boringssl/v0.20260803.0",
       "url": "https://github.com/jst-build/imports-cc.git",
       "repos": [{"alias": "ssl", "map": {"toolchain": "toolchain"}}]
     },

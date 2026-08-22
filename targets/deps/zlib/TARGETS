@@ -1,0 +1,33 @@
+{
+  git2_zlib: {
+    type: @'rules//CC:library',
+    name: ['git2_zlib'],
+    'pure C': ['yes'],
+    'private-cflags': ['-Wno-implicit-fallthrough'],
+    'private-defines': ['NO_VIZ', 'STDC', 'NO_GZIP', 'HAVE_SYS_TYPES_H', 'HAVE_STDINT_H', 'HAVE_STDDEF_H'],
+    srcs: [
+      'adler32.c',
+      'crc32.c',
+      'deflate.c',
+      'infback.c',
+      'inffast.c',
+      'inflate.c',
+      'inftrees.c',
+      'trees.c',
+      'zutil.c',
+    ],
+    hdrs: ['zlib.h'],
+    'private-hdrs': [
+      'crc32.h',
+      'deflate.h',
+      'gzguts.h',
+      'inffast.h',
+      'inffixed.h',
+      'inflate.h',
+      'inftrees.h',
+      'trees.h',
+      'zconf.h',
+      'zutil.h',
+    ],
+  },
+}

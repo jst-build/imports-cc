@@ -1,0 +1,21 @@
+{
+  git2_cli_unexported: {
+    type: @'rules//CC:binary',
+    // Real upstream's own default (non-"dynamic" BUILD_CLI) output name -
+    // matches LIBGIT2_FILENAME's default "git2".
+    name: ['git2'],
+    'pure C': ['yes'],
+    srcs: [
+      jst.glob('*.c'),
+      'unix/sighandler.c',
+    ],
+    // Real upstream's CLI_INCLUDES is "src/util", "src/cli", "include" only
+    // - it does not compile against "src/libgit2"'s own private headers,
+    // just links its compiled objects in (via "private-deps" below).
+    'private-hdrs': [
+      jst.glob('*.h'),
+      @'//src/util:util_private_headers',
+    ],
+    'private-deps': [@'//:git2'],
+  },
+}

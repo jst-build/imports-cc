@@ -1,0 +1,25 @@
+{
+  // The Clar test framework itself (bundled with libgit2, not an
+  // external dependency).
+  srcs: {
+    type: @'rules//data:staged',
+    srcs: [
+      'clar.c',
+      'clar_libgit2.c',
+      'clar_libgit2_alloc.c',
+      'clar_libgit2_timer.c',
+      'clar_libgit2_trace.c',
+      'main.c',
+    ],
+  },
+
+  hdrs: {
+    type: @'rules//data:staged',
+    srcs: [jst.glob('*.h')],
+  },
+
+  generate_py: {
+    type: @'rules//data:staged',
+    srcs: ['generate.py'],
+  },
+}

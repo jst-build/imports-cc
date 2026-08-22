@@ -1,0 +1,21 @@
+local clar = import '/tests/clar.jst';
+
+{
+  hdrs: {
+    type: @'rules//data:staged',
+    stage: ['mailmap'],
+    srcs: [jst.glob('*.h')],
+  },
+
+  srcs: {
+    type: @'rules//data:staged',
+    stage: ['mailmap'],
+    srcs: [jst.glob('*.c')],
+  },
+
+  // Real "generate.py" codegen, scoped to just this suite's own sources.
+  clar_suite: clar.gen_suite(@'./:srcs'),
+
+  // The real Clar test binary for just this suite family.
+  clar_tests: clar.test_binary('tests_mailmap', @'./:srcs', @'./:clar_suite'),
+}

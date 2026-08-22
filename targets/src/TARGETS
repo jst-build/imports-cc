@@ -1,10 +1,13 @@
 {
   libgit2: {
     type: @'rules//CC:library',
-    arguments_config: ['OS', 'ARCH', 'TARGET_ARCH'],
+    arguments_config: ['OS', 'ARCH', 'TARGET_ARCH', 'LIBGIT2_BUILD_SHARED'],
     name: ['git2'],
     'pkg-name': ['libgit2'],
     'pure C': ['yes'],
+    shared: if $'LIBGIT2_BUILD_SHARED' then ['yes'],
+    // Real upstream: SOVERSION "${VERSION_MAJOR}.${VERSION_MINOR}".
+    soversion: ['1', '9'],
     'private-defines':
       if jst.env('OS') == 'linux' then
         ['HAVE_QSORT_R_GNU']
@@ -21,11 +24,12 @@
     ],
     hdrs: [@'//include:git2_public_headers'],
     'private-hdrs': [@'//src/libgit2:libgit2_private_headers'],
-    deps: [
+    components: [
       @'//src/util:util_compress',
       @'//src/util:util_gssapi',
       @'//src/util:util_http_parser',
       @'//src/util:util_https',
+      @'//src/util:util_ntlmclient',
       @'//src/util:util_os',
       @'//src/util:util_regex',
       @'//src/util:util_sha1',

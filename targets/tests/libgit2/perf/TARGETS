@@ -1,0 +1,13 @@
+{
+  hdrs: {
+    type: @'rules//data:staged',
+    stage: ['perf'],
+    srcs: [jst.glob('*.h')],
+  },
+
+  srcs: {
+    type: @'rules//data:staged',
+    stage: ['perf'],
+    srcs: [jst.glob('*.c')],
+  },
+}

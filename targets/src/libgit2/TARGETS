@@ -21,9 +21,10 @@
 
   'experimental.h': {
     type: 'configure',
+    arguments_config: ['EXPERIMENTAL_SHA256'],
     target: 'experimental',
     config: {
-      // defines1: [[ 'GIT_EXPERIMENTAL_SHA256', 0, ]],
+      defines1: [['GIT_EXPERIMENTAL_SHA256', jst.env('EXPERIMENTAL_SHA256')]],
     },
   },
 

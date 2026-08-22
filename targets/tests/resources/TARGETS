@@ -1,0 +1,380 @@
+{
+  // The real upstream fixture data (git repos, packfiles, config files,
+  // ...) used by the Clar test suite at runtime. Staged as one opaque
+  // tree, mirroring "CLAR_FIXTURE_PATH". Used as a fallback for suites
+  // whose fixture usage can't be statically determined (dynamic
+  // "cl_fixture"/"cl_git_sandbox_init" arguments, or use of shared
+  // setup helpers whose own fixture needs are file-content-driven) -
+  // see the per-suite targets below for suites with a known, small
+  // fixture set.
+  all: {
+    type: 'install',
+    dirs: [[jst.tree('.'), 'resources']],
+  },
+
+  // Fixtures needed by "//tests/libgit2:helper_srcs" (linked into every
+  // suite binary), shared by every per-suite target below via "deps".
+  common: {
+    type: 'install',
+    dirs: [
+      [jst.tree('sub.git'), 'resources'],
+      [jst.tree('submod2'), 'resources'],
+      [jst.tree('submod2_target'), 'resources'],
+      [jst.tree('submod3'), 'resources'],
+      [jst.tree('submodule_simple'), 'resources'],
+      [jst.tree('submodule_with_path'), 'resources'],
+      [jst.tree('submodules'), 'resources'],
+      [jst.tree('super'), 'resources'],
+      [jst.tree('testrepo.git'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "apply" suite specifically
+  apply: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('merge-recursive'), 'resources'],
+      [jst.tree('renames'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "attr" suite specifically
+  attr: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('attr'), 'resources'],
+      [jst.tree('attr_index'), 'resources'],
+      [jst.tree('empty_standard_repo'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "cherrypick" suite specifically
+  cherrypick: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('cherrypick'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "clone" suite specifically
+  clone: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('empty_bare.git'), 'resources'],
+      [jst.tree('empty_standard_repo'), 'resources'],
+      [jst.tree('testrepo.git'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "commit" suite specifically
+  commit: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('empty_standard_repo'), 'resources'],
+      [jst.tree('testrepo'), 'resources'],
+      [jst.tree('testrepo2'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "config" suite specifically
+  config: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('config'), 'resources'],
+      [jst.tree('empty_standard_repo'), 'resources'],
+      [jst.tree('testrepo'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "describe" suite specifically
+  describe: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('describe'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "email" suite specifically
+  email: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('diff_format_email'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "fetchhead" suite specifically
+  fetchhead: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('empty_standard_repo'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "filter" suite specifically
+  filter: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('crlf'), 'resources'],
+      [jst.tree('crlf.git'), 'resources'],
+      [jst.tree('empty_standard_repo'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "grafts" suite specifically
+  grafts: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('grafted.git'), 'resources'],
+      [jst.tree('shallow.git'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "graph" suite specifically
+  graph: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('merge-recursive'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "mailmap" suite specifically
+  mailmap: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('mailmap'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "merge" suite specifically
+  merge: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('merge-recursive'), 'resources'],
+      [jst.tree('merge-resolve'), 'resources'],
+      [jst.tree('merge-whitespace'), 'resources'],
+      [jst.tree('testrepo'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "merge/trees" suite specifically
+  merge_trees: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('merge-recursive'), 'resources'],
+      [jst.tree('merge-resolve'), 'resources'],
+      [jst.tree('merge-whitespace'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "merge/workdir" suite specifically
+  merge_workdir: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('merge-recursive'), 'resources'],
+      [jst.tree('merge-resolve'), 'resources'],
+      [jst.tree('testrepo'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "network" suite specifically
+  network: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('partial-testrepo'), 'resources'],
+      [jst.tree('testrepo_256.git'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "network/remote" suite specifically
+  network_remote: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('testrepo_256.git'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "object/blob" suite specifically
+  object_blob: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('empty_standard_repo'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "object/tag" suite specifically
+  object_tag: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('bad_tag.git'), 'resources'],
+      [jst.tree('short_tag.git'), 'resources'],
+      [jst.tree('testrepo'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "object/tree" suite specifically
+  object_tree: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('deprecated-mode.git'), 'resources'],
+      [jst.tree('testrepo'), 'resources'],
+      [jst.tree('testrepo2'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "odb" suite specifically
+  odb: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('duplicate.git'), 'resources'],
+      [jst.tree('redundant.git'), 'resources'],
+      [jst.tree('testrepo_256.git'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "path" suite specifically
+  path: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('empty_bare.git'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "rebase" suite specifically
+  rebase: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('rebase'), 'resources'],
+      [jst.tree('rebase-submodule'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "refs" suite specifically
+  refs: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('bad_tag.git'), 'resources'],
+      [jst.tree('empty_bare.git'), 'resources'],
+      [jst.tree('peeled.git'), 'resources'],
+      [jst.tree('status'), 'resources'],
+      [jst.tree('testrepo'), 'resources'],
+      [jst.tree('testrepo2'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "refs/reflog" suite specifically
+  refs_reflog: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('testrepo'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "remote" suite specifically
+  remote: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('testrepo'), 'resources'],
+      [jst.tree('testrepo2'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "repo" suite specifically
+  repo: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('attr'), 'resources'],
+      [jst.tree('empty_bare.git'), 'resources'],
+      [jst.tree('empty_standard_repo'), 'resources'],
+      [jst.tree('nasty'), 'resources'],
+      [jst.tree('peeled.git'), 'resources'],
+      [jst.tree('shallow.git'), 'resources'],
+      [jst.tree('status'), 'resources'],
+      [jst.tree('template'), 'resources'],
+      [jst.tree('testrepo'), 'resources'],
+    ],
+    files: {
+      'resources/gitgit.index': jst.file('gitgit.index'),
+    },
+  },
+
+  // Fixtures needed by the "revert" suite specifically
+  revert: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('revert'), 'resources'],
+      [jst.tree('revert-rename.git'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "status" suite specifically
+  status: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('empty_standard_repo'), 'resources'],
+      [jst.tree('filemodes'), 'resources'],
+      [jst.tree('icase'), 'resources'],
+      [jst.tree('issue_1397'), 'resources'],
+      [jst.tree('issue_592'), 'resources'],
+      [jst.tree('issue_592b'), 'resources'],
+      [jst.tree('renames'), 'resources'],
+      [jst.tree('status'), 'resources'],
+      [jst.tree('status_skiphash'), 'resources'],
+      [jst.tree('testrepo'), 'resources'],
+      [jst.tree('testrepo2'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "submodule" suite specifically
+  submodule: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('empty_standard_repo'), 'resources'],
+      [jst.tree('status'), 'resources'],
+      [jst.tree('submodules.git'), 'resources'],
+      [jst.tree('testrepo'), 'resources'],
+      [jst.tree('testrepo2'), 'resources'],
+    ],
+  },
+
+  // Fixtures needed by the "threads" suite specifically
+  threads: {
+    type: 'install',
+    deps: ['common'],
+    dirs: [
+      [jst.tree('status'), 'resources'],
+      [jst.tree('testrepo'), 'resources'],
+      [jst.tree('testrepo2'), 'resources'],
+    ],
+  },
+}

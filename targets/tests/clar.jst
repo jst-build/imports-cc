@@ -1,0 +1,86 @@
+{
+  // Real "generate.py" codegen, scoped to just this suite's own sources.
+  gen_suite(suite_srcs): {
+    type: @'rules//shell:cmds',
+    deps: [
+      @'//tests/clar:generate_py',
+      suite_srcs,
+    ],
+    cmds: [
+      // jst stages every action input as a hardlink into its CAS, and with
+      // mtime 0. "generate.py"'s own change-detection (Module.mtime,
+      // initialized to 0) treats an unchanged-since-0 mtime as "already
+      // scanned", so every source file needs a real mtime before it will be
+      // picked up - using "touch" would update that shared CAS-linked inode in
+      // place, not just this action's own view of the file. Copying to ".gen"
+      // first breaks the hardlink and also naturally gives every copy a fresh
+      // mtime as a side effect.
+      'mkdir .gen',
+      'cp -rP * .gen',
+      'python3 .gen/generate.py -f -o . .gen >log 2>&1 || (cat log && exit 1)',
+    ],
+    outs: ['clar.suite', 'clar_suite.h'],
+  },
+
+  // The real Clar test binary for just this suite family - split out per suite
+  // so a source change only invalidates and reruns the suites it can actually
+  // affect.
+  test_binary(name, suite_srcs, clar_suite): {
+    type: @'rules//CC:binary',
+    name: [name],
+    'pure C': ['yes'],
+    srcs: [
+      @'//tests/clar:srcs',
+      @'//tests/libgit2:helper_srcs',
+      suite_srcs,
+    ],
+    // "//tests/libgit2:hdrs" (the full cross-suite header set) is needed since
+    // a handful of suites "#include" a helper header from a sibling suite
+    // directory (e.g. "apply_helpers.h" itself pulls in
+    // "../merge/merge_helpers.h").
+    'private-hdrs': [
+      @'//tests/clar:hdrs',
+      @'//tests/clar/clar:hdrs',
+      @'//tests/libgit2:hdrs',
+      @'//src/util:util_private_headers',
+      @'//src/libgit2:libgit2_private_headers',
+      clar_suite,
+    ],
+    'private-defines': [
+      // See "launcher_script" below for why this reads a real absolute path
+      // from the environment instead of a compiled-in one. Aborts with a clear
+      // message rather than silently handing Clar a NULL if the binary is run
+      // outside "launcher_script" without the env var set.
+      'CLAR_FIXTURE_PATH=({ const char *_p = getenv("CLAR_FIXTURE_PATH"); if (!_p) { fprintf(stderr, "Error: CLAR_FIXTURE_PATH is not set\\n"); exit(1); } _p; })',
+      'CLAR_TMPDIR="libgit2_tests"',
+      'CLAR_HAS_REALPATH',
+      '_FILE_OFFSET_BITS=64',
+      'GIT_DEPRECATE_HARD',
+    ],
+    'private-cflags': [
+      '-Wno-array-bounds',
+      '-Wno-missing-declarations',
+    ],
+    'private-deps': [@'//:git2'],
+  },
+
+  // The "test.sh" launching a suite's compiled binary. "CLAR_TMP" and
+  // "CLAR_FIXTURE_PATH" are set at runtime as the latter must be an absolute
+  // runtime path to a writable "resources" directory - some suites need no
+  // fixtures at all, so a missing "resources" is tolerated rather than failing.
+  launcher_script(test_binary_name): {
+    type: 'file_gen',
+    name: 'test.sh',
+    data:
+      |||
+        set -e
+        mkdir tmp
+        export CLAR_TMP="$(pwd)/tmp"
+        if [ -d resources ]; then
+          cp -rP resources resources_rw
+          chmod -R u+w resources_rw
+          export CLAR_FIXTURE_PATH="$(pwd)/resources_rw"
+        fi
+      ||| + './' + test_binary_name + ' -v\n',
+  },
+}

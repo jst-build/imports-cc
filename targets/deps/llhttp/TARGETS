@@ -1,0 +1,14 @@
+{
+  git2_llhttp: {
+    type: @'rules//CC:library',
+    name: ['git2_llhttp'],
+    'pure C': ['yes'],
+    'private-cflags': ['-Wno-unused-parameter', '-Wno-missing-declarations'],
+    srcs: [
+      'api.c',
+      'http.c',
+      'llhttp.c',
+    ],
+    hdrs: ['llhttp.h'],
+  },
+}

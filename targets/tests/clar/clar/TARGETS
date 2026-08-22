@@ -1,0 +1,7 @@
+{
+  hdrs: {
+    type: @'rules//data:staged',
+    stage: ['clar'],
+    srcs: [jst.glob('*.h')],
+  },
+}
