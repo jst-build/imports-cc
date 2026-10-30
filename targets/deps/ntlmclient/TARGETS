@@ -13,9 +13,11 @@
   },
 
   // Patch needed to support BoringSSL as a replacement for OpenSSL.
-  // BoringSSL never actually defines "const_DES_cblock"; the added typedef
-  // only takes effect when BoringSSL really is the backend, and is inert
-  // against a real OpenSSL/LibreSSL, which brings its own "const_DES_cblock".
+  // BoringSSL never actually defines "const_DES_cblock", and its "DES_cblock"
+  // is a struct rather than OpenSSL's "unsigned char[8]"; declare the
+  // function table in terms of plain byte blocks instead. Only takes effect
+  // when BoringSSL really is the backend; inert against a real
+  // OpenSSL/LibreSSL, which brings its own "const_DES_cblock".
   'crypt_openssl.h.diff': {
     type: 'file_gen',
     name: 'crypt_openssl.h.diff',
@@ -23,19 +25,33 @@
       |||
         --- crypt_openssl.h.orig
         +++ crypt_openssl.h
-        @@ -14,6 +14,12 @@
+        @@ -14,6 +14,17 @@
          # include <openssl/hmac.h>
          #endif
          
-        +/* BoringSSL reports an OpenSSL 1.1-style OPENSSL_VERSION_NUMBER, but
-        + * has no "const_DES_cblock" of its own, so nothing below defines it. */
+        +/* BoringSSL reports an OpenSSL 1.1-style OPENSSL_VERSION_NUMBER, but has no
+        + * "const_DES_cblock" of its own and its "DES_cblock" is a struct, not the
+        + * "unsigned char[8]" this library's DES blocks are. Declare the function
+        + * table below in terms of plain byte blocks; crypt_openssl.c adapts. */
         +#if defined(OPENSSL_IS_BORINGSSL)
         +typedef unsigned char const_DES_cblock[8];
+        +typedef unsigned char ntlm_DES_cblock[8];
+        +#else
+        +# define ntlm_DES_cblock DES_cblock
         +#endif
         +
          /* OpenSSL 1.1.0 uses opaque structs, we'll reuse these. */
          #if defined(OPENSSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER < 0x10100000L
          # define HMAC_CTX struct hmac_ctx_st
+        @@ -65,7 +76,7 @@
+         
+         	void *openssl_handle;
+         
+        -	void (*des_ecb_encrypt_fn)(const_DES_cblock *input, DES_cblock *output, DES_key_schedule *ks, int enc);
+        +	void (*des_ecb_encrypt_fn)(const_DES_cblock *input, ntlm_DES_cblock *output, DES_key_schedule *ks, int enc);
+         	int (*des_set_key_fn)(const_DES_cblock *key, DES_key_schedule *schedule);
+         
+         	unsigned long (*err_get_error_fn)(void);
       |||,
   },
 
@@ -43,6 +59,11 @@
   // "crypt_openssl.c" provides its own static "HMAC_CTX_cleanup" stub for every
   // OpenSSL >= 1.1 that isn't LibreSSL, but BoringSSL exports a real
   // "HMAC_CTX_cleanup" of its own, so exclude BoringSSL from that guard.
+  // BoringSSL's prototypes for several of the functions stored in the
+  // function table also differ from OpenSSL's (uint32_t error codes, size_t
+  // lengths, void returns, struct DES blocks); calling through a mismatched
+  // function pointer is undefined behavior and rejected by clang >= 16, so
+  // route those through small adapters with OpenSSL's signatures.
   'crypt_openssl.c.diff': {
     type: 'file_gen',
     name: 'crypt_openssl.c.diff',
@@ -50,11 +71,75 @@
       |||
         --- crypt_openssl.c.orig
         +++ crypt_openssl.c
-        @@ -45,3 +45,3 @@
+        @@ -44,7 +44,7 @@
+         
          #endif
          
         -#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)) || \
         +#if (OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER) && !defined(OPENSSL_IS_BORINGSSL)) || \
+         	(defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER >= 0x03050000fL) || \
+         	defined(CRYPT_OPENSSL_DYNAMIC)
+         
+        @@ -55,6 +55,59 @@
+         
+         #endif
+         
+        +/* BoringSSL's prototypes differ from OpenSSL's ones that the function table
+        + * in crypt_openssl.h is declared with (struct DES blocks, uint32_t errors,
+        + * size_t lengths, void returns). Calling through a mismatched function
+        + * pointer is undefined, so route those calls through adapters instead. */
+        +#if defined(OPENSSL_IS_BORINGSSL) && !defined(CRYPT_OPENSSL_DYNAMIC)
+        +
+        +static int ntlm_boringssl_DES_set_key(const_DES_cblock *key, DES_key_schedule *schedule)
+        +{
+        +	DES_set_key((const DES_cblock *)key, schedule);
+        +	return 0;
+        +}
+        +
+        +static void ntlm_boringssl_DES_ecb_encrypt(const_DES_cblock *input, ntlm_DES_cblock *output, DES_key_schedule *ks, int enc)
+        +{
+        +	DES_ecb_encrypt((const DES_cblock *)input, (DES_cblock *)output, ks, enc);
+        +}
+        +
+        +static unsigned long ntlm_boringssl_ERR_get_error(void)
+        +{
+        +	return ERR_get_error();
+        +}
+        +
+        +static const char *ntlm_boringssl_ERR_lib_error_string(unsigned long e)
+        +{
+        +	return ERR_lib_error_string((uint32_t)e);
+        +}
+        +
+        +static int ntlm_boringssl_HMAC_CTX_reset(HMAC_CTX *ctx)
+        +{
+        +	HMAC_CTX_reset(ctx);
+        +	return 1;
+        +}
+        +
+        +static int ntlm_boringssl_HMAC_Init_ex(HMAC_CTX *ctx, const void *key, int key_len, const EVP_MD *md, ENGINE *impl)
+        +{
+        +	return HMAC_Init_ex(ctx, key, (size_t)key_len, md, impl);
+        +}
+        +
+        +static int ntlm_boringssl_RAND_bytes(unsigned char *buf, int num)
+        +{
+        +	return RAND_bytes(buf, (size_t)num);
+        +}
+        +
+        +# define DES_set_key ntlm_boringssl_DES_set_key
+        +# define DES_ecb_encrypt ntlm_boringssl_DES_ecb_encrypt
+        +# define ERR_get_error ntlm_boringssl_ERR_get_error
+        +# define ERR_lib_error_string ntlm_boringssl_ERR_lib_error_string
+        +# define HMAC_CTX_reset ntlm_boringssl_HMAC_CTX_reset
+        +# define HMAC_Init_ex ntlm_boringssl_HMAC_Init_ex
+        +# define RAND_bytes ntlm_boringssl_RAND_bytes
+        +
+        +#endif
+        +
+         
+         #ifdef CRYPT_OPENSSL_DYNAMIC
+         
       |||,
   },
 
